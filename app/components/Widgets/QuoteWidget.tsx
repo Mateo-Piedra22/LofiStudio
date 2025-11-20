@@ -1,0 +1,104 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Quote, RefreshCw, Languages } from 'lucide-react';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import quotesData from '@/lib/config/quotes.json';
+import tagMapJson from '@/lib/config/quote-tags.json';
+
+type Language = 'en' | 'es';
+
+const QUOTES_BY_CATEGORY = (quotesData as any).languages as Record<Language, Record<string, { text: string; author: string }[]>>
+
+interface QuoteWidgetProps {
+  category?: 'motivation' | 'peace' | 'focus';
+}
+
+export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProps) {
+  const [currentCategory, setCurrentCategory] = useLocalStorage('quoteCategory', category);
+  const [language, setLanguage] = useLocalStorage<Language>('quoteLanguage', 'en');
+  const [quote, setQuote] = useState(QUOTES_BY_CATEGORY[language][currentCategory]?.[0] || QUOTES_BY_CATEGORY['en']['motivation'][0]);
+  const [loading, setLoading] = useState(false);
+
+  const tagMap: Record<string, string> = (tagMapJson as any).tags;
+
+  const fetchQuote = async (cat: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/quote?category=${encodeURIComponent(cat)}&lang=${encodeURIComponent(language)}`);
+      const data = await res.json();
+      if (data && data.text && data.author) {
+        setQuote({ text: data.text, author: data.author });
+      } else {
+        const fallback = QUOTES_BY_CATEGORY['en']['motivation'][0];
+        setQuote(fallback);
+      }
+    } catch (e) {
+      const fallback = QUOTES_BY_CATEGORY['en']['motivation'][0];
+      setQuote(fallback);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuote(currentCategory);
+  }, [currentCategory]);
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'es' : 'en');
+  };
+
+  return (
+    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-foreground">
+          <span className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+            <Quote className="w-5 h-5" />
+            {language === 'en' ? 'Daily Quote' : 'Cita Diaria'}
+          </span>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {(Object.keys(QUOTES_BY_CATEGORY['en'])).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCurrentCategory(cat as any)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${currentCategory === cat
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-accent/10 text-muted-foreground hover:bg-accent/20'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+            <Button
+              onClick={toggleLanguage}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 hover:bg-accent/10 text-xs font-bold"
+              title={language === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés'}
+            >
+              {language.toUpperCase()}
+            </Button>
+            <Button
+              onClick={() => fetchQuote(currentCategory)}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="New Quote"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col justify-center space-y-3 -mt-0.5">
+          <p className="text-foreground text-lg leading-relaxed italic">"{quote.text}"</p>
+          <p className="text-muted-foreground text-sm text-right">— {quote.author}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -1,0 +1,6 @@
+{
+  "__info": "Parámetros del grid de widgets. Sirve para controlar el ancho del bloque (tileW), la altura base por fila (tileH) y la capacidad total de bloques visibles (capacity). Para ajustar el layout, modifica estos valores y recarga la aplicación.",
+  "tileW": 4,
+  "tileH": 1,
+  "capacity": 9
+}

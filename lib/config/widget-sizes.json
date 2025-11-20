@@ -1,0 +1,20 @@
+{
+  "groups": {
+    "small": { "rows": 1 },
+    "medium": { "rows": 2 },
+    "large": { "rows": 3 },
+    "special": { "rows": 2.5 }
+  },
+  "assignments": {
+    "clock": "small",
+    "weather": "small",
+    "quote": "small",
+    "timer": "medium",
+    "gif": "medium",
+    "notes": "medium",
+    "breathing": "medium",
+    "dictionary": "medium",
+    "tasks": "medium",
+    "calendar": "medium"
+  }
+}

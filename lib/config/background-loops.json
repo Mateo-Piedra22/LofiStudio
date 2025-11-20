@@ -1,0 +1,9 @@
+{
+  "__info": "Loops animados (YouTube) para fondos de video. Sirve para elegir escenas animadas predefinidas. Para añadir uno nuevo, agrega un objeto con 'id' y 'name' dentro de 'loops'.",
+  "loops": [
+    { "id": "5qap5aO4i9A", "name": "Lofi Girl Study" },
+    { "id": "DWcJFNfaw9c", "name": "Cozy Rain" },
+    { "id": "tNkZsRW7h2c", "name": "Space Journey" },
+    { "id": "fEvM-OUageg", "name": "Anime Sunset" }
+  ]
+}

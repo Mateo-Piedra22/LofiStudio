@@ -1,0 +1,45 @@
+{
+  "__info": "Citas por idioma y categoría para el widget de Citas. Sirve como fuente local y fallback cuando la API externa no responde. Para añadir una cita nueva, agrega un objeto {text, author} dentro de la categoría. Para crear una categoría nueva, añade una clave dentro del idioma con su listado de citas.",
+  "languages": {
+    "en": {
+      "motivation": [
+        { "text": "The way to get started is to quit talking and begin doing.", "author": "Walt Disney" },
+        { "text": "Don't let yesterday take up too much of today.", "author": "Will Rogers" },
+        { "text": "You learn more from failure than from success.", "author": "Unknown" },
+        { "text": "It's not whether you get knocked down, it's whether you get up.", "author": "Vince Lombardi" },
+        { "text": "If you are working on something that you really care about, you don't have to be pushed.", "author": "Steve Jobs" }
+      ],
+      "peace": [
+        { "text": "Peace comes from within. Do not seek it without.", "author": "Buddha" },
+        { "text": "The present moment is filled with joy and happiness.", "author": "Thich Nhat Hanh" },
+        { "text": "Quiet the mind and the soul will speak.", "author": "Ma Jaya Sati Bhagavati" },
+        { "text": "In the midst of movement and chaos, keep stillness inside of you.", "author": "Deepak Chopra" }
+      ],
+      "focus": [
+        { "text": "Concentrate all your thoughts upon the work in hand.", "author": "Alexander Graham Bell" },
+        { "text": "The successful warrior is the average man, with laser-like focus.", "author": "Bruce Lee" },
+        { "text": "Focus is a matter of deciding what things you're not going to do.", "author": "John Carmack" }
+      ]
+    },
+    "es": {
+      "motivation": [
+        { "text": "La mejor forma de predecir el futuro es crearlo.", "author": "Peter Drucker" },
+        { "text": "No cuentes los días, haz que los días cuenten.", "author": "Muhammad Ali" },
+        { "text": "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", "author": "Robert Collier" },
+        { "text": "Cree que puedes y ya estarás a medio camino.", "author": "Theodore Roosevelt" },
+        { "text": "La disciplina es el puente entre metas y logros.", "author": "Jim Rohn" }
+      ],
+      "peace": [
+        { "text": "La paz viene de adentro. No la busques afuera.", "author": "Buda" },
+        { "text": "Respira. Es solo un mal día, no una mala vida.", "author": "Desconocido" },
+        { "text": "La tranquilidad perfecta consiste en el buen orden de la mente.", "author": "Marco Aurelio" },
+        { "text": "Mantén la calma y sigue adelante.", "author": "Winston Churchill" }
+      ],
+      "focus": [
+        { "text": "Concéntrate en ser productivo en lugar de estar ocupado.", "author": "Tim Ferriss" },
+        { "text": "Donde va tu atención, fluye tu energía.", "author": "Tony Robbins" },
+        { "text": "El enfoque es la clave del éxito.", "author": "Bill Gates" }
+      ]
+    }
+  }
+}

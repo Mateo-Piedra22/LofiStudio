@@ -1,0 +1,15 @@
+{
+  "__info": "Mapeo de códigos WMO (World Meteorological Organization) a descripciones e iconos normalizados. Sirve para unificar la salida visual entre OpenWeather y Open‑Meteo. Para añadir o modificar, edita los grupos de 'codes' con su 'desc' e 'icon'.",
+  "map": [
+    { "codes": [0], "desc": "clear", "icon": "sun" },
+    { "codes": [1,2,3], "desc": "partly cloudy", "icon": "cloud" },
+    { "codes": [45,48], "desc": "fog", "icon": "fog" },
+    { "codes": [51,53,55,56,57], "desc": "drizzle", "icon": "rain" },
+    { "codes": [61,63,65,66,67], "desc": "rain", "icon": "rain" },
+    { "codes": [71,73,75,77], "desc": "snow", "icon": "snow" },
+    { "codes": [80,81,82], "desc": "rain showers", "icon": "rain" },
+    { "codes": [85,86], "desc": "snow showers", "icon": "snow" },
+    { "codes": [95,96,97,98,99], "desc": "thunderstorm", "icon": "storm" },
+    { "codes": [999], "desc": "cloudy", "icon": "cloud" }
+  ]
+}

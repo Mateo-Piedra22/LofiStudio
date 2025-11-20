@@ -1,0 +1,101 @@
+{
+  "__info": "Configuración de presets de widgets. Sirve para aplicar combinaciones de widgets, fondos y playlist de música con un solo click. Para añadir un preset nuevo, agrega un objeto dentro de 'presets' con sus campos. Para modificar un preset, edita el objeto correspondiente.",
+  "presets": [
+  {
+    "id": "empty",
+    "name": "Empty",
+    "description": "Empty workspace",
+    "widgets": [],
+    "background": { "type": "gradient" },
+    "musicPlaylist": []
+  },
+  {
+    "id": "minimal",
+    "name": "Minimalist",
+    "description": "Clean workspace with just the essentials",
+    "widgets": [
+      { "type": "clock", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "quote", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} }
+    ],
+    "background": { "type": "gradient" },
+    "musicPlaylist": [
+      { "id": "jfKfPfyJRdk", "title": "Lofi Girl Radio", "thumbnail": "https://img.youtube.com/vi/jfKfPfyJRdk/maxresdefault.jpg" }
+    ]
+  },
+  {
+    "id": "productive",
+    "name": "Deep Focus",
+    "description": "Task-oriented layout for maximum productivity",
+    "widgets": [
+      { "type": "tasks", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "notes", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "timer", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "clock", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "weather", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": { "city": "New York" } }
+    ],
+    "background": { "type": "room" },
+    "musicPlaylist": [
+      { "id": "5qap5aO4i9A", "title": "Lofi Hip Hop Radio", "thumbnail": "https://img.youtube.com/vi/5qap5aO4i9A/maxresdefault.jpg" }
+    ]
+  },
+  {
+    "id": "chill",
+    "name": "Chill Vibes",
+    "description": "Relaxing atmosphere for casual work",
+    "widgets": [
+      { "type": "gif", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": { "category": "lofi" } },
+      { "type": "clock", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "weather", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": { "city": "Tokyo" } },
+      { "type": "quote", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} }
+    ],
+    "background": { "type": "cafe" },
+    "musicPlaylist": [
+      { "id": "DWcJFNfaw9c", "title": "Cozy Rain", "thumbnail": "https://img.youtube.com/vi/DWcJFNfaw9c/maxresdefault.jpg" }
+    ]
+  },
+  {
+    "id": "creative",
+    "name": "Creative Flow",
+    "description": "Inspiration-focused layout",
+    "widgets": [
+      { "type": "notes", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "gif", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": { "category": "art" } },
+      { "type": "quote", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": { "category": "creativity" } },
+      { "type": "timer", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} }
+    ],
+    "background": { "type": "video", "videoId": "tNkZsRW7h2c" },
+    "musicPlaylist": [
+      { "id": "tNkZsRW7h2c", "title": "Space Journey", "thumbnail": "https://img.youtube.com/vi/tNkZsRW7h2c/maxresdefault.jpg" }
+    ]
+  },
+  {
+    "id": "focus",
+    "name": "Zen Mode",
+    "description": "Minimal distractions",
+    "widgets": [
+      { "type": "timer", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "breathing", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} }
+    ],
+    "background": { "type": "gradient" },
+    "musicPlaylist": [
+      { "id": "jfKfPfyJRdk", "title": "Lofi Girl Radio", "thumbnail": "https://img.youtube.com/vi/jfKfPfyJRdk/maxresdefault.jpg" }
+    ]
+  },
+  {
+    "id": "dashboard",
+    "name": "Command Center",
+    "description": "All your tools in one place",
+    "widgets": [
+      { "type": "tasks", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "calendar", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "timer", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "weather", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} },
+      { "type": "clock", "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "enabled": true, "settings": {} }
+    ],
+    "background": { "type": "room" },
+    "musicPlaylist": [
+      { "id": "5qap5aO4i9A", "title": "Lofi Hip Hop Radio", "thumbnail": "https://img.youtube.com/vi/5qap5aO4i9A/maxresdefault.jpg" }
+    ]
+  }
+  ]
+}

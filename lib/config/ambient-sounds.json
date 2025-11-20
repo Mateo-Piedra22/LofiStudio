@@ -1,0 +1,12 @@
+{
+  "__info": "Configuración de sonidos ambiente. Sirve para definir los sonidos que aparecen en el mezclador (Ambient Mixer): cada elemento tiene un id único, una etiqueta visible, el nombre del icono (de lucide-react) y la URL del audio en bucle. Para añadir uno nuevo, agrega un objeto dentro de 'sounds' con esos campos. Para modificar, edita el objeto correspondiente. Los cambios se reflejan automáticamente en la interfaz.",
+  "sounds": [
+    { "id": "rain", "label": "Rain", "icon": "CloudRain", "url": "https://assets.mixkit.co/active_storage/sfx/2498/2498-preview.mp3" },
+    { "id": "thunder", "label": "Thunder", "icon": "CloudLightning", "url": "https://assets.mixkit.co/active_storage/sfx/1272/1272-preview.mp3" },
+    { "id": "wind", "label": "Wind", "icon": "Wind", "url": "https://assets.mixkit.co/active_storage/sfx/1388/1388-preview.mp3" },
+    { "id": "forest", "label": "Forest", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1478/1478-preview.mp3" },
+    { "id": "fire", "label": "Fire", "icon": "Flame", "url": "https://assets.mixkit.co/active_storage/sfx/1284/1284-preview.mp3" },
+    { "id": "cafe", "label": "Cafe", "icon": "Coffee", "url": "https://assets.mixkit.co/active_storage/sfx/2521/2521-preview.mp3" },
+    { "id": "night", "label": "Night", "icon": "Moon", "url": "https://assets.mixkit.co/active_storage/sfx/2519/2519-preview.mp3" }
+  ]
+}

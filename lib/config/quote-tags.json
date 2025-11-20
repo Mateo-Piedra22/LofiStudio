@@ -1,0 +1,8 @@
+{
+  "__info": "Mapeo de categorías internas a etiquetas de la API externa (Quotable). Sirve para pedir citas alineadas con nuestras categorías. Para añadir una categoría nueva, agrega una clave en 'tags' con el nombre interno y su etiqueta externa.",
+  "tags": {
+    "motivation": "motivational",
+    "peace": "wisdom",
+    "focus": "business"
+  }
+}

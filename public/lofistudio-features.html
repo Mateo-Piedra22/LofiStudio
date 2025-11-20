@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LofiStudio – Guía de Funcionalidades</title>
+  <style>
+    :root { --bg: #0b1020; --fg: #e8ebf0; --muted: #a3acc6; --primary: #6e8efb; --glass-bg: rgba(255,255,255,0.06); --glass-border: rgba(255,255,255,0.12); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; background: linear-gradient(135deg, #0b1020 0%, #1a2038 100%); color: var(--fg); }
+    .container { max-width: 1060px; margin: 0 auto; padding: 40px 20px; }
+    .title { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px 0; }
+    .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .card { grid-column: span 12; border: 1px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(12px); border-radius: 18px; padding: 22px; }
+    .card h2 { margin: 0 0 10px 0; font-size: 20px; }
+    .card p { margin: 6px 0; font-size: 14px; color: var(--fg); }
+    .muted { color: var(--muted); font-size: 13px; }
+    .list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-size: 12px; color: var(--muted); margin-right: 8px; }
+    .kbd { display:inline-block; border: 1px solid var(--glass-border); background: var(--glass-bg); padding: 4px 8px; border-radius: 6px; font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .table th, .table td { border: 1px solid var(--glass-border); padding: 8px 10px; font-size: 13px; }
+    .table th { text-align: left; color: var(--muted); background: rgba(255,255,255,0.04); }
+    .section { margin-top: 24px; }
+    .callout { border: 1px dashed var(--glass-border); background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px; font-size: 13px; color: var(--muted); }
+    @media (min-width: 760px) { .card.half { grid-column: span 6; } .card.third { grid-column: span 4; } }
+  </style>
+</head>
+<body>
+  <main class="container" aria-label="Guía de funcionalidades de LofiStudio">
+    <h1 class="title">LofiStudio</h1>
+    <p class="subtitle">Espacio de trabajo productivo con música lofi, widgets inteligentes y un ambiente visual inmersivo.</p>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Resumen</h2>
+        <p>LofiStudio integra un sistema de <strong>widgets drag&amp;drop</strong>, un <strong>reproductor de música</strong> con búsqueda en YouTube, <strong>temas adaptativos</strong>, <strong>fondos dinámicos</strong> y <strong>presets inteligentes</strong> para configurar todo en un clic. La disposición y preferencias se guardan automáticamente en el navegador.</p>
+        <p class="muted">Tecnologías: Next.js App Router, React 18, Tailwind, Shadcn/UI, React Grid Layout, Framer Motion, Three.js.</p>
+      </article>
+
+      <article class="card">
+        <h2>Editor de Layout</h2>
+        <p>Activa el modo de edición para arrastrar y redimensionar widgets libremente.</p>
+        <ul>
+          <li>Grid flexible con filas y columnas responsivas.</li>
+          <li>Prevención de colisiones.</li>
+          <li>Movimiento libre sin auto-compaction.</li>
+          <li>Persistencia automática del layout.</li>
+          <li>Panel “Add Widgets” con <em>scroll</em> y listado de widgets activos.</li>
+          <li>Límite seguro de capacidad para evitar saturar la pantalla.</li>
+        </ul>
+        <p><span class="kbd">Ctrl</span> + <span class="kbd">E</span> alterna el modo edición.</p>
+      </article>
+
+      <article class="card">
+        <h2>Widgets disponibles</h2>
+        <div class="list">
+          <div>
+            <p><span class="badge">Clock</span> Hora en tiempo real.</p>
+            <p><span class="badge">Weather</span> Pronóstico, ciudad y métricas.</p>
+            <p><span class="badge">GIF</span> GIFs por categorías.</p>
+            <p><span class="badge">Tasks</span> Crear, completar y eliminar.</p>
+            <p><span class="badge">Notes</span> Editor rápido con guardado.</p>
+          </div>
+          <div>
+            <p><span class="badge">Quote</span> Citas motivacionales.</p>
+            <p><span class="badge">Calendar</span> Vista mensual.</p>
+            <p><span class="badge">Breathing</span> Patrones guiados.</p>
+            <p><span class="badge">Dictionary</span> Definiciones en inglés.</p>
+            <p><span class="badge">Timer</span> Pomodoro configurable.</p>
+          </div>
+        </div>
+        <p>Regla: no se permiten duplicados de un mismo widget.</p>
+        <p>Estilo: todos los widgets usan <em>glass</em> consistente con el tema.</p>
+      </article>
+
+      <article class="card">
+        <h2>Reproductor de Música</h2>
+        <ul>
+          <li>Búsqueda en YouTube con sugerencias instantáneas.</li>
+          <li>Playlist persistente con selección rápida.</li>
+          <li>Controles: <em>shuffle</em>, <em>repeat</em>, anterior/siguiente, play/pause.</li>
+          <li>Mini reproductor y vista expandida.</li>
+        </ul>
+        <div class="callout">Para búsqueda en YouTube se requiere <code>YOUTUBE_API_KEY</code> configurada en el entorno.</div>
+      </article>
+
+      <article class="card">
+        <h2>Ambient Mixer</h2>
+        <p>Mezcla sonidos de ambiente para mejorar el enfoque:</p>
+        <ul>
+          <li>Rain, Thunder, Wind, Forest, Fire, Café, Night.</li>
+          <li>Volúmenes independientes y mute global.</li>
+          <li>Persistencia de la mezcla.</li>
+        </ul>
+      </article>
+
+      <article class="card half">
+        <h2>Temas</h2>
+        <p>Claro, Oscuro y Automático (se adapta a preferencias del sistema). Persistencia en <code>localStorage</code> y sincronización entre componentes.</p>
+      </article>
+      <article class="card half">
+        <h2>Fondos</h2>
+        <p>Gradient, escenas 3D (Room, Cafe), video de YouTube, imagen o video local cargado desde la PC.</p>
+      </article>
+
+      <article class="card">
+        <h2>Presets Inteligentes</h2>
+        <table class="table" aria-label="Tabla de presets">
+          <thead>
+            <tr><th>Preset</th><th>Descripción</th><th>Widgets</th><th>Música</th><th>Fondo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Minimalist</td><td>Esencial y limpio</td><td>Clock, Quote</td><td>Lofi Girl Radio</td><td>Gradient</td></tr>
+            <tr><td>Deep Focus</td><td>Productividad máxima</td><td>Tasks, Timer, Notes, Clock, Weather</td><td>Lofi Hip Hop Radio</td><td>Room</td></tr>
+            <tr><td>Chill Vibes</td><td>Ambiente relajado</td><td>GIF, Clock, Weather, Quote</td><td>Cozy Rain</td><td>Cafe</td></tr>
+            <tr><td>Creative Flow</td><td>Inspiración</td><td>Notes, GIF, Quote, Timer</td><td>Space Journey</td><td>Video</td></tr>
+            <tr><td>Zen Mode</td><td>Mínimas distracciones</td><td>Timer, Breathing</td><td>Lofi Girl Radio</td><td>Gradient</td></tr>
+            <tr><td>Command Center</td><td>Todo en uno</td><td>Clock, Weather, Calendar, Tasks, Notes, Timer</td><td>Lofi Hip Hop Radio</td><td>Room</td></tr>
+          </tbody>
+        </table>
+        <p>Al aplicar un preset, se actualizan widgets, disposición, fondo y playlist. Si el preset incluye categoría de citas, se aplica automáticamente.</p>
+      </article>
+
+      <article class="card half">
+        <h2>Atajos de Teclado</h2>
+        <p>
+          <span class="kbd">Ctrl</span> + <span class="kbd">E</span> Editar Layout ·
+          <span class="kbd">Ctrl</span> + <span class="kbd">,</span> Settings ·
+          <span class="kbd">Ctrl</span> + <span class="kbd">S</span> Stats ·
+          <span class="kbd">Ctrl</span> + <span class="kbd">L</span> Logs ·
+          <span class="kbd">Shift</span> + <span class="kbd">?</span> Ayuda ·
+          <span class="kbd">Alt</span> + <span class="kbd">Z</span> Zen Mode ·
+          <span class="kbd">Esc</span> Cerrar modales
+        </p>
+      </article>
+      <article class="card half">
+        <h2>Settings</h2>
+        <ul>
+          <li>Seleccionar tema.</li>
+          <li>Ajustar duración Pomodoro.</li>
+          <li>Gestión de datos: exportar, importar y limpiar.</li>
+          <li>Gestión de fondo con selección de tipo y carga local de imagen/video.</li>
+          <li>Abrir Widget Manager desde Settings.</li>
+        </ul>
+      </article>
+
+      <article class="card third">
+        <h2>Estadísticas</h2>
+        <p>Registro de sesiones Pomodoro completadas, tiempos y visualizaciones (heatmap, cards).</p>
+      </article>
+      <article class="card third">
+        <h2>Gestor de Tareas</h2>
+        <p>Creación/edición, completadas, y logs de actividad con persistencia local.</p>
+      </article>
+      <article class="card third">
+        <h2>Cloud & Auth</h2>
+        <p>Autenticación con Google (NextAuth). Integración opcional con Neon + Drizzle para sincronización y perfil.</p>
+      </article>
+
+      <article class="card section">
+        <h2>APIs externas</h2>
+        <ul>
+          <li>YouTube Data API v3: búsqueda y playlist.</li>
+          <li>OpenWeather: clima y métricas.</li>
+          <li>Giphy: GIFs aleatorios por categoría.</li>
+          <li>Free Dictionary: definiciones.</li>
+        </ul>
+        <div class="callout">Para activar estas integraciones, configura las variables de entorno: <code>YOUTUBE_API_KEY</code>, <code>WEATHER_API_KEY</code>, <code>GIPHY_API_KEY</code>.</div>
+      </article>
+
+      <article class="card">
+        <h2>Detalles de UX</h2>
+        <ul>
+          <li>Estética <em>glassmorphism</em> consistente.</li>
+          <li>Scroll atrapado en modales: al abrir un modal, el fondo no se desplaza.</li>
+          <li>Bienvenida y toasts informativos para onboarding.</li>
+          <li>Accesibilidad: semántica, contraste y navegación por teclado.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "__info": "Acciones rápidas para la Command Palette. Sirve para definir comandos que despachan eventos o ejecutan acciones simples. Para añadir uno nuevo, agrega un objeto en 'quick' con 'label' y 'event'.",
+  "quick": [
+    { "label": "Open Widget Manager", "event": "open-widget-manager" },
+    { "label": "Open Settings", "event": "open-settings" },
+    { "label": "Open Background Selector", "event": "open-background-selector" },
+    { "label": "Open Statistics", "event": "open-stats" },
+    { "label": "Open Activity Log", "event": "open-logs" }
+  ]
+}

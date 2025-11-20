@@ -1,0 +1,18 @@
+{
+  "__info": "Variantes de fondos en video para Room (habitación) y Cafe (cafetería). Sirve para rotar fácilmente entre escenas cozy. Para añadir una variante, agrega un objeto con 'id' (YouTube) y 'name' dentro del grupo correspondiente. Para modificar, cambia los datos del objeto.",
+  "room": [
+    { "id": "1RcVIuZ8Wdk", "name": "Cozy Cabin Ambience" },
+    { "id": "fsttJEXDVBg", "name": "Rain & Fireplace Sounds" },
+    { "id": "wDv0wrRRRgc", "name": "Cozy Living Room Ambience" },
+    { "id": "QX9ptr60JFw", "name": "Cozy Room Ambience ASMR" },
+    { "id": "jU8w2-EcMIc", "name": "Stormy Night Cozy Cabin" }
+  ],
+  "cafe": [
+    { "id": "1Vt-Gltde3o", "name": "Warm Fireplace & Rain Coffee Shop" },
+    { "id": "c0_ejQQcrwI", "name": "Rainy Night Coffee Shop" },
+    { "id": "VMAPTo7RVCo", "name": "Cozy Fall Coffee Shop" },
+    { "id": "l2mW0DxCBY4", "name": "Cozy Coffee Shop Ambience" },
+    { "id": "NJuSStkIZBg", "name": "Rainy Jazz Cafe" },
+    { "id": "WMer7YJYYSc", "name": "Rainy Night at the Coffee Shop" }
+  ]
+}

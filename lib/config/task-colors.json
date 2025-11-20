@@ -1,0 +1,4 @@
+{
+  "__info": "Colores disponibles para asignar a las tareas. Sirven para clasificar visualmente y para los puntos de color en el calendario. Para añadir un color nuevo, agrega su valor hex en 'colors'. Para modificar, cambia el valor correspondiente. Evita colores con baja accesibilidad.",
+  "colors": ["#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7"]
+}
