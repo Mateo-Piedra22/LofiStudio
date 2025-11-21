@@ -8,14 +8,19 @@ import { eq } from "drizzle-orm"
 export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.AUTH_SECRET,
     trustHost: true,
-    ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : { session: { strategy: 'jwt' as const } }),
+    ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : {}),
+    session: { strategy: 'jwt' },
+    debug: true,
     providers: [
         Google({
+            clientId: process.env.AUTH_GOOGLE_ID || '',
+            clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
             authorization: {
                 params: {
-                    scope: 'openid email profile',
+                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks',
                     include_granted_scopes: true,
                     access_type: 'offline',
+                    prompt: 'consent',
                 }
             }
         }),
@@ -69,6 +74,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             return enhanced
         },
+    },
+    events: {
+        async signIn(message: any) { try { console.info('[auth] signIn event', JSON.stringify(message)) } catch {} },
+        async signOut(message: any) { try { console.info('[auth] signOut event', JSON.stringify(message)) } catch {} },
+        async createUser(message: any) { try { console.info('[auth] createUser event', JSON.stringify(message)) } catch {} },
+        async linkAccount(message: any) { try { console.info('[auth] linkAccount event', JSON.stringify(message)) } catch {} },
+        async session(message: any) { try { console.info('[auth] session event', JSON.stringify(message)) } catch {} },
     },
     pages: {
         signIn: "/",

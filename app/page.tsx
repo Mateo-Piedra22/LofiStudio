@@ -791,7 +791,7 @@ export default function Home() {
                 {widget.type === 'clock' && <ClockWidget />}
                 {widget.type === 'worldtime' && <WorldTimeWidget />}
                 {widget.type === 'weather' && (
-                  <WeatherWidget compact={widget.layout.h <= tileH || currentBreakpoint === 'sm' || currentBreakpoint === 'xs' || currentBreakpoint === 'xxs'} />
+                  <WeatherWidget compact={!showWidgetHeaders || widget.layout.h <= tileH || currentBreakpoint === 'sm' || currentBreakpoint === 'xs' || currentBreakpoint === 'xxs'} />
                 )}
                 {widget.type === 'gif' && <GifWidget />}
                 {widget.type === 'notes' && <NotesWidget />}

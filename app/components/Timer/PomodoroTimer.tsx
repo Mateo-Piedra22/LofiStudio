@@ -137,7 +137,7 @@ export default function PomodoroTimer({ currentVideo }: PomodoroTimerProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 p-0">
-        <div className="flex flex-col items-center justify-center p-8 relative z-10">
+        <div className="flex flex-col items-center justify-center p-8 relative z-10 cursor-pointer" onClick={() => { isActive ? pause() : start() }}>
           <div className={`absolute inset-0 rounded-full blur-[100px] opacity-20 transition-all duration-1000 ${isActive ? (mode === 'work' ? 'bg-primary' : 'bg-secondary') : 'bg-transparent'}`} />
           <div className="relative z-10 text-center">
             <motion.div

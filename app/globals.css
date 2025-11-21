@@ -71,6 +71,13 @@
   min-height: 100%;
 }
 
+/* Widget header alignment */
+[data-ui='widget'] .card-header {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 @layer base {
   body {
     @apply bg-background text-foreground antialiased;

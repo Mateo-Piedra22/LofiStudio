@@ -198,26 +198,28 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               </div>
             </div>
 
-            <div className={`grid grid-cols-2 gap-2 ${compact ? 'pt-2' : 'pt-3'} border-t border-border`}>
-              <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <AnimatedIcon name="Droplets" className="w-4 h-4 text-blue-400" />
+            {!compact && (
+              <div className={`grid grid-cols-2 gap-2 ${compact ? 'pt-2' : 'pt-3'} border-t border-border`}>
+                <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <AnimatedIcon name="Droplets" className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
+                    <p className="text-foreground text-xs font-medium">{weather.humidity}%</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
-                  <p className="text-foreground text-xs font-medium">{weather.humidity}%</p>
+                <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
+                  <div className="p-2 bg-gray-500/20 rounded-lg">
+                    <AnimatedIcon name="Wind" className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
+                    <p className="text-foreground text-xs font-medium">{weather.windSpeed} m/s</p>
+                  </div>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
-                <div className="p-2 bg-gray-500/20 rounded-lg">
-                  <AnimatedIcon name="Wind" className="w-4 h-4 text-gray-400" />
-                </div>
-                <div>
-                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
-                  <p className="text-foreground text-xs font-medium">{weather.windSpeed} m/s</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 text-center py-8 px-4">

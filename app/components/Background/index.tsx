@@ -131,10 +131,11 @@ export default function Background() {
                       e.target.playVideo();
                     } catch {}
                   }}
+                  onError={() => { try { setConfig({ type: 'video', videoId: DEFAULT_VIDEO_ID }); } catch {} }}
                 />
               </div>
             </div>
-            <div className="absolute inset-0 bg-background/40" />
+            <div className="absolute inset-0" style={{ backgroundColor: 'hsl(var(--background) / var(--glass-opacity))' }} />
           </div>
         )}
 

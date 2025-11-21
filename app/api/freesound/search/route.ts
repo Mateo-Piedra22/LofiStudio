@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return new Response(JSON.stringify({ ok: false, error: 'Missing query' }), { status: 400, headers: { 'content-type': 'application/json' } })
   }
 
-  const token = process.env.FREESOUND_CLIENT_SECRET || process.env.NEXT_PUBLIC_FREESOUND_TOKEN
+  const token = process.env.NEXT_PUBLIC_FREESOUND_TOKEN || process.env.FREESOUND_TOKEN || ''
   if (!token) {
     return new Response(JSON.stringify({ ok: false, error: 'Missing Freesound token' }), { status: 500, headers: { 'content-type': 'application/json' } })
   }
@@ -22,9 +22,10 @@ export async function GET(req: NextRequest) {
       filter: `duration:[${min} TO *]`
     }).toString()
     const url = `https://freesound.org/apiv2/search/text/?${qs}`
-    const resp = await fetch(url, { headers: { Authorization: `Token ${token}` } })
+    const resp = await fetch(url, { headers: { Authorization: `Token ${token}`, 'Accept': 'application/json' } })
     if (!resp.ok) {
-      return new Response(JSON.stringify({ ok: false, error: `Upstream ${resp.status}` }), { status: 502, headers: { 'content-type': 'application/json' } })
+      const text = await resp.text()
+      return new Response(JSON.stringify({ ok: false, error: `Upstream ${resp.status}`, detail: text }), { status: resp.status, headers: { 'content-type': 'application/json' } })
     }
     const data = await resp.json()
     const results: any[] = data?.results || []
@@ -35,4 +36,3 @@ export async function GET(req: NextRequest) {
     return new Response(JSON.stringify({ ok: false, error: e?.message || 'Unknown error' }), { status: 500, headers: { 'content-type': 'application/json' } })
   }
 }
-

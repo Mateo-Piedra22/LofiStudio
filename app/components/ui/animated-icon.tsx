@@ -199,7 +199,7 @@ export function AnimatedIcon({ name, className }: { name: string, className?: st
   React.useEffect(() => {
     const el = ref.current
     if (!el) return
-    const onError = () => setFailed(true)
+    const onError = () => { setFailed(true); try { console.warn('[lottie] failed to render icon', name, src) } catch {} }
     el.addEventListener('error', onError)
     return () => el.removeEventListener('error', onError)
   }, [src])
@@ -208,11 +208,11 @@ export function AnimatedIcon({ name, className }: { name: string, className?: st
     let active = true
     if (!src) return
     const ctl = new AbortController()
-    const timer = setTimeout(() => { try { ctl.abort() } catch {} }, 3500)
+    const timer = setTimeout(() => { try { ctl.abort() } catch {} }, 6000)
     fetch(src, { signal: ctl.signal }).then(r => {
       if (!active) return
-      if (!r.ok) setFailed(true)
-    }).catch(() => { if (active) setFailed(true) })
+      if (!r.ok) { setFailed(true); try { console.warn('[lottie] fetch failed', name, src, r.status) } catch {} }
+    }).catch(() => { if (active) { setFailed(true); try { console.warn('[lottie] fetch error', name, src) } catch {} } })
     return () => { active = false; clearTimeout(timer); ctl.abort() }
   }, [src])
 

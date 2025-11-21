@@ -92,7 +92,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     try { event.target.mute(); } catch {}
     setDuration(event.target.getDuration());
     setError(null);
-    try { if (currentVideo) event.target.playVideo(); } catch {}
+    try { if (!userPaused && currentVideo) event.target.playVideo(); } catch {}
   };
 
   const onReadyBg: YouTubeProps['onReady'] = (e) => {
@@ -459,6 +459,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   const onStateChange: YouTubeProps['onStateChange'] = (event) => {
     setIsPlaying(event.data === 1);
     if (event.data === 0) {
+      if (userPaused) return;
       if (mode !== 'radio') {
         if (repeat) playerRef.current?.playVideo();
         else if (playlist.length > 0) handleNext();
@@ -928,13 +929,12 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
         <audio
           ref={audioRef}
           src={radioStation!.url_resolved}
-          autoPlay
           crossOrigin="anonymous"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
-          onError={() => handleNext()}
-          onStalled={() => handleNext()}
+          onError={() => { if (!userPaused) handleNext(); }}
+          onStalled={() => { if (!userPaused) handleNext(); }}
           style={{ display: 'none' }}
         />
       ) : null}
