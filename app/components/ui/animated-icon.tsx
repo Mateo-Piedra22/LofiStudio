@@ -183,16 +183,19 @@ const FALLBACK: Record<string, React.ComponentType<any>> = {
 
 export function AnimatedIcon({ name, className }: { name: string, className?: string }) {
   const [failed, setFailed] = React.useState(false)
+  const [ready, setReady] = React.useState(false)
   const src = LOTTIE_MAP[name]
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!window.customElements?.get('lottie-player')) {
-      const s = document.createElement('script')
-      s.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js'
-      s.async = true
-      document.head.appendChild(s)
-    }
+    if (window.customElements?.get('lottie-player')) { setReady(true); return }
+    const s = document.createElement('script')
+    s.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js'
+    s.async = true
+    s.onload = () => { setReady(true) }
+    s.onerror = () => { setFailed(true) }
+    document.head.appendChild(s)
+    return () => { try { document.head.removeChild(s) } catch {} }
   }, [])
 
   const ref = React.useRef<any>(null)
@@ -216,7 +219,7 @@ export function AnimatedIcon({ name, className }: { name: string, className?: st
     return () => { active = false; clearTimeout(timer); ctl.abort() }
   }, [src])
 
-  if (!failed && src) {
+  if (ready && !failed && src) {
     return (
       <lottie-player ref={ref} src={src} background="transparent" speed="1" loop autoplay className={className} aria-hidden="true"></lottie-player>
     )

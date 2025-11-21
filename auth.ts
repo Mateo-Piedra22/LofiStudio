@@ -82,7 +82,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async linkAccount(message: any) { try { console.info('[auth] linkAccount event', JSON.stringify(message)) } catch {} },
         async session(message: any) { try { console.info('[auth] session event', JSON.stringify(message)) } catch {} },
     },
-    pages: {
-        signIn: "/",
-    }
+    pages: undefined,
 })

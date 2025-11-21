@@ -64,18 +64,15 @@
   display: none;
 }
 
-[data-hide-headers='true'] [data-ui='widget'] .card-header + * {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-}
+/* Centrado de contenido al ocultar headers se manejará por widget específico */
 
 /* Widget header alignment */
 [data-ui='widget'] .card-header {
   min-height: 44px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  text-align: left;
 }
 
 @layer base {
@@ -101,21 +98,26 @@ lottie-player {
   background-color: hsl(var(--background) / var(--glass-opacity));
   border-color: hsl(var(--border) / var(--glass-opacity));
   border-width: 1px;
-  @apply shadow-xl backdrop-blur-xl;
+  box-shadow: var(--tw-shadow);
+  backdrop-filter: blur(calc(var(--glass-opacity) * 20px));
 }
 
 .glass-panel {
   background-color: hsl(var(--background) / var(--glass-opacity));
   border-color: hsl(var(--border) / var(--glass-opacity));
   border-width: 1px;
-  @apply shadow-2xl backdrop-blur-2xl;
+  box-shadow: var(--tw-shadow);
+  backdrop-filter: blur(calc(var(--glass-opacity) * 16px));
 }
 
 .glass-button {
   background-color: hsl(var(--background) / calc(var(--glass-opacity)));
   border-color: hsl(var(--border) / calc(var(--glass-opacity)));
   border-width: 1px;
-  @apply backdrop-blur-md transition-all duration-300;
+  backdrop-filter: blur(calc(var(--glass-opacity) * 12px));
+  transition-property: background-color, border-color, filter, backdrop-filter, transform, box-shadow;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-button:hover {

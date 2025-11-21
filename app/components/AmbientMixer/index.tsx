@@ -66,7 +66,6 @@ export default function AmbientMixer() {
                 }
                 if (!src) continue;
                 const audio = new Audio();
-                audio.crossOrigin = 'anonymous';
                 audio.preload = 'auto';
                 audio.loop = true;
                 (audio as any).playsInline = true;

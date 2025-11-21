@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
     }
     const data = await resp.json()
     const results: any[] = data?.results || []
-    const pick = results.find(r => r?.previews?.['preview-hq-mp3']) || results.find(r => r?.previews?.['preview-lq-mp3'])
-    const src = pick?.previews?.['preview-hq-mp3'] || pick?.previews?.['preview-lq-mp3'] || null
+    const pick = results.find(r => r?.previews?.['preview-hq-mp3'] || r?.previews?.['preview-lq-mp3'] || r?.previews?.['preview-hq-ogg'] || r?.previews?.['preview-lq-ogg']) || results[0]
+    const src = pick?.previews?.['preview-hq-mp3'] || pick?.previews?.['preview-lq-mp3'] || pick?.previews?.['preview-hq-ogg'] || pick?.previews?.['preview-lq-ogg'] || null
     return new Response(JSON.stringify({ ok: true, src, count: results.length }), { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' } })
   } catch (e: any) {
     return new Response(JSON.stringify({ ok: false, error: e?.message || 'Unknown error' }), { status: 500, headers: { 'content-type': 'application/json' } })
