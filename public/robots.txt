@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://lofistudio.app/sitemap.xml
+Sitemap: https://lofi-studio-ma.vercel.app/sitemap.xml

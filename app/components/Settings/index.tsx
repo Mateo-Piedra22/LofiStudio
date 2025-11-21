@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ThemeSelector from './ThemeSelector';
-import { X, Download, Upload, Trash2, AlertCircle, Video, Box, Palette, Image } from 'lucide-react';
+import { X, Download, Upload, Trash2, AlertCircle, Video, Box, Palette, Image, Repeat } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import FeedbackForm from '@/app/components/Settings/FeedbackForm';
 import { useWidgets } from '@/lib/hooks/useWidgets';
 import type { BackgroundConfig } from '@/app/components/Background';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import variants from '@/lib/config/background-variants.json';
 import loopsJson from '@/lib/config/background-loops.json';
 
@@ -33,14 +34,20 @@ export default function Settings({
   const [backgroundConfig, setBackgroundConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' });
   const defaultGlass = typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 0.4 : 0.7;
   const [glassOpacity, setGlassOpacity] = useLocalStorage('glassOpacity', defaultGlass);
-  const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
-  const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', false);
+  const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
+  const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
+  const [googleCalendarId, setGoogleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
+  const [googleTaskListId, setGoogleTaskListId] = useLocalStorage('googleTaskListId', '');
+  const [availableCalendars, setAvailableCalendars] = useState<any[]>([]);
+  const [availableTaskLists, setAvailableTaskLists] = useState<any[]>([]);
   const [unsplashQuery, setUnsplashQuery] = useState('');
   const ROOM_VARIANTS = (variants as any).room as Array<{ id: string; name: string }>;
   const CAFE_VARIANTS = (variants as any).cafe as Array<{ id: string; name: string }>;
   const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
   const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0);
   const LOOPS = (loopsJson as any).loops as Array<{ id: string; name: string }>;
+  const roomTotal = ROOM_VARIANTS.length;
+  const cafeTotal = CAFE_VARIANTS.length;
 
   const applyGlass = (v: number) => {
     document.documentElement.style.setProperty('--glass-opacity', String(v));
@@ -126,6 +133,30 @@ export default function Settings({
     window.location.reload();
   };
 
+  useEffect(() => {
+    const fetchCalendars = async () => {
+      try {
+        const res = await fetch('/api/google/calendar/list');
+        if (!res.ok) return;
+        const data = await res.json();
+        setAvailableCalendars(data.calendars || []);
+      } catch {}
+    };
+    if (googleCalendarEnabled && availableCalendars.length === 0) fetchCalendars();
+  }, [googleCalendarEnabled]);
+
+  useEffect(() => {
+    const fetchTaskLists = async () => {
+      try {
+        const res = await fetch('/api/google/tasks/lists');
+        if (!res.ok) return;
+        const data = await res.json();
+        setAvailableTaskLists(data.lists || []);
+      } catch {}
+    };
+    if (googleTasksEnabled && availableTaskLists.length === 0) fetchTaskLists();
+  }, [googleTasksEnabled]);
+
   const handleWorkDurationChange = (value: string) => {
     const num = parseInt(value);
     if (!isNaN(num) && num > 0 && num <= 120) {
@@ -140,8 +171,15 @@ export default function Settings({
     }
   };
 
+  const [ts, setTs] = useState<number | null>(null);
+  const [dy, setDy] = useState<number>(0);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm"
+      onTouchStart={(e) => setTs(e.touches[0]?.clientY || 0)}
+      onTouchMove={(e) => { if (ts == null) return; setDy((e.touches[0]?.clientY || 0) - ts); }}
+      onTouchEnd={() => { if (dy > 80) onClose(); setTs(null); setDy(0); }}
+    >
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-foreground">
@@ -235,36 +273,23 @@ export default function Settings({
             <h3 className="text-foreground font-semibold mb-3">Background</h3>
             <div className="p-4 rounded-lg glass border space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Box className="w-4 h-4" /> Scenes</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={backgroundConfig.type === 'video' && ROOM_VARIANTS.some(v => v.id === backgroundConfig.videoId) ? 'default' : 'secondary'}
-                    onClick={() => {
-                      const next = (Number(roomIdx) + 1) % ROOM_VARIANTS.length;
-                      setRoomIdx(next);
-                      setBackgroundConfig({ type: 'video', videoId: ROOM_VARIANTS[next].id });
-                    }}
-                  >
-                    Room
-                  </Button>
-                  <Button
-                    variant={backgroundConfig.type === 'video' && CAFE_VARIANTS.some(v => v.id === backgroundConfig.videoId) ? 'default' : 'secondary'}
-                    onClick={() => {
-                      const next = (Number(cafeIdx) + 1) % CAFE_VARIANTS.length;
-                      setCafeIdx(next);
-                      setBackgroundConfig({ type: 'video', videoId: CAFE_VARIANTS[next].id });
-                    }}
-                  >
-                    Cafe
-                  </Button>
-                  <Button variant={backgroundConfig.type === 'gradient' ? 'default' : 'secondary'} onClick={() => setBackgroundConfig({ type: 'gradient' })}>Gradient</Button>
-                  <Button variant={backgroundConfig.type === 'video' ? 'default' : 'secondary'} onClick={() => setBackgroundConfig({ type: 'video', videoId: 'jfKfPfyJRdk' })}>Video</Button>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Video className="w-4 h-4" /> Animated Loops</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Video className="w-4 h-4" /> Scenes & Animated Loops</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {[{ key: 'room', id: ROOM_VARIANTS[roomIdx].id, name: ROOM_VARIANTS[roomIdx].name, index: roomIdx, total: roomTotal }, { key: 'cafe', id: CAFE_VARIANTS[cafeIdx].id, name: CAFE_VARIANTS[cafeIdx].name, index: cafeIdx, total: cafeTotal }].map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => setBackgroundConfig({ type: 'video', videoId: item.id })}
+                      className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'video' && backgroundConfig.videoId === item.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
+                    >
+                      <img src={`https://img.youtube.com/vi/${item.id}/mqdefault.jpg`} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+                      <div className="absolute bottom-2 left-2 text-xs text-foreground">{`${item.key === 'room' ? 'Room' : 'Cafe'}: ${item.name} (${Number(item.index) + 1}/${item.total})`}</div>
+                      <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-background/70 border border-border text-muted-foreground">
+                        <Repeat className="w-3 h-3" /> Loop Mode
+                      </div>
+                    </button>
+                  ))}
+
                   {LOOPS.map((loop) => (
                     <button key={loop.id} onClick={() => setBackgroundConfig({ type: 'video', videoId: loop.id })} className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'video' && backgroundConfig.videoId === loop.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}>
                       <img src={`https://img.youtube.com/vi/${loop.id}/mqdefault.jpg`} alt={loop.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
@@ -280,6 +305,7 @@ export default function Settings({
                 <div className="space-y-2">
                   <input type="text" placeholder="Search Unsplash (e.g., cozy room, rainy day)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm" onChange={(e) => setUnsplashQuery(e.target.value)} />
                   <Button onClick={() => setBackgroundConfig({ type: 'image', imageUrl: `https://source.unsplash.com/random/1920x1080/?${unsplashQuery || 'lofi,study'}` })} className="w-full" variant="secondary">Load Random Unsplash Image</Button>
+                  <Button onClick={() => window.open('https://unsplash.com/wallpapers', '_blank', 'noopener')} className="w-full" variant="outline">Open Unsplash Wallpapers</Button>
                 </div>
               </div>
 
@@ -328,6 +354,25 @@ export default function Settings({
                 </div>
                 <Switch checked={googleCalendarEnabled} onCheckedChange={(v) => setGoogleCalendarEnabled(!!v)} />
               </div>
+              {googleCalendarEnabled && (
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Calendar</span>
+                    <div className="flex-1">
+                      <Select value={googleCalendarId} onValueChange={(v) => setGoogleCalendarId(v)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select calendar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(availableCalendars.length ? availableCalendars : [{ id: 'primary', summary: 'Primary' }]).map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.summary}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-foreground">Google Tasks</p>
@@ -335,6 +380,25 @@ export default function Settings({
                 </div>
                 <Switch checked={googleTasksEnabled} onCheckedChange={(v) => setGoogleTasksEnabled(!!v)} />
               </div>
+              {googleTasksEnabled && (
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Task list</span>
+                    <div className="flex-1">
+                      <Select value={googleTaskListId} onValueChange={(v) => setGoogleTaskListId(v)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select task list" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(availableTaskLists.length ? availableTaskLists : []).map((l) => (
+                            <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">After enabling, sign out and sign in again. Reload to apply changes.</p>
             </div>
           </div>

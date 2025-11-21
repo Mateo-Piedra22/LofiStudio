@@ -9,6 +9,9 @@ export interface Task {
   tags?: string[];
   dueAt?: number;
   color?: string;
+  externalSource?: string;
+  externalId?: string;
+  externalCalendarId?: string;
 }
 
 export interface TaskLog {
@@ -75,6 +78,6 @@ export interface WidgetPreset {
   name: string;
   description: string;
   widgets: Omit<WidgetConfig, 'id'>[];
-  background?: { type: 'room' | 'cafe' | 'gradient' | 'video'; videoId?: string };
+  background?: { type: 'room' | 'cafe' | 'gradient' | 'video' | 'image'; videoId?: string };
   musicPlaylist?: { id: string; title: string; thumbnail: string }[];
 }

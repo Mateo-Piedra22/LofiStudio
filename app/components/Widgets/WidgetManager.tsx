@@ -1,6 +1,7 @@
 'use client';
 
 import { useWidgets } from '@/lib/hooks/useWidgets';
+import layoutConfig from '@/lib/config/layout.json';
 import sizeConfig from '@/lib/config/widget-sizes.json';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,17 +31,24 @@ export default function WidgetManager() {
     const rowsInt = Math.ceil(capped);
     return rowsInt;
   };
-  const usedBlocksAll = widgets.filter(w => w.enabled).reduce((sum, w) => sum + rowsFor(w.type), 0);
-  const percent = Math.min(100, Math.round((usedBlocksAll / capacity) * 100));
-  const danger = usedBlocksAll >= 7;
+  const tileH = (layoutConfig as any).tileH ?? 1;
+  const enabled = widgets.filter(w => w.enabled);
+  const visible = enabled.slice(0, capacity);
+  const usedBlocksVisible = visible.reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout?.h || tileH) / tileH))), 0);
+  const percent = Math.min(100, Math.round((usedBlocksVisible / capacity) * 100));
+  const danger = usedBlocksVisible >= capacity;
+  const hiddenCount = Math.max(0, enabled.length - visible.length);
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-foreground">Capacidad de bloques</p>
-          <span className="text-xs px-2 py-0.5 rounded bg-primary text-primary-foreground">{`${usedBlocksAll} / ${capacity}`}</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-primary text-primary-foreground">{`${usedBlocksVisible} / ${capacity}`}</span>
         </div>
+        {hiddenCount > 0 && (
+          <div className="text-xs text-muted-foreground">{`Ocultos por viewport: ${hiddenCount}`}</div>
+        )}
         <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
           <div className={`h-full ${danger ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${percent}%` }} />
         </div>
@@ -55,7 +63,7 @@ export default function WidgetManager() {
             const rowsInt = Math.ceil(capped);
             return rowsInt;
           };
-          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + rowsFor(w.type), 0);
+          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout?.h || tileH) / tileH))), 0);
           const span = rowsFor(widget.type);
           const atCapacity = usedBlocks + span > capacity;
           return (

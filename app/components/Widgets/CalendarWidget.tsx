@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CalendarIcon, ChevronLeft, ChevronRight, Edit2, Check, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { useTaskManager } from '@/lib/hooks/useTaskManager';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import { useSession } from 'next-auth/react';
 
 export default function CalendarWidget() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -19,6 +21,16 @@ export default function CalendarWidget() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editTime, setEditTime] = useState('');
+  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
+  const [googleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
+  const { data: session } = useSession();
+  const [eventsByDay, setEventsByDay] = useState<Map<string, any[]>>(new Map());
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventTime, setNewEventTime] = useState('');
+  const [eventEditingId, setEventEditingId] = useState<string | null>(null);
+  const [eventEditTitle, setEventEditTitle] = useState('');
+  const [eventEditTime, setEventEditTime] = useState('');
+  const [syncTaskToCalendarEnabled, setSyncTaskToCalendarEnabled] = useLocalStorage('syncTaskToCalendarEnabled', true);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -26,6 +38,32 @@ export default function CalendarWidget() {
   const calendarEnd = endOfWeek(monthEnd);
   
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  const refreshMonthEvents = () => {
+    if (!googleCalendarEnabled) return;
+    const hasScope = (((session as any)?.scope as string | undefined)?.split(' ') || []).includes('https://www.googleapis.com/auth/calendar.events');
+    if (!hasScope) return;
+    const timeMin = calendarStart.toISOString();
+    const timeMax = calendarEnd.toISOString();
+    const cal = googleCalendarId || 'primary';
+    fetch(`/api/google/calendar/events?calendarId=${encodeURIComponent(cal)}&timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`)
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(data => {
+        const map = new Map<string, any[]>();
+        (data.events || []).forEach((e: any) => {
+          const d = e.start ? new Date(e.start) : null;
+          const key = d ? format(d, 'yyyy-MM-dd') : null;
+          if (!key) return;
+          const arr = map.get(key) || [];
+          arr.push(e);
+          map.set(key, arr);
+        });
+        setEventsByDay(map);
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => { refreshMonthEvents(); }, [googleCalendarEnabled, (session as any)?.accessToken, currentDate]);
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -83,6 +121,75 @@ export default function CalendarWidget() {
     }
     updateTask(id, { title: editTitle, description: editDescription || undefined, dueAt });
     setEditingId(null);
+    setTimeout(() => refreshMonthEvents(), 200);
+  };
+
+  const createEvent = async () => {
+    if (!selectedDay || !newEventTitle) return;
+    const [h, m] = (newEventTime || '00:00').split(':').map(Number);
+    const start = new Date(selectedDay);
+    start.setHours(h || 0, m || 0, 0, 0);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const res = await fetch('/api/google/calendar/events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ calendarId: googleCalendarId || 'primary', summary: newEventTitle, start: start.getTime(), end: end.getTime() }) });
+    if (!res.ok) return;
+    const data = await res.json();
+    const ev = data?.event;
+    if (ev) {
+      const key = format(start, 'yyyy-MM-dd');
+      setEventsByDay(prev => {
+        const map = new Map(prev);
+        const arr = map.get(key) || [];
+        arr.push({
+          id: ev.id,
+          summary: ev.summary,
+          description: ev.description,
+          start: start.getTime(),
+          end: end.getTime(),
+        });
+        map.set(key, arr);
+        return map;
+      });
+      setNewEventTitle('');
+      setNewEventTime('');
+    }
+  };
+
+  const startEditEvent = (e: any) => {
+    setEventEditingId(e.id);
+    setEventEditTitle(e.summary || 'Event');
+    const d = e.start ? new Date(e.start) : new Date();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    setEventEditTime(`${hh}:${mm}`);
+  };
+
+  const saveEditEvent = async (id: string) => {
+    const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : '';
+    if (!key) return;
+    const [h, m] = (eventEditTime || '00:00').split(':').map(Number);
+    const start = new Date(selectedDay as Date);
+    start.setHours(h || 0, m || 0, 0, 0);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    await fetch('/api/google/calendar/events', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ calendarId: googleCalendarId || 'primary', id, summary: eventEditTitle, start: start.getTime(), end: end.getTime() }) });
+    setEventsByDay(prev => {
+      const map = new Map(prev);
+      const arr = (map.get(key) || []).map((e: any) => e.id === id ? { ...e, summary: eventEditTitle, start: start.getTime(), end: end.getTime() } : e);
+      map.set(key, arr);
+      return map;
+    });
+    setEventEditingId(null);
+  };
+
+  const deleteEvent = async (id: string) => {
+    const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : '';
+    if (!key) return;
+    await fetch('/api/google/calendar/events', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ calendarId: googleCalendarId || 'primary', id }) });
+    setEventsByDay(prev => {
+      const map = new Map(prev);
+      const arr = (map.get(key) || []).filter((e: any) => e.id !== id);
+      map.set(key, arr);
+      return map;
+    });
   };
 
   return (
@@ -138,7 +245,10 @@ export default function CalendarWidget() {
                 const key = format(day, 'yyyy-MM-dd')
                 const list = tasksByDay.get(key) || []
                 if (!list.length) return null
-                const colors = Array.from(new Set(list.map((t: any) => t.color).filter(Boolean)))
+                const colorsFromTasks = Array.from(new Set(list.map((t: any) => t.color).filter(Boolean)))
+                const ev = eventsByDay.get(key) || []
+                const colorsFromEvents = ev.length ? ['#3b82f6'] : []
+                const colors = Array.from(new Set([...(colorsFromTasks as any), ...colorsFromEvents]))
                 return (
                   <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1">
                     {colors.slice(0, 4).map((c, idx) => (
@@ -160,6 +270,10 @@ export default function CalendarWidget() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs text-muted-foreground">Sync tasks with Google Calendar</span>
+              <Checkbox checked={!!syncTaskToCalendarEnabled} onCheckedChange={(v) => setSyncTaskToCalendarEnabled(!!v)} />
+            </div>
             {(() => {
               const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : ''
               const list = (key && tasksByDay.get(key)) || []
@@ -201,6 +315,48 @@ export default function CalendarWidget() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )
+            })()}
+            {(() => {
+              const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : ''
+              const ev = (key && eventsByDay.get(key)) || []
+              const sortedEv = [...ev].sort((a: any, b: any) => ((a.start || 0) - (b.start || 0)))
+              return (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">Google Calendar</h4>
+                  {sortedEv.map((e: any) => (
+                    <div key={e.id} className="p-3 rounded-lg border border-border bg-card">
+                      {eventEditingId === e.id ? (
+                        <div className="space-y-2">
+                          <Input value={eventEditTitle} onChange={(ev) => setEventEditTitle(ev.target.value)} />
+                          <div className="flex items-center gap-2">
+                            <Input type="time" value={eventEditTime} onChange={(ev) => setEventEditTime(ev.target.value)} className="w-32" />
+                            <Button size="sm" onClick={() => saveEditEvent(e.id)}><Check className="w-4 h-4 mr-2" />Save</Button>
+                            <Button size="sm" variant="outline" onClick={() => setEventEditingId(null)}><X className="w-4 h-4 mr-2" />Cancel</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-foreground">{e.summary}</p>
+                            {e.start && <p className="text-xs text-muted-foreground mt-1">{format(new Date(e.start), 'p')}</p>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="ghost" onClick={() => startEditEvent(e)}><Edit2 className="w-4 h-4" /></Button>
+                            <Button size="sm" variant="destructive" onClick={() => deleteEvent(e.id)}><X className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="p-3 rounded-lg border border-border bg-card">
+                    <div className="flex items-center gap-2">
+                      <Input placeholder="New event" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} />
+                      <Input type="time" value={newEventTime} onChange={(e) => setNewEventTime(e.target.value)} className="w-32" />
+                      <Button size="sm" onClick={createEvent}><Check className="w-4 h-4 mr-2" />Create</Button>
+                    </div>
+                  </div>
                 </div>
               )
             })()}

@@ -1,12 +1,24 @@
 {
   "__info": "Configuración de sonidos ambiente. Sirve para definir los sonidos que aparecen en el mezclador (Ambient Mixer): cada elemento tiene un id único, una etiqueta visible, el nombre del icono (de lucide-react) y la URL del audio en bucle. Para añadir uno nuevo, agrega un objeto dentro de 'sounds' con esos campos. Para modificar, edita el objeto correspondiente. Los cambios se reflejan automáticamente en la interfaz.",
   "sounds": [
-    { "id": "rain", "label": "Rain", "icon": "CloudRain", "url": "https://assets.mixkit.co/active_storage/sfx/2498/2498-preview.mp3" },
-    { "id": "thunder", "label": "Thunder", "icon": "CloudLightning", "url": "https://assets.mixkit.co/active_storage/sfx/1272/1272-preview.mp3" },
-    { "id": "wind", "label": "Wind", "icon": "Wind", "url": "https://assets.mixkit.co/active_storage/sfx/1388/1388-preview.mp3" },
-    { "id": "forest", "label": "Forest", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1478/1478-preview.mp3" },
-    { "id": "fire", "label": "Fire", "icon": "Flame", "url": "https://assets.mixkit.co/active_storage/sfx/1284/1284-preview.mp3" },
-    { "id": "cafe", "label": "Cafe", "icon": "Coffee", "url": "https://assets.mixkit.co/active_storage/sfx/2521/2521-preview.mp3" },
-    { "id": "night", "label": "Night", "icon": "Moon", "url": "https://assets.mixkit.co/active_storage/sfx/2519/2519-preview.mp3" }
+    { "id": "rain", "label": "Light Rain", "icon": "CloudRain", "url": "https://assets.mixkit.co/active_storage/sfx/1005/1005-preview.mp3" },
+    { "id": "thunder", "label": "Distant Thunder", "icon": "CloudLightning", "url": "https://assets.mixkit.co/active_storage/sfx/1272/1272-preview.mp3" },
+    { "id": "wind", "label": "Wind Through Trees", "icon": "Wind", "url": "https://assets.mixkit.co/active_storage/sfx/1388/1388-preview.mp3" },
+    { "id": "forest", "label": "Forest Ambience", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1478/1478-preview.mp3" },
+    { "id": "fire", "label": "Crackling Fireplace", "icon": "Flame", "url": "https://assets.mixkit.co/active_storage/sfx/1284/1284-preview.mp3" },
+    { "id": "cafe", "label": "Cafe Ambience", "icon": "Coffee", "url": "https://assets.mixkit.co/active_storage/sfx/1411/1411-preview.mp3" },
+    { "id": "night", "label": "Night Crickets", "icon": "Moon", "url": "https://assets.mixkit.co/active_storage/sfx/2519/2519-preview.mp3" },
+    { "id": "ocean", "label": "Ocean Waves", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1247/1247-preview.mp3" },
+    { "id": "river", "label": "River Stream", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1213/1213-preview.mp3" },
+    { "id": "birds", "label": "Birds Singing", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1220/1220-preview.mp3" },
+    { "id": "rainstorm", "label": "Rainstorm", "icon": "CloudRain", "url": "https://assets.mixkit.co/active_storage/sfx/1262/1262-preview.mp3" },
+    { "id": "coast", "label": "Coastal Waves", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1240/1240-preview.mp3" },
+    { "id": "waterfall", "label": "Waterfall", "icon": "Trees", "url": "https://assets.mixkit.co/active_storage/sfx/1238/1238-preview.mp3" },
+    { "id": "forest-night", "label": "Forest Night", "icon": "Moon", "url": "https://assets.mixkit.co/active_storage/sfx/1227/1227-preview.mp3" },
+    { "id": "wind-coast", "label": "Coastal Wind", "icon": "Wind", "url": "https://assets.mixkit.co/active_storage/sfx/1206/1206-preview.mp3" },
+    { "id": "camp", "label": "Camp Ambience", "icon": "Flame", "url": "https://assets.mixkit.co/active_storage/sfx/1219/1219-preview.mp3" },
+    { "id": "night-city", "label": "Night City", "icon": "Moon", "url": "https://assets.mixkit.co/active_storage/sfx/1241/1241-preview.mp3" },
+    { "id": "wind-meadow", "label": "Meadow Wind", "icon": "Wind", "url": "https://assets.mixkit.co/active_storage/sfx/1265/1265-preview.mp3" },
+    { "id": "rain-woods", "label": "Rain in Woods", "icon": "CloudRain", "url": "https://assets.mixkit.co/active_storage/sfx/1242/1242-preview.mp3" }
   ]
 }

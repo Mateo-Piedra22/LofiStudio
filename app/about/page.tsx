@@ -11,9 +11,7 @@ export default function AboutPage() {
       <div className="relative z-10 flex items-center justify-center px-6 py-24">
         <div className="glass-panel rounded-3xl border px-8 py-10 max-w-3xl w-full">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-muted-foreground" />
-            </div>
+            <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-14 md:h-16 w-auto rounded-lg shadow-xl ring-0 ring-white/10 dark:ring-black/20" />
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Acerca de LofiStudio</h1>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground">

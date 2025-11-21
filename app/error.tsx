@@ -10,8 +10,8 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
       <div className="absolute inset-0 z-0" />
       <div className="relative z-10 flex items-center justify-center px-6 py-24">
         <div className="glass-panel rounded-3xl border px-8 py-10 max-w-xl w-full text-center">
-          <div className="mx-auto mb-6 h-16 w-16 rounded-full bg-destructive/15 flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-destructive" />
+          <div className="mx-auto mb-6 h-16 w-16 rounded-md overflow-hidden">
+            <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-14 md:h-16 w-auto rounded-lg shadow-xl ring-0 ring-white/10 dark:ring-black/20" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Algo salió mal</h1>
           <p className="mt-2 text-sm text-muted-foreground truncate">{error?.message || 'Error inesperado'}</p>

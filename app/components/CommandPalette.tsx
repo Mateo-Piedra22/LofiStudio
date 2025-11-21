@@ -61,11 +61,17 @@ export default function CommandPalette() {
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Background">
-            <CommandItem onSelect={() => { const arr = (variants as any).room as Array<{id:string}>; const next = (Number(roomIdx) + 1) % arr.length; setRoomIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
-              Next Room Cozy
+            <CommandItem onSelect={() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const idx = Number(roomIdx) % arr.length; setBackgroundConfig({ type: 'video', videoId: arr[idx].id } as any); setOpen(false) }}>
+              {(() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const idx = Number(roomIdx) % arr.length; const name = arr[idx]?.name || '—'; return `Room Cozy — current: ${name} (${idx + 1}/${arr.length})` })()}
             </CommandItem>
-            <CommandItem onSelect={() => { const arr = (variants as any).cafe as Array<{id:string}>; const next = (Number(cafeIdx) + 1) % arr.length; setCafeIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
-              Next Cafe Cozy
+            <CommandItem onSelect={() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const next = (Number(roomIdx) + 1) % arr.length; setRoomIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
+              {(() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const next = (Number(roomIdx) + 1) % arr.length; const name = arr[next]?.name || '—'; return `Next Room Loop — ${name} (${next + 1}/${arr.length})` })()}
+            </CommandItem>
+            <CommandItem onSelect={() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const idx = Number(cafeIdx) % arr.length; setBackgroundConfig({ type: 'video', videoId: arr[idx].id } as any); setOpen(false) }}>
+              {(() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const idx = Number(cafeIdx) % arr.length; const name = arr[idx]?.name || '—'; return `Cafe Cozy — current: ${name} (${idx + 1}/${arr.length})` })()}
+            </CommandItem>
+            <CommandItem onSelect={() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const next = (Number(cafeIdx) + 1) % arr.length; setCafeIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
+              {(() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const next = (Number(cafeIdx) + 1) % arr.length; const name = arr[next]?.name || '—'; return `Next Cafe Loop — ${name} (${next + 1}/${arr.length})` })()}
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Layout">

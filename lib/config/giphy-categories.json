@@ -1,0 +1,14 @@
+{
+  "__info": "Categorías y tags para el widget de GIFs (Giphy). No cambia la API; solo define etiquetas y sinónimos para buscar mejor.",
+  "categories": [
+    { "id": "lofi", "label": "Lofi", "tags": ["lofi", "lofi girl", "lofi music", "lofi study"] },
+    { "id": "study", "label": "Study", "tags": ["study", "studying", "library", "notebook"] },
+    { "id": "focus", "label": "Focus", "tags": ["focus", "deep work", "concentration", "productivity"] },
+    { "id": "chill", "label": "Chill", "tags": ["chill", "relax", "calm", "cozy"] },
+    { "id": "nature", "label": "Nature", "tags": ["nature", "forest", "rain", "mountains"] },
+    { "id": "cats", "label": "Cats", "tags": ["cats", "cat", "kitty", "cute cat"] },
+    { "id": "coffee", "label": "Coffee", "tags": ["coffee", "cafe", "espresso", "barista"] },
+    { "id": "night", "label": "Night", "tags": ["night", "stars", "moon", "city night"] },
+    { "id": "vaporwave", "label": "Vaporwave", "tags": ["vaporwave", "retro", "neon", "synthwave"] }
+  ]
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
@@ -50,10 +50,12 @@ export default function Home() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
+  const [isTopbarHidden, setIsTopbarHidden] = useState(false);
+  const canTopbarInteract = (!isEditingLayout || !isTopbarHidden) && !isZenMode;
   const { widgets, updateWidgetLayout, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
   const { data: session } = useSession();
-  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
-  const [googleTasksEnabled] = useLocalStorage('googleTasksEnabled', false);
+  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
+  const [googleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
   const grantedScopes = ((session as any)?.scope as string | undefined)?.split(' ') || [];
   const requiredScopes = [
     ...(googleCalendarEnabled ? ['https://www.googleapis.com/auth/calendar.events'] : []),
@@ -69,6 +71,7 @@ export default function Home() {
     signIn('google' as any, { redirect: true, callbackUrl: '/' } as any, {
       prompt: extra.length ? 'consent' : undefined,
       access_type: extra.length ? 'offline' : undefined,
+      include_granted_scopes: true,
       scope,
     } as any);
   };
@@ -78,6 +81,9 @@ export default function Home() {
   const capacity = 9;
   const maxRows = 3;
   const [rowHeight, setRowHeight] = useState<number>(60);
+  const [isLandscape, setIsLandscape] = useState<boolean>(true);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchDeltaYRef = useRef<number>(0);
   const [centerNotice, setCenterNotice] = useState<string | null>(null);
   const [beforeDrag, setBeforeDrag] = useState<any[]>([]);
   const anyModalOpenRender = showSettings || showStats || showLogs || (showWidgetManager && !isEditingLayout);
@@ -91,6 +97,12 @@ export default function Home() {
   useEffect(() => {
     document.documentElement.style.setProperty('--glass-opacity', String(glassOpacity));
   }, [glassOpacity]);
+
+  useEffect(() => {
+    if (!currentVideo) {
+      setCurrentVideo({ id: 'jfKfPfyJRdk', title: 'Lofi Girl Radio', thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/maxresdefault.jpg' });
+    }
+  }, [currentVideo]);
 
   const toggleZenMode = () => {
     setIsZenMode(!isZenMode);
@@ -213,6 +225,59 @@ export default function Home() {
   }, [isEditingLayout, tileH, maxRows]);
 
   useEffect(() => {
+    const mql = typeof window !== 'undefined' ? window.matchMedia('(orientation: landscape)') : null as any;
+    const init = () => { if (mql) setIsLandscape(!!mql.matches); };
+    const handler = (e: any) => setIsLandscape(!!e.matches);
+    init();
+    mql?.addEventListener?.('change', handler);
+    return () => { mql?.removeEventListener?.('change', handler); };
+  }, []);
+
+  useEffect(() => {
+    const target = (() => {
+      if (currentBreakpoint === 'lg') return { cols: 3, rows: 3, cap: 9 };
+      if (currentBreakpoint === 'md') return { cols: 2, rows: 3, cap: 6 };
+      if (currentBreakpoint === 'sm') return isLandscape ? { cols: 2, rows: 2, cap: 4 } : { cols: 1, rows: 3, cap: 3 };
+      return { cols: 1, rows: 3, cap: 3 };
+    })();
+    const ev = new CustomEvent('responsive:capacity', { detail: { capacity: target.cap } });
+    window.dispatchEvent(ev);
+    if (currentBreakpoint === 'lg') return;
+    const enabled = widgets.filter(w => w.enabled);
+    const heightUnitsFor = (t: string) => {
+      const groupName = (sizeConfig.assignments as any)[t] || 'small';
+      const rowsFor = (sizeConfig.groups as any)[groupName]?.rows || 1;
+      return Math.round(rowsFor * tileH);
+    };
+    const take = enabled.slice(0, target.cap);
+    const colsArr: { id: string; h: number }[][] = Array.from({ length: target.cols }, () => []);
+    const totals = Array.from({ length: target.cols }, () => 0);
+    const maxUnitsPerCol = target.rows * tileH;
+    take.forEach((w, idx) => {
+      const desiredH = heightUnitsFor(w.type);
+      const order = Array.from({ length: target.cols }, (_, i) => i).sort((a, b) => totals[a] - totals[b]);
+      for (const c of order) {
+        const requiresTop = desiredH === tileH * target.rows;
+        if (totals[c] + desiredH <= maxUnitsPerCol && (!requiresTop || totals[c] === 0)) {
+          colsArr[c].push({ id: w.id, h: desiredH });
+          totals[c] += desiredH;
+          break;
+        }
+      }
+    });
+    const updates: { i: string; x: number; y: number; w: number; h: number; minW: number; minH: number; maxW: number; maxH: number }[] = [];
+    colsArr.forEach((colItems, colIdx) => {
+      let y = 0;
+      colItems.forEach((ci) => {
+        const x = colIdx * tileW;
+        updates.push({ i: ci.id, x, y, w: tileW, h: ci.h, minW: tileW, minH: tileH, maxW: tileW, maxH: tileH * target.rows });
+        y += ci.h;
+      });
+    });
+    setGridLayouts((prev: any) => ({ ...prev, [currentBreakpoint]: updates }));
+  }, [currentBreakpoint, widgets.length, tileW, tileH]);
+
+  useEffect(() => {
     const anyModalOpen = showSettings || showStats || showLogs || (showWidgetManager && !isEditingLayout);
     document.body.style.overflow = anyModalOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -221,6 +286,7 @@ export default function Home() {
   useEffect(() => {
     const handler = () => {
       setCenterNotice('Capacidad alcanzada. Quita un widget antes de agregar otro.');
+      try { if (typeof navigator !== 'undefined' && 'vibrate' in navigator) (navigator as any).vibrate(10); } catch {}
       const t = setTimeout(() => setCenterNotice(null), 2500);
       return () => clearTimeout(t);
     };
@@ -593,77 +659,94 @@ export default function Home() {
         </div>
 
         {/* Floating Top Bar */}
-        <div data-ui="topbar" className={`fixed top-0 left-0 right-0 z-40 p-6 flex items-start justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'} ${isEditingLayout ? 'blur-sm pointer-events-none' : ''}`}>
-          <div className="glass border rounded-xl px-3 py-2">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              LofiStudio
-            </h1>
-            <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">Focus Space</p>
-          </div>
+        {(!isEditingLayout || !isTopbarHidden) && (
+          <div data-ui="topbar" className={`fixed top-0 left-0 right-0 z-40 p-3 md:p-6 flex items-start justify-end transition-all duration-500 ${isZenMode ? 'opacity-0' : 'opacity-100'} ${isEditingLayout ? 'blur-sm' : ''}`} style={{ pointerEvents: 'none' }}>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 glass-button p-1.5 rounded-full">
-              <Button onClick={toggleZenMode} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Zen Mode">
+          <div className="flex items-center gap-3 pointer-events-auto mr-6">
+            <div className={`hidden md:flex items-center gap-2 glass-button p-1.5 rounded-full ${!canTopbarInteract ? 'pointer-events-none opacity-60' : 'pointer-events-auto'}`}>
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; toggleZenMode(); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Zen Mode">
                 <EyeOff className="w-4 h-4" />
               </Button>
-              <Button onClick={handleEditLayoutToggle} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Edit Layout">
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; handleEditLayoutToggle(); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Edit Layout">
                 <Edit2 className="w-4 h-4" />
               </Button>
-              <Button onClick={() => setShowStats(!showStats)} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Stats">
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowStats(!showStats); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Stats">
                 <BarChart3 className="w-4 h-4" />
               </Button>
-              <Button onClick={() => setShowSettings(!showSettings)} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Settings">
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowSettings(!showSettings); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Settings">
                 <SettingsIcon className="w-4 h-4" />
               </Button>
             </div>
             {needsReauth && (
-              <Button onClick={handleReauth} variant="secondary" size="sm" className="glass border h-8">
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; handleReauth(); }} variant="secondary" size="sm" className="glass border h-8">
                 Completar permisos
               </Button>
             )}
             <UserAuth />
-            <Button onClick={() => setShowMobileMenu(!showMobileMenu)} variant="ghost" size="icon" className="md:hidden glass-button h-10 w-10 rounded-full text-foreground">
+            <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowMobileMenu(!showMobileMenu); }} variant="ghost" size="icon" className="md:hidden glass-button h-10 w-10 rounded-full text-foreground">
               <Menu className="w-5 h-5" />
             </Button>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Edit Layout Dock */}
-        {isEditingLayout && !isZenMode && (
+        {isEditingLayout && !isZenMode && !isTopbarHidden && (
           <div data-ui="edit-dock" className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
             <div className="flex items-center gap-4 glass border px-6 py-3 rounded-full shadow-2xl">
               <span className="font-medium text-sm text-foreground">Editing Layout</span>
               <div className="h-4 w-px bg-border" />
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Grid</span>
-                <Button variant="default" size="sm" className="h-8">3x3</Button>
+                <Button variant="default" size="sm" className="h-8">{(() => {
+                  if (currentBreakpoint === 'lg') return '3x3';
+                  if (currentBreakpoint === 'md') return '2x3';
+                  if (currentBreakpoint === 'sm') return isLandscape ? '2x2' : '1x3';
+                  return '1x3';
+                })()}</Button>
                 <Button disabled variant="ghost" size="sm" className="h-8 cursor-not-allowed opacity-60" title="Modo libre (Premium)">Modo libre</Button>
               </div>
               <div className="h-4 w-px bg-border" />
-              <Button
-                onClick={() => setShowWidgetManager(!showWidgetManager)}
-                variant="ghost"
-                size="sm"
-                className="text-foreground hover:bg-accent hover:text-accent-foreground h-8"
-              >
-                <Layout className="w-4 h-4 mr-2" />
-                {showWidgetManager ? 'Hide Widgets' : 'Add Widgets'}
-              </Button>
-              <Button
-                onClick={() => setIsEditingLayout(false)}
-                size="sm"
-                variant="secondary"
-                className="h-8 rounded-full px-4"
-              >
-                <Check className="w-4 h-4 mr-2" />
-                Done
-              </Button>
+            <Button
+              onClick={() => setShowWidgetManager(!showWidgetManager)}
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground h-8"
+            >
+              <Layout className="w-4 h-4 mr-2" />
+              {showWidgetManager ? 'Hide Widgets' : 'Add Widgets'}
+            </Button>
+            <Button
+              onClick={() => setIsTopbarHidden(!isTopbarHidden)}
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground h-8"
+            >
+              {isTopbarHidden ? 'Show Topbar' : 'Hide Topbar'}
+            </Button>
+            <Button
+              onClick={() => setIsEditingLayout(false)}
+              size="sm"
+              variant="secondary"
+              className="h-8 rounded-full px-4"
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Done
+            </Button>
             </div>
           </div>
         )}
 
+        {isEditingLayout && isTopbarHidden && (
+          <div className="fixed top-3 left-3 z-50">
+            <Button onClick={() => setIsTopbarHidden(false)} variant="ghost" size="icon" className="h-9 w-9 rounded-full glass border">
+              <Eye className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
+
         {/* Main Grid Area */}
-        <div className={`relative z-10 h-screen w-full transition-opacity duration-500`}>
+        <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100dvh' }}>
           <ResponsiveGridLayout
             className="layout"
             layouts={gridLayouts}
@@ -671,7 +754,7 @@ export default function Home() {
             cols={{ lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 }}
             rowHeight={rowHeight}
             maxRows={maxRows}
-            isDraggable={isEditingLayout}
+            isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
             isResizable={false}
             isBounded
             draggableHandle=".widget-drag-handle"
@@ -687,7 +770,7 @@ export default function Home() {
             preventCollision
             compactType={null as any}
           >
-            {widgets.filter(w => w.enabled).map(widget => (
+            {widgets.filter(w => w.enabled).slice(0, (currentBreakpoint === 'lg' ? 9 : currentBreakpoint === 'md' ? 6 : currentBreakpoint === 'sm' ? (isLandscape ? 4 : 3) : 3)).map(widget => (
               <DraggableWidget
                 key={widget.id}
                 isEditing={isEditingLayout}
@@ -711,18 +794,35 @@ export default function Home() {
           </ResponsiveGridLayout>
           {isEditingLayout && (
             <div className="pointer-events-none absolute inset-0 z-20 px-4 py-4">
-              <div className="h-full w-full grid grid-cols-3 gap-x-4">
-                {[0,1,2].map((col) => (
-                  <div key={col} className="flex flex-col gap-y-3">
-                    {[0,1,2].map((row) => (
-                      <div key={`${col}-${row}`} className="rounded-lg border border-white/10 bg-white/5 dark:bg-black/10" style={{ height: `${Math.round(rowHeight * tileH)}px` }} />
+              {(() => {
+                const dims = currentBreakpoint === 'lg' ? { cols: 3, rows: 3 } : currentBreakpoint === 'md' ? { cols: 2, rows: 3 } : currentBreakpoint === 'sm' ? (isLandscape ? { cols: 2, rows: 2 } : { cols: 1, rows: 3 }) : { cols: 1, rows: 3 };
+                return (
+                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : dims.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-4`}>
+                    {Array.from({ length: dims.cols }).map((_, col) => (
+                      <div key={col} className="flex flex-col gap-y-3">
+                        {Array.from({ length: dims.rows }).map((_, row) => (
+                          <div key={`${col}-${row}`} className="rounded-lg border border-white/10 bg-white/5 dark:bg-black/10" style={{ height: `${Math.round(rowHeight * tileH)}px` }} />
+                        ))}
+                      </div>
                     ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </div>
           )}
         </div>
+
+        {!isZenMode && (
+          <div className="fixed bottom-3 left-3 z-40" style={{ pointerEvents: 'auto' }}>
+            <div className="glass border rounded-xl px-[6px] py-[6px] flex items-center gap-2">
+              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="w-auto rounded-lg shadow-xl ring-0 ring-white/10 dark:ring-black/20" style={{ height: '54px' }} />
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">LofiStudio</h1>
+                <p className="text-[11px] text-muted-foreground font-medium tracking-widest uppercase">Focus Space</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Floating Player */}
         <div className={(isEditingLayout || isZenMode) ? 'opacity-0 pointer-events-none transition-opacity' : 'transition-opacity'}>
@@ -738,7 +838,16 @@ export default function Home() {
         )}
 
         {/* Modals */}
-        {!isZenMode && showKeyboardHelp && <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />}
+        {!isZenMode && showKeyboardHelp && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+            onTouchStart={(e) => { (touchStartYRef as any).current = e.touches[0]?.clientY || 0; }}
+            onTouchMove={(e) => { if ((touchStartYRef as any).current == null) return; (touchDeltaYRef as any).current = (e.touches[0]?.clientY || 0) - ((touchStartYRef as any).current || 0); }}
+            onTouchEnd={() => { if (((touchDeltaYRef as any).current || 0) > 80) setShowKeyboardHelp(false); (touchStartYRef as any).current = null; (touchDeltaYRef as any).current = 0; }}
+          >
+            <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
+          </div>
+        )}
 
         {!isZenMode && showWidgetManager && (
           <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-80' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
@@ -759,7 +868,12 @@ export default function Home() {
         {!isZenMode && showSettings && <Settings theme={theme} setTheme={setTheme} onClose={() => setShowSettings(false)} />}
 
         {!isZenMode && showStats && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+            onTouchStart={(e) => { (touchStartYRef as any).current = e.touches[0]?.clientY || 0; }}
+            onTouchMove={(e) => { if ((touchStartYRef as any).current == null) return; (touchDeltaYRef as any).current = (e.touches[0]?.clientY || 0) - ((touchStartYRef as any).current || 0); }}
+            onTouchEnd={() => { if (((touchDeltaYRef as any).current || 0) > 80) setShowStats(false); (touchStartYRef as any).current = null; (touchDeltaYRef as any).current = 0; }}
+          >
             <div className="w-full max-w-5xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-foreground">Your Statistics</h2>
@@ -771,7 +885,12 @@ export default function Home() {
         )}
 
         {!isZenMode && showLogs && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+            onTouchStart={(e) => { (touchStartYRef as any).current = e.touches[0]?.clientY || 0; }}
+            onTouchMove={(e) => { if ((touchStartYRef as any).current == null) return; (touchDeltaYRef as any).current = (e.touches[0]?.clientY || 0) - ((touchStartYRef as any).current || 0); }}
+            onTouchEnd={() => { if (((touchDeltaYRef as any).current || 0) > 80) setShowLogs(false); (touchStartYRef as any).current = null; (touchDeltaYRef as any).current = 0; }}
+          >
             <div className="w-full max-w-2xl glass-panel rounded-2xl p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-foreground">Activity Log</h2>
@@ -805,6 +924,17 @@ export default function Home() {
               <a href="/terms" className="hover:text-foreground">Términos</a>
               <span className="opacity-50">•</span>
               <a href="/cookies" className="hover:text-foreground">Cookies</a>
+            </div>
+            <div className="md:hidden mt-3 flex items-center justify-center gap-3">
+              <Button onClick={() => setShowWidgetManager(true)} variant="default" size="icon" className="h-10 w-10 rounded-full">
+                <Layout className="w-5 h-5" />
+              </Button>
+              <Button onClick={() => setShowSettings(true)} variant="secondary" size="icon" className="h-10 w-10 rounded-full">
+                <SettingsIcon className="w-5 h-5" />
+              </Button>
+              <Button onClick={() => setShowStats(true)} variant="ghost" size="icon" className="h-10 w-10 rounded-full">
+                <BarChart3 className="w-5 h-5" />
+              </Button>
             </div>
           </div>
         )}

@@ -4,18 +4,26 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ImageIcon, RefreshCw } from 'lucide-react';
+import giphyConfig from '@/lib/config/giphy-categories.json';
 
-const categories = ['study', 'lofi', 'chill', 'focus', 'nature', 'cats'];
+const categories = (giphyConfig as any).categories as Array<{ id: string; label: string; tags: string[] }>;
 
 export default function GifWidget() {
   const [gif, setGif] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState('lofi');
+  const [category, setCategory] = useState<string>((categories[0]?.id) || 'lofi');
+  const tagFor = (id: string) => {
+    const cat = categories.find(c => c.id === id);
+    const tags = cat?.tags || [id];
+    // Alternate tags to avoid repeated random results and broaden matches
+    const idx = Math.floor(Math.random() * tags.length);
+    return tags[idx];
+  };
 
   const fetchGif = async (cat: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/giphy/search?q=${encodeURIComponent(cat)}`);
+      const response = await fetch(`/api/giphy/search?q=${encodeURIComponent(tagFor(cat))}`);
       const data = await response.json();
       
       if (!data.error && data.url) {
@@ -34,24 +42,24 @@ export default function GifWidget() {
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader>
+      <CardHeader className="pt-2 pb-2">
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
             Mood GIF
           </span>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2 justify-end overflow-x-auto whitespace-nowrap no-scrollbar">
             {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  category === cat
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
+                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 ${
+                  category === cat.id
                     ? 'bg-primary text-primary-foreground shadow-md scale-105'
                     : 'bg-accent/10 text-muted-foreground hover:bg-accent/20 hover:text-foreground'
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
             <Button
@@ -67,10 +75,10 @@ export default function GifWidget() {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col space-y-4">
+      <CardContent className="flex-1 min-h-0 flex flex-col space-y-2">
 
         {/* GIF Display */}
-        <div className="relative flex-1 rounded-lg overflow-hidden bg-secondary/50 border border-border">
+        <div className="relative flex-1 min-h-0 rounded-lg overflow-hidden bg-secondary/50 border border-border">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-accent/20 backdrop-blur-sm z-10">
               <RefreshCw className="w-8 h-8 text-foreground animate-spin" />

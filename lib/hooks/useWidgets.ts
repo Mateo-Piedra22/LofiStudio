@@ -11,7 +11,8 @@ export function useWidgets() {
   const [widgets, setWidgets, widgetsLoaded] = useLocalStorage<WidgetConfig[]>('widgets', []);
   const tileW = (layoutConfig as any).tileW ?? 4;
   const tileH = (layoutConfig as any).tileH ?? 1;
-  const capacity = (layoutConfig as any).capacity ?? 9;
+  const baseCapacity = (layoutConfig as any).capacity ?? 9;
+  const [capacity, setCapacity] = useState<number>(baseCapacity);
 
   useEffect(() => {
     const needsLayoutInit = widgets.some((w: any) => !w.layout);
@@ -44,6 +45,16 @@ export function useWidgets() {
       });
       setWidgets(migrated);
     }
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const next = Number((e?.detail || {}).capacity);
+      if (!Number.isFinite(next) || next <= 0) return;
+      setCapacity(next);
+    };
+    window.addEventListener('responsive:capacity', handler as any);
+    return () => window.removeEventListener('responsive:capacity', handler as any);
   }, []);
 
   const DEFAULT_SIZE: Record<WidgetConfig['type'], { w: number; h: number }> = {

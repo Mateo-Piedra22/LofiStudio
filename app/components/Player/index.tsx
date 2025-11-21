@@ -26,6 +26,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [playlist, setPlaylist] = useLocalStorage<VideoInfo[]>('playlist', []);
   const [currentIndex, setCurrentIndex] = useLocalStorage('currentPlaylistIndex', 0);
   const [showPlaylist, setShowPlaylist] = useState(false);
@@ -129,6 +130,13 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     }
   };
 
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) { setSearchResults([]); return; }
+    const id = setTimeout(() => { handleSearch(); }, 250);
+    return () => clearTimeout(id);
+  }, [searchQuery]);
+
   const handleSelectVideo = (video: VideoInfo) => {
     setCurrentVideo(video);
     setSearchResults([]);
@@ -201,13 +209,13 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   // Mini Player (Collapsed State)
   if (!isExpanded) {
     return (
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto">
-        <div className="glass-panel rounded-full p-2 pr-4 flex items-center gap-3 shadow-2xl border border-border hover:scale-105 transition-all cursor-pointer group">
+      <div className="fixed left-1/2 -translate-x-1/2 z-[100] pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
+        <div className="glass-panel rounded-full p-1.5 pr-3 flex items-center gap-2 shadow-2xl border border-border hover:scale-105 transition-all cursor-pointer group">
           <button
             onClick={handlePlayPause}
             disabled={!currentVideo}
             className={cn(
-              "h-12 w-12 rounded-full flex items-center justify-center transition-all shadow-lg",
+              "h-9 w-9 rounded-full flex items-center justify-center transition-all shadow-lg",
               currentVideo
                 ? "bg-primary text-primary-foreground hover:scale-110"
                 : "bg-accent/20 text-muted-foreground cursor-not-allowed"
@@ -225,9 +233,10 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
               <img
                 src={currentVideo.thumbnail}
                 alt={currentVideo.title}
-                className="w-10 h-10 rounded-lg object-cover"
+                className={`w-8 h-8 rounded-lg object-cover ${isPlaying ? 'animate-spin' : ''}`}
+                style={{ animationDuration: '6s' }}
               />
-              <div className="max-w-[200px]">
+              <div className="max-w-[180px]">
                 <p className="text-xs font-medium text-foreground truncate">
                   {currentVideo.title}
                 </p>
@@ -255,7 +264,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
 
   // Full Player (Expanded State)
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 animate-in slide-in-from-bottom-4 fade-in duration-300 pointer-events-auto">
+    <div className="fixed left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 animate-in slide-in-from-bottom-4 fade-in duration-300 pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
       <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-border">
         {/* Header / Minimize */}
         <div className="flex items-center justify-between px-6 py-3 bg-background/50 border-b border-border">
@@ -272,34 +281,45 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Search Bar */}
-          <div className="relative group">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="Search for songs..."
-              className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 pl-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            {searchResults.length > 0 && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-60 overflow-y-auto">
-                {searchResults.map((video) => (
-                  <button
-                    key={video.id}
-                    onClick={() => handleSelectVideo(video)}
-                    className="w-full flex items-center gap-3 p-3 hover:bg-accent/10 transition-colors text-left border-b border-border last:border-0"
-                  >
-                    <img src={video.thumbnail} alt="" className="w-10 h-10 rounded object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground truncate">{video.title}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Search Toggle */}
+          <div className="flex justify-end">
+            <Button onClick={() => setShowSearch(true)} variant="ghost" size="sm" className="gap-2">
+              <Search className="w-4 h-4" />
+              Search
+            </Button>
           </div>
+          {showSearch && (
+            <div className="fixed inset-0 z-[120] flex items-end justify-center p-4" onClick={() => { setShowSearch(false); setSearchResults([]); }}>
+              <div className="w-full max-w-2xl glass-panel rounded-2xl border border-border shadow-2xl p-4" onClick={(e) => e.stopPropagation()}>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for songs..."
+                    className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 pl-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  {searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-60 overflow-y-auto">
+                      {searchResults.map((video) => (
+                        <button
+                          key={video.id}
+                          onClick={() => { handleSelectVideo(video); setShowSearch(false); }}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-accent/10 transition-colors text-left border-b border-border last:border-0"
+                        >
+                          <img src={video.thumbnail} alt="" className="w-10 h-10 rounded object-cover" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-foreground truncate">{video.title}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Main Player Controls */}
           <div className="flex flex-col gap-4">

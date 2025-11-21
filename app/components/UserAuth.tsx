@@ -22,8 +22,8 @@ export default function UserAuth() {
     const { data: session } = useSession()
     const [showProfileModal, setShowProfileModal] = useState(false)
     const [showConsent, setShowConsent] = useState(false)
-    const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false)
-    const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', false)
+    const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true)
+    const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', true)
 
     useEffect(() => {
         if (session?.user) {
@@ -136,6 +136,7 @@ export default function UserAuth() {
         signIn('google', { redirect: true, callbackUrl: '/' } as any, {
             prompt: extra.length ? 'consent' : undefined,
             access_type: extra.length ? 'offline' : undefined,
+            include_granted_scopes: true,
             scope,
         } as any)
     }

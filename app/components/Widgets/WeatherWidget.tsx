@@ -22,8 +22,10 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useLocalStorage('weatherCity', '');
   const [inputCity, setInputCity] = useState('');
+  const [suggestions, setSuggestions] = useState<Array<{ name: string; admin1?: string; admin2?: string; country?: string; country_code?: string; postcodes?: string[]; lat: number; lon: number }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const fetchWeather = async (cityName?: string) => {
+  const fetchWeather = async (cityName?: string, coords?: { lat: number; lon: number }) => {
     setLoading(true);
     try {
       const targetCity = cityName || city;
@@ -51,7 +53,9 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
         return;
       }
 
-      const response = await fetch(`/api/weather/current?city=${encodeURIComponent(targetCity)}`);
+      const response = coords
+        ? await fetch(`/api/weather/current?lat=${coords.lat}&lon=${coords.lon}`)
+        : await fetch(`/api/weather/current?city=${encodeURIComponent(targetCity)}`);
       const data = await response.json();
 
       if (!data.error) {
@@ -74,38 +78,83 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
       setCity(inputCity.trim());
       fetchWeather(inputCity.trim());
       setInputCity('');
-    }
+      }
   };
 
+  useEffect(() => {
+    const q = inputCity.trim();
+    if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+    const id = setTimeout(async () => {
+      try {
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=es&format=json`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const raw: any[] = (data?.results || []);
+        const ql = q.toLowerCase();
+        const filtered = raw.filter((r: any) => {
+          const fields = [r.name, r.admin1, r.admin2, r.country].filter(Boolean).map((x: string) => x.toLowerCase());
+          const zipList: string[] = Array.isArray(r.postcodes) ? r.postcodes : [];
+          return fields.some((f: string) => f.includes(ql)) || zipList.some((z: string) => z.toLowerCase().includes(ql));
+        });
+        const list = filtered.map((r: any) => ({ name: r.name, admin1: r.admin1, admin2: r.admin2, country: r.country, country_code: r.country_code, postcodes: Array.isArray(r.postcodes) ? r.postcodes : undefined, lat: r.latitude, lon: r.longitude }));
+        setSuggestions(list);
+        setShowSuggestions(true);
+      } catch {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 250);
+    return () => clearTimeout(id);
+  }, [inputCity]);
+
   const getWeatherIcon = (icon: string) => {
-    const size = compact ? 'w-8 h-8' : 'w-10 h-10';
-    if (icon === 'rain' || icon.includes('rain')) return <CloudRain className={`${size} text-blue-400`} />;
+    const size = compact ? 'w-6 h-6' : 'w-10 h-10';
+    if (icon === 'rain' || icon.includes('rain')) return <CloudRain className={`${size} text-blue-400 motion-safe:animate-pulse`} />;
     if (icon === 'cloud' || icon.includes('cloud')) return <Cloud className={`${size} text-gray-400`} />;
-    if (icon === 'snow') return <Snowflake className={`${size} text-cyan-200`} />;
+    if (icon === 'snow') return <Snowflake className={`${size} text-cyan-200 motion-safe:animate-pulse`} />;
     if (icon === 'fog') return <CloudFog className={`${size} text-gray-300`} />;
     if (icon === 'storm') return <Zap className={`${size} text-yellow-300`} />;
-    return <Sun className={`${size} text-yellow-400`} />;
+    return <Sun className={`${size} text-yellow-400 motion-safe:animate-pulse`} />;
   };
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader>
+      <CardHeader className={compact ? 'pt-1 pb-1' : ''}>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
             Weather
           </span>
           <div className="flex items-center gap-2">
-            <form onSubmit={handleCitySubmit} className="flex gap-2 no-drag">
-              <input
-                type="text"
-                value={inputCity}
-                onChange={(e) => setInputCity(e.target.value)}
-                placeholder="Enter city..."
-                className="w-[152px] md:w-[216px] px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <Button type="submit" size="sm" className="shrink-0">Set</Button>
-            </form>
+            <div className="relative no-drag">
+              <form onSubmit={handleCitySubmit} className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputCity}
+                  onChange={(e) => setInputCity(e.target.value)}
+                  placeholder="Enter city..."
+                  className={`${compact ? 'w-[120px] md:w-[180px]' : 'w-[140px] md:w-[216px]'} px-3 py-1.5 rounded-lg bg-background/50 border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                />
+                <Button type="submit" size="sm" className="shrink-0 h-7 px-3">Set</Button>
+              </form>
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl max-h-56 overflow-y-auto">
+                  {suggestions.map((s, i) => {
+                    const cp = s.postcodes?.[0];
+                    const display = `${s.name}${s.admin1 ? ', ' + s.admin1 : ''}${s.admin2 ? ', ' + s.admin2 : ''}${s.country ? ', ' + s.country : ''}${cp ? ' (CP: ' + cp + ')' : ''}`;
+                    return (
+                      <button
+                        key={`${s.name}-${s.lat}-${s.lon}-${i}`}
+                        onClick={() => { setCity(display); setInputCity(''); setShowSuggestions(false); fetchWeather(display, { lat: s.lat, lon: s.lon }); }}
+                        className="w-full text-left px-3 py-2 hover:bg-accent/10 text-sm text-foreground border-b border-border last:border-0"
+                      >
+                        {display}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <Button
               onClick={() => fetchWeather()}
               size="icon"
@@ -119,15 +168,15 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col space-y-3 overflow-hidden">
+      <CardContent className={`flex-1 flex flex-col ${compact ? 'space-y-2' : 'space-y-3'} overflow-hidden`}>
 
         {weather ? (
-          <div className="flex-1 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex-1 space-y-4 mt-0.5 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className={`${compact ? 'text-4xl' : 'text-5xl md:text-6xl'} font-bold text-foreground leading-none tracking-tighter`}>{Math.round(weather.temp)}°</p>
-                <p className={`${compact ? 'text-base' : 'text-lg'} text-muted-foreground capitalize font-medium`}>{weather.description}</p>
-                <p className="text-muted-foreground text-sm flex items-center gap-1">
+                <p className={`${compact ? 'text-2xl' : 'text-5xl md:text-6xl'} font-bold text-foreground leading-none tracking-tighter`}>{Math.round(weather.temp)}°</p>
+                <p className={`${compact ? 'text-xs' : 'text-lg'} text-muted-foreground capitalize font-medium`}>{weather.description}</p>
+                <p className="text-muted-foreground text-xs flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {weather.city}
                 </p>
@@ -137,23 +186,23 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               </div>
             </div>
 
-            <div className={`grid grid-cols-2 gap-3 ${compact ? 'pt-2' : 'pt-3'} border-t border-border`}>
-              <div className={`flex items-center gap-3 ${compact ? 'p-2' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
+            <div className={`grid grid-cols-2 gap-2 ${compact ? 'pt-2' : 'pt-3'} border-t border-border`}>
+              <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-blue-500/20 rounded-lg">
                   <Droplets className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
-                  <p className="text-foreground font-medium">{weather.humidity}%</p>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
+                  <p className="text-foreground text-xs font-medium">{weather.humidity}%</p>
                 </div>
               </div>
-              <div className={`flex items-center gap-3 ${compact ? 'p-2' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
+              <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-gray-500/20 rounded-lg">
                   <Wind className="w-4 h-4 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
-                  <p className="text-foreground font-medium">{weather.windSpeed} m/s</p>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
+                  <p className="text-foreground text-xs font-medium">{weather.windSpeed} m/s</p>
                 </div>
               </div>
             </div>
