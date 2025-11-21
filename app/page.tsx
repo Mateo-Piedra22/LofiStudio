@@ -437,12 +437,12 @@ export default function Home() {
     }
     if (currentBreakpoint !== 'lg') return;
     currentLayout.forEach((l: any) => {
-    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
-    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
+      const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+      const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
       const span = Math.max(1, Math.ceil((l.h / tileH)));
       const snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(l.y / tileH)));
       const targetX = snappedCol * tileW;
-      const targetY = snappedRow * tileH;
+      const targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
       updateWidgetLayout(l.i, { x: targetX, y: targetY, w: tileW, h: l.h });
     });
   };
@@ -457,7 +457,7 @@ export default function Home() {
     if (span === 3) snappedRow = 0;
     if (span === 2 && snappedRow > 1) snappedRow = 1;
     let targetX = snappedCol * tileW;
-    let targetY = snappedRow * tileH;
+    let targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
     const draggedId = newItem.i;
     const oldPos = beforeDrag.find((it: any) => it.i === draggedId);
     const constrained = _layout.map((it: any) => ({ ...it, ...c, w: tileW, h: it.h }));
@@ -529,7 +529,7 @@ export default function Home() {
     if (span === 3) snappedRow = 0;
     if (span === 2 && snappedRow > 1) snappedRow = 1;
     let targetX = snappedCol * tileW;
-    let targetY = snappedRow * tileH;
+    let targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
     const occupied = new Set<string>();
     _layout.forEach((it: any) => {
       if (it.i === newItem.i) return;

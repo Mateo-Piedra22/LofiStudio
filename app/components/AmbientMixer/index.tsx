@@ -69,7 +69,10 @@ export default function AmbientMixer() {
                 audio.preload = 'auto';
                 audio.loop = true;
                 (audio as any).playsInline = true;
-                audio.src = src;
+                try {
+                    const isExternal = /^https?:\/\//i.test(src);
+                    audio.src = isExternal ? `/api/audio/fetch?url=${encodeURIComponent(src)}` : src;
+                } catch { audio.src = src; }
                 audio.volume = 0;
                 audio.load();
                 audio.addEventListener('canplay', () => {

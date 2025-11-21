@@ -184,7 +184,7 @@ const FALLBACK: Record<string, React.ComponentType<any>> = {
 export function AnimatedIcon({ name, className }: { name: string, className?: string }) {
   const [failed, setFailed] = React.useState(false)
   const [ready, setReady] = React.useState(false)
-  const src = LOTTIE_MAP[name]
+  const src = LOTTIE_MAP[name] ? `/api/lottie?name=${encodeURIComponent(name)}` : undefined
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return

@@ -133,12 +133,11 @@ export default function UserAuth() {
         if (googleCalendarEnabled) extra.push('https://www.googleapis.com/auth/calendar.events')
         if (googleTasksEnabled) extra.push('https://www.googleapis.com/auth/tasks')
         const scope = [...base, ...extra].join(' ')
-        signIn('google', { redirectTo: '/' }, {
-            prompt: extra.length ? 'consent' : undefined,
-            access_type: 'offline',
-            include_granted_scopes: true,
-            scope,
-        })
+        const params = new URLSearchParams({ callbackUrl: '/', scope })
+        if (extra.length) params.set('prompt','consent')
+        params.set('access_type','offline')
+        params.set('include_granted_scopes','true')
+        window.location.href = `/api/auth/signin/google?${params.toString()}`
     }
 
     return (
