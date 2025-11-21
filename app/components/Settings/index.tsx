@@ -32,12 +32,13 @@ export default function Settings({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { widgets, toggleWidget, presets, lastPresetId } = useWidgets();
   const [backgroundConfig, setBackgroundConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' });
-  const defaultGlass = typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 0.4 : 0.7;
+  const defaultGlass = 0.25;
   const [glassOpacity, setGlassOpacity] = useLocalStorage('glassOpacity', defaultGlass);
   const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
   const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
   const [googleCalendarId, setGoogleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
   const [googleTaskListId, setGoogleTaskListId] = useLocalStorage('googleTaskListId', '');
+  const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const [availableCalendars, setAvailableCalendars] = useState<any[]>([]);
   const [availableTaskLists, setAvailableTaskLists] = useState<any[]>([]);
   const [unsplashQuery, setUnsplashQuery] = useState('');
@@ -55,6 +56,7 @@ export default function Settings({
 
   if (typeof window !== 'undefined') {
     applyGlass(glassOpacity);
+    document.body.classList.toggle('widget-hide-headers', !showWidgetHeaders);
   }
 
   const handleExportData = () => {
@@ -209,6 +211,13 @@ export default function Settings({
                   }}
                 />
                 <span className="text-xs text-muted-foreground min-w-[3ch] text-right">{glassOpacity.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="mt-4 p-4 rounded-lg glass border">
+              <label className="text-sm text-foreground mb-2 block">Widget Headers</label>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Mostrar encabezados en los widgets</p>
+                <Switch checked={showWidgetHeaders} onCheckedChange={(v) => { setShowWidgetHeaders(!!v); if (typeof window !== 'undefined') document.body.classList.toggle('widget-hide-headers', !v); }} />
               </div>
             </div>
           </div>

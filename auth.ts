@@ -9,6 +9,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : { session: { strategy: 'jwt' as const } }),
     providers: [
         Google({
+            clientId: process.env.AUTH_GOOGLE_ID || '',
+            clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
             authorization: {
                 params: {
                     scope: 'openid email profile',
