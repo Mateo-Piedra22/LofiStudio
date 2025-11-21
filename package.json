@@ -67,6 +67,7 @@
     "react": "^18",
     "react-day-picker": "9.8.0",
     "react-dom": "^18",
+    "react-is": "^18.2.0",
     "react-grid-layout": "^1.5.2",
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
@@ -88,7 +89,7 @@
     "@types/react-youtube": "^7.6.2",
     "drizzle-kit": "^0.31.7",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^16.0.3",
+    "eslint-config-next": "^15.4.0",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
