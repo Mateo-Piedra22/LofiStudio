@@ -19,7 +19,7 @@ const FALLBACK: Record<string, { text: string; author: string }[]> = {
 }
 
 const tagMap: Record<string, string> = {
-  motivation: 'inspirational',
+  motivation: 'motivational',
   peace: 'wisdom',
   focus: 'business',
 }
@@ -31,11 +31,11 @@ export async function GET(request: NextRequest) {
 
   try {
     const controller = new AbortController()
-    const id = setTimeout(() => controller.abort(), 8000)
-    const resp = await fetch(`https://api.quotable.io/random?tags=${encodeURIComponent(tag)}&maxLength=120`, { signal: controller.signal, cache: 'no-store', next: { revalidate: 600 } })
+    const id = setTimeout(() => controller.abort(), 3500)
+    const resp = await fetch(`https://api.quotable.io/random?tags=${encodeURIComponent(tag)}&maxLength=120`, { signal: controller.signal, next: { revalidate: 3600 } })
     clearTimeout(id)
     const data = await resp.json().catch(() => null)
-    if (resp.ok && data && data.content && data.author) {
+    if (data && data.content && data.author) {
       return NextResponse.json({ text: data.content, author: data.author })
     }
     const fb = FALLBACK[category] || FALLBACK.motivation

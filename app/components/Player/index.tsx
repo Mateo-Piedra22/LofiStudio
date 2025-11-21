@@ -39,15 +39,12 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   const progressInterval = useRef<NodeJS.Timeout>();
 
   const opts: YouTubeProps['opts'] = {
-    height: '1',
-    width: '1',
+    height: '0',
+    width: '0',
     playerVars: {
       autoplay: 0,
       controls: 0,
       modestbranding: 1,
-      playsinline: 1,
-      enablejsapi: 1,
-      origin: typeof window !== 'undefined' ? window.location.origin : undefined,
     },
   };
 
@@ -58,9 +55,6 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     }
     setDuration(event.target.getDuration());
     setError(null);
-    if (isPlaying) {
-      try { event.target.playVideo(); } catch {}
-    }
   };
 
   const onError: YouTubeProps['onError'] = (event) => {
@@ -93,12 +87,6 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
   }, [isPlaying]);
-
-  useEffect(() => {
-    if (currentVideo && playerRef.current && isPlaying) {
-      try { playerRef.current.playVideo(); } catch {}
-    }
-  }, [currentVideo, isPlaying]);
 
   const handlePlayPause = () => {
     if (!playerRef.current || !currentVideo) return;
@@ -484,7 +472,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
 
       {/* Hidden YouTube Player */}
       {currentVideo && (
-        <div aria-hidden="true" className="absolute w-[1px] h-[1px] opacity-0 -z-50 overflow-hidden">
+        <div className="hidden">
           <YouTube
             videoId={currentVideo.id}
             opts={opts}

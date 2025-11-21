@@ -747,7 +747,6 @@ export default function Home() {
 
         {/* Main Grid Area */}
         <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100dvh' }}>
-          <div className={`${isEditingLayout ? 'flex items-end h-full' : 'flex items-start h-full'}`}>
           <ResponsiveGridLayout
             className="layout"
             layouts={gridLayouts}
@@ -793,7 +792,6 @@ export default function Home() {
               </DraggableWidget>
             ))}
           </ResponsiveGridLayout>
-          </div>
           {isEditingLayout && (
             <div className="pointer-events-none absolute inset-0 z-20 px-4 py-4">
               {(() => {
