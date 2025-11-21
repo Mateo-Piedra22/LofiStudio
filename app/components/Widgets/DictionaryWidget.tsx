@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Book, Search, Volume2, Loader2 } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 
 interface Definition {
     definition: string;
@@ -60,7 +60,7 @@ export default function DictionaryWidget() {
         <Card className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-foreground text-sm">
-                    <Book className="w-4 h-4" />
+                    <AnimatedIcon name="Book" className="w-4 h-4" />
                     Dictionary
                 </CardTitle>
             </CardHeader>
@@ -73,7 +73,7 @@ export default function DictionaryWidget() {
                         className="h-8 bg-background/50 border-border text-xs"
                     />
                     <Button type="submit" size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-accent/10">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                        {loading ? <AnimatedIcon name="Loader2" className="w-4 h-4 animate-spin" /> : <AnimatedIcon name="Search" className="w-4 h-4" />}
                     </Button>
                 </form>
 
@@ -89,7 +89,7 @@ export default function DictionaryWidget() {
                                 </div>
                                 {data.phonetics.some(p => p.audio) && (
                                     <Button onClick={playAudio} size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
-                                        <Volume2 className="w-4 h-4" />
+                                        <AnimatedIcon name="Volume2" className="w-4 h-4" />
                                     </Button>
                                 )}
                             </div>
@@ -113,7 +113,7 @@ export default function DictionaryWidget() {
 
                     {!data && !loading && !error && (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs text-center mt-4">
-                            <Book className="w-8 h-8 mb-2 opacity-50" />
+                            <AnimatedIcon name="Book" className="w-8 h-8 mb-2 opacity-50" />
                             <p>Search for a word to see its definition.</p>
                         </div>
                     )}

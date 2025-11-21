@@ -19,8 +19,10 @@ interface PomodoroTimerProps {
 }
 
 export default function PomodoroTimer({ currentVideo }: PomodoroTimerProps) {
-  const [workDuration, setWorkDuration] = useLocalStorage('pomodoroWork', 25 * 60);
-  const [breakDuration, setBreakDuration] = useLocalStorage('pomodoroBreak', 5 * 60);
+  const [workMinutes] = useLocalStorage('pomodoroWork', 25);
+  const [breakMinutes] = useLocalStorage('pomodoroBreak', 5);
+  const workDuration = Math.max(1, workMinutes) * 60;
+  const breakDuration = Math.max(1, breakMinutes) * 60;
   const [mode, setMode] = useState<TimerMode>('work');
   const [sessionsCompleted, setSessionsCompleted] = useLocalStorage('pomodoroSessions', 0);
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('notificationsEnabled', true);
@@ -140,9 +142,11 @@ export default function PomodoroTimer({ currentVideo }: PomodoroTimerProps) {
           <div className="relative z-10 text-center">
             <motion.div
               key={seconds}
-              initial={{ y: 10, opacity: 0.5 }}
+              initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="text-[8rem] sm:text-[10rem] font-bold tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/50 drop-shadow-2xl select-none"
+              transition={{ type: 'spring', stiffness: 120, damping: 28, mass: 0.6 }}
+              style={{ willChange: 'transform, opacity' }}
+              className="text-[7.25rem] sm:text-[9.25rem] font-bold tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/50 drop-shadow-2xl select-none"
             >
               {formatTime(seconds)}
             </motion.div>

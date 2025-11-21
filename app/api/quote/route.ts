@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import tagMapJson from '@/lib/config/quote-tags.json'
 
 const FALLBACK: Record<string, { text: string; author: string }[]> = {
   motivation: [
@@ -18,30 +19,34 @@ const FALLBACK: Record<string, { text: string; author: string }[]> = {
   ],
 }
 
-const tagMap: Record<string, string> = {
-  motivation: 'motivational',
-  peace: 'wisdom',
-  focus: 'business',
-}
+const categoryToApiParam: Record<string, string> = (tagMapJson as any).tags
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
   const category = (params.get('category') || 'motivation').toLowerCase()
-  const tag = tagMap[category] || 'motivational'
+  const apiKey = process.env.API_NINJAS_KEY
+  const categoriesParam = categoryToApiParam[category] || 'wisdom'
 
   try {
+    if (!apiKey) throw new Error('Missing API key')
     const controller = new AbortController()
     const id = setTimeout(() => controller.abort(), 3500)
-    const resp = await fetch(`https://api.quotable.io/random?tags=${encodeURIComponent(tag)}&maxLength=120`, { signal: controller.signal, next: { revalidate: 3600 } })
+    const resp = await fetch(`https://api.api-ninjas.com/v2/quotes?categories=${encodeURIComponent(categoriesParam)}`, {
+      headers: { 'X-Api-Key': apiKey },
+      signal: controller.signal,
+      next: { revalidate: 3600 },
+    })
     clearTimeout(id)
+    if (!resp.ok) throw new Error(`API error ${resp.status}`)
     const data = await resp.json().catch(() => null)
-    if (data && data.content && data.author) {
-      return NextResponse.json({ text: data.content, author: data.author })
+    const item = Array.isArray(data) ? data[0] : null
+    if (item && item.quote && item.author) {
+      return NextResponse.json({ text: item.quote, author: item.author, source: 'api' })
     }
     const fb = FALLBACK[category] || FALLBACK.motivation
-    return NextResponse.json(fb[0])
+    return NextResponse.json({ ...fb[0], source: 'local' })
   } catch (e: any) {
     const fb = FALLBACK[category] || FALLBACK.motivation
-    return NextResponse.json(fb[0])
+    return NextResponse.json({ ...fb[0], source: 'local' })
   }
 }

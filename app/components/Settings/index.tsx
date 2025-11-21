@@ -173,6 +173,7 @@ export default function Settings({
 
   const [ts, setTs] = useState<number | null>(null);
   const [dy, setDy] = useState<number>(0);
+  const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm"
@@ -251,7 +252,7 @@ export default function Settings({
           {/* Widget Visibility */}
           <div>
             <h3 className="text-foreground font-semibold mb-3">Widgets</h3>
-            <div className="p-4 rounded-lg glass border">
+            <div className="p-4 rounded-lg glass border space-y-4">
               <p className="text-muted-foreground text-sm mb-4">
                 Manage your widgets, layouts, and presets in the dedicated Widget Manager.
               </p>
@@ -265,6 +266,14 @@ export default function Settings({
               >
                 Open Widget Manager
               </Button>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div>
+                  <p className="text-sm text-foreground">Show widget headers</p>
+                  <p className="text-xs text-muted-foreground">Toggle titles and header controls in widgets.</p>
+                </div>
+                <Switch checked={!!showWidgetHeaders} onCheckedChange={(v) => setShowWidgetHeaders(!!v)} />
+              </div>
             </div>
           </div>
 

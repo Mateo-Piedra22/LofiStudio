@@ -5,23 +5,24 @@ import layoutConfig from '@/lib/config/layout.json';
 import sizeConfig from '@/lib/config/widget-sizes.json';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, MoveLeft, MoveRight, Clock, Cloud, Image, CheckSquare, StickyNote, Quote, Calendar, Wind, Book, Timer } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { WidgetConfig } from '@/lib/types';
 
 export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId } = useWidgets();
 
-  const availableWidgets: { type: WidgetConfig['type']; label: string; icon: any }[] = [
-    { type: 'clock', label: 'Clock', icon: Clock },
-    { type: 'weather', label: 'Weather', icon: Cloud },
-    { type: 'gif', label: 'GIF', icon: Image },
-    { type: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { type: 'notes', label: 'Notes', icon: StickyNote },
-    { type: 'quote', label: 'Quote', icon: Quote },
-    { type: 'calendar', label: 'Calendar', icon: Calendar },
-    { type: 'breathing', label: 'Breathing', icon: Wind },
-    { type: 'dictionary', label: 'Dictionary', icon: Book },
-    { type: 'timer', label: 'Timer', icon: Timer },
+  const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string }[] = [
+    { type: 'clock', label: 'Clock', iconName: 'Clock' },
+    { type: 'worldtime', label: 'World Time', iconName: 'Clock' },
+    { type: 'weather', label: 'Weather', iconName: 'Cloud' },
+    { type: 'gif', label: 'GIF', iconName: 'Image' },
+    { type: 'tasks', label: 'Tasks', iconName: 'CheckSquare' },
+    { type: 'notes', label: 'Notes', iconName: 'StickyNote' },
+    { type: 'quote', label: 'Quote', iconName: 'Quote' },
+    { type: 'calendar', label: 'Calendar', iconName: 'Calendar' },
+    { type: 'breathing', label: 'Breathing', iconName: 'Wind' },
+    { type: 'dictionary', label: 'Dictionary', iconName: 'Book' },
+    { type: 'timer', label: 'Timer', iconName: 'Timer' },
   ];
 
   const rowsFor = (t: WidgetConfig['type']) => {
@@ -85,7 +86,7 @@ export default function WidgetManager() {
                 }`}
             >
               <span className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${span}`}</span>
-              <widget.icon className="w-8 h-8 mb-2" />
+              <AnimatedIcon name={widget.iconName} className="w-8 h-8 mb-2" />
               <span className="text-sm font-medium">{widget.label}</span>
               {isAdded && <span className="text-xs mt-1 opacity-60">Added</span>}
               {(!isAdded && atCapacity) && <span className="text-xs mt-1 opacity-60">Capacity reached</span>}
@@ -113,7 +114,7 @@ export default function WidgetManager() {
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <AnimatedIcon name="Trash2" className="w-4 h-4" />
                 </Button>
               </div>
             </div>

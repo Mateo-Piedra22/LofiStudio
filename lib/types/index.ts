@@ -62,7 +62,7 @@ export interface UserSettings {
 
 export interface WidgetConfig {
   id: string;
-  type: 'clock' | 'weather' | 'gif' | 'tasks' | 'timer' | 'notes' | 'quote' | 'calendar' | 'breathing' | 'dictionary';
+  type: 'clock' | 'worldtime' | 'weather' | 'gif' | 'tasks' | 'timer' | 'notes' | 'quote' | 'calendar' | 'breathing' | 'dictionary';
   layout: {
     x: number;
     y: number;

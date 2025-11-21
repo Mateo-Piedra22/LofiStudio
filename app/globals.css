@@ -58,11 +58,34 @@
   * {
     @apply border-border;
   }
+}
 
+[data-hide-headers='true'] [data-ui='widget'] .card-header {
+  display: none;
+}
+
+[data-hide-headers='true'] [data-ui='widget'] .card-header + * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+}
+
+@layer base {
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Lottie centering and sizing */
+lottie-player {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  width: 1em;
+  height: 1em;
 }
 
 /* Adaptive Glass Effect */

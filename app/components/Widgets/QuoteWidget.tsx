@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Quote, RefreshCw, Languages } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import quotesData from '@/lib/config/quotes.json';
 import tagMapJson from '@/lib/config/quote-tags.json';
@@ -21,8 +21,15 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
   const [language, setLanguage] = useLocalStorage<Language>('quoteLanguage', 'en');
   const [quote, setQuote] = useState(QUOTES_BY_CATEGORY[language][currentCategory]?.[0] || QUOTES_BY_CATEGORY['en']['motivation'][0]);
   const [loading, setLoading] = useState(false);
+  const [source, setSource] = useState<'api' | 'local'>('local');
 
   const tagMap: Record<string, string> = (tagMapJson as any).tags;
+
+  const getLocalFallback = (lang: Language, cat: string) => {
+    const list = QUOTES_BY_CATEGORY[lang]?.[cat] || QUOTES_BY_CATEGORY['en']?.['motivation'] || []
+    if (list.length === 0) return { text: 'Keep going.', author: 'Unknown' }
+    return list[Math.floor(Math.random() * list.length)]
+  }
 
   const fetchQuote = async (cat: string) => {
     try {
@@ -31,13 +38,14 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
       const data = await res.json();
       if (data && data.text && data.author) {
         setQuote({ text: data.text, author: data.author });
+        setSource(data.source === 'api' ? 'api' : 'local');
       } else {
-        const fallback = QUOTES_BY_CATEGORY['en']['motivation'][0];
-        setQuote(fallback);
+        setQuote(getLocalFallback(language, cat));
+        setSource('local');
       }
     } catch (e) {
-      const fallback = QUOTES_BY_CATEGORY['en']['motivation'][0];
-      setQuote(fallback);
+      setQuote(getLocalFallback(language, cat));
+      setSource('local');
     } finally {
       setLoading(false);
     }
@@ -45,7 +53,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
 
   useEffect(() => {
     fetchQuote(currentCategory);
-  }, [currentCategory]);
+  }, [currentCategory, language]);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'es' : 'en');
@@ -53,13 +61,16 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader>
+      <CardHeader className="pt-4 pb-3">
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-            <Quote className="w-5 h-5" />
+            <AnimatedIcon name="Quote" className="w-5 h-5" />
             {language === 'en' ? 'Daily Quote' : 'Cita Diaria'}
           </span>
           <div className="flex items-center gap-2 flex-wrap justify-end">
+            <span className={`px-2 py-1 rounded-full text-[10px] ${source === 'api' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}`}>
+              {source === 'api' ? (language === 'en' ? 'Online' : 'En línea') : (language === 'en' ? 'Local' : 'Local')}
+            </span>
             {(Object.keys(QUOTES_BY_CATEGORY['en'])).map((cat) => (
               <button
                 key={cat}
@@ -88,14 +99,14 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
               className="h-8 w-8 hover:bg-accent/10"
               title="New Quote"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <AnimatedIcon name="RefreshCw" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col justify-center space-y-3 -mt-0.5">
-          <p className="text-foreground text-lg leading-relaxed italic">"{quote.text}"</p>
+        <div className="flex-1 flex flex-col justify-center space-y-2 -mt-[5px] overflow-hidden">
+          <p className="text-foreground text-lg leading-snug italic line-clamp-4">"{quote.text}"</p>
           <p className="text-muted-foreground text-sm text-right">— {quote.author}</p>
         </div>
       </CardContent>

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Providers from './components/Providers';
+import Script from 'next/script';
 import ConsentAnalytics from './components/Privacy/ConsentAnalytics';
 import CookieConsent from './components/Privacy/CookieConsent';
 
@@ -39,6 +40,7 @@ export default function RootLayout({
           <Providers>
             <div className="noise-overlay" />
             {children}
+            <Script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" strategy="beforeInteractive" />
             <ConsentAnalytics />
             <CookieConsent />
           </Providers>

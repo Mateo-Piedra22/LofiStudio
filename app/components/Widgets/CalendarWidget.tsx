@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CalendarIcon, ChevronLeft, ChevronRight, Edit2, Check, X } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { useTaskManager } from '@/lib/hooks/useTaskManager';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
@@ -197,7 +197,7 @@ export default function CalendarWidget() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5" />
+            <AnimatedIcon name="Calendar" className="w-5 h-5" />
             Calendar
           </span>
           <div className="flex items-center gap-1">
@@ -206,7 +206,7 @@ export default function CalendarWidget() {
               className="p-1 hover:bg-accent rounded transition-colors"
               aria-label="Previous month"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <AnimatedIcon name="ChevronLeft" className="w-4 h-4" />
             </button>
             <span className="text-sm font-normal mx-2 min-w-[100px] text-center">
               {format(currentDate, 'MMMM yyyy')}
@@ -216,7 +216,7 @@ export default function CalendarWidget() {
               className="p-1 hover:bg-accent rounded transition-colors"
               aria-label="Next month"
             >
-              <ChevronRight className="w-4 h-4" />
+              <AnimatedIcon name="ChevronRight" className="w-4 h-4" />
             </button>
           </div>
         </CardTitle>
@@ -266,7 +266,7 @@ export default function CalendarWidget() {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span className="text-foreground">Tasks for {selectedDay ? format(selectedDay, 'PPP') : ''}</span>
-              <Button onClick={closeDay} variant="ghost" size="icon"><X className="w-4 h-4" /></Button>
+              <Button onClick={closeDay} variant="ghost" size="icon"><AnimatedIcon name="X" className="w-4 h-4" /></Button>
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -294,8 +294,8 @@ export default function CalendarWidget() {
                               <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={2} />
                               <div className="flex items-center gap-2">
                                 <Input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)} className="w-32" />
-                                <Button size="sm" onClick={() => saveEdit(t.id)}><Check className="w-4 h-4 mr-2" />Save</Button>
-                                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="w-4 h-4 mr-2" />Cancel</Button>
+                                <Button size="sm" onClick={() => saveEdit(t.id)}><AnimatedIcon name="Check" className="w-4 h-4 mr-2" />Save</Button>
+                                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><AnimatedIcon name="X" className="w-4 h-4 mr-2" />Cancel</Button>
                               </div>
                             </div>
                           ) : (
@@ -304,7 +304,7 @@ export default function CalendarWidget() {
                                 <h4 className="text-sm font-medium text-foreground">{t.title}</h4>
                                 <div className="flex items-center gap-2">
                                   {t.color && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color as string }} />}
-                                  <Button size="sm" variant="ghost" onClick={() => startEdit(t)}><Edit2 className="w-4 h-4" /></Button>
+                                  <Button size="sm" variant="ghost" onClick={() => startEdit(t)}><AnimatedIcon name="Edit2" className="w-4 h-4" /></Button>
                                 </div>
                               </div>
                               {t.description && <p className="text-xs text-muted-foreground mt-1">{t.description}</p>}
@@ -332,8 +332,8 @@ export default function CalendarWidget() {
                           <Input value={eventEditTitle} onChange={(ev) => setEventEditTitle(ev.target.value)} />
                           <div className="flex items-center gap-2">
                             <Input type="time" value={eventEditTime} onChange={(ev) => setEventEditTime(ev.target.value)} className="w-32" />
-                            <Button size="sm" onClick={() => saveEditEvent(e.id)}><Check className="w-4 h-4 mr-2" />Save</Button>
-                            <Button size="sm" variant="outline" onClick={() => setEventEditingId(null)}><X className="w-4 h-4 mr-2" />Cancel</Button>
+                            <Button size="sm" onClick={() => saveEditEvent(e.id)}><AnimatedIcon name="Check" className="w-4 h-4 mr-2" />Save</Button>
+                            <Button size="sm" variant="outline" onClick={() => setEventEditingId(null)}><AnimatedIcon name="X" className="w-4 h-4 mr-2" />Cancel</Button>
                           </div>
                         </div>
                       ) : (
@@ -343,8 +343,8 @@ export default function CalendarWidget() {
                             {e.start && <p className="text-xs text-muted-foreground mt-1">{format(new Date(e.start), 'p')}</p>}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button size="sm" variant="ghost" onClick={() => startEditEvent(e)}><Edit2 className="w-4 h-4" /></Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteEvent(e.id)}><X className="w-4 h-4" /></Button>
+                            <Button size="sm" variant="ghost" onClick={() => startEditEvent(e)}><AnimatedIcon name="Edit2" className="w-4 h-4" /></Button>
+                            <Button size="sm" variant="destructive" onClick={() => deleteEvent(e.id)}><AnimatedIcon name="X" className="w-4 h-4" /></Button>
                           </div>
                         </div>
                       )}
@@ -354,7 +354,7 @@ export default function CalendarWidget() {
                     <div className="flex items-center gap-2">
                       <Input placeholder="New event" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} />
                       <Input type="time" value={newEventTime} onChange={(e) => setNewEventTime(e.target.value)} className="w-32" />
-                      <Button size="sm" onClick={createEvent}><Check className="w-4 h-4 mr-2" />Create</Button>
+                      <Button size="sm" onClick={createEvent}><AnimatedIcon name="Check" className="w-4 h-4 mr-2" />Create</Button>
                     </div>
                   </div>
                 </div>

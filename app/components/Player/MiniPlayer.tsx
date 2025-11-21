@@ -1,6 +1,6 @@
 'use client';
 
-import { Maximize2, Music } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 
 interface MiniPlayerProps {
   video: {
@@ -20,7 +20,7 @@ export default function MiniPlayer({ video, onExpand }: MiniPlayerProps) {
           className="w-12 h-9 sm:w-16 sm:h-12 object-cover rounded shadow-md" 
         />
         <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded">
-          <Music className="w-4 h-4 text-foreground animate-pulse" />
+          <AnimatedIcon name="Music" className="w-4 h-4 text-foreground animate-pulse" />
         </div>
       </div>
       <div className="flex-1 min-w-0">
@@ -33,7 +33,7 @@ export default function MiniPlayer({ video, onExpand }: MiniPlayerProps) {
         aria-label="Expand player"
         title="Expand Player"
       >
-        <Maximize2 className="w-5 h-5" />
+        <AnimatedIcon name="Maximize2" className="w-5 h-5" />
       </button>
     </div>
   );

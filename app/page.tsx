@@ -13,6 +13,7 @@ import Player from './components/Player';
 import PomodoroTimer from './components/Timer/PomodoroTimer';
 import WeatherWidget from './components/Widgets/WeatherWidget';
 import ClockWidget from './components/Widgets/ClockWidget';
+import WorldTimeWidget from './components/Widgets/WorldTimeWidget';
 import GifWidget from './components/Widgets/GifWidget';
 import TaskManager from './components/Tasks/TaskManager';
 import TaskLogs from './components/Tasks/TaskLogs';
@@ -33,7 +34,6 @@ import { SettingsIcon, Activity, BarChart3, X, Layout, Menu, Keyboard, EyeOff, E
 import { Button } from '@/components/ui/button';
 import type { VideoInfo } from './components/Player';
 import UserAuth from './components/UserAuth';
-import CookieConsent from './components/Privacy/CookieConsent';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { z } from 'zod';
@@ -54,6 +54,7 @@ export default function Home() {
   const canTopbarInteract = (!isEditingLayout || !isTopbarHidden) && !isZenMode;
   const { widgets, updateWidgetLayout, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
   const { data: session } = useSession();
+  const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
   const [googleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
   const grantedScopes = ((session as any)?.scope as string | undefined)?.split(' ') || [];
@@ -68,15 +69,15 @@ export default function Home() {
     if (googleCalendarEnabled) extra.push('https://www.googleapis.com/auth/calendar.events');
     if (googleTasksEnabled) extra.push('https://www.googleapis.com/auth/tasks');
     const scope = [...base, ...extra].join(' ');
-    signIn('google' as any, { redirect: true, callbackUrl: '/' } as any, {
+    signIn('google', { redirectTo: '/' }, {
       prompt: extra.length ? 'consent' : undefined,
-      access_type: extra.length ? 'offline' : undefined,
+      access_type: 'offline',
       include_granted_scopes: true,
       scope,
-    } as any);
+    });
   };
   const [currentBreakpoint, setCurrentBreakpoint] = useState<'lg' | 'md' | 'sm' | 'xs' | 'xxs'>('lg');
-  const tileW = 4;
+  const tileW = 1;
   const tileH = 1;
   const capacity = 9;
   const maxRows = 3;
@@ -97,6 +98,10 @@ export default function Home() {
   useEffect(() => {
     document.documentElement.style.setProperty('--glass-opacity', String(glassOpacity));
   }, [glassOpacity]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-hide-headers', showWidgetHeaders ? 'false' : 'true');
+  }, [showWidgetHeaders]);
 
   useEffect(() => {
     if (!currentVideo) {
@@ -432,7 +437,8 @@ export default function Home() {
     }
     if (currentBreakpoint !== 'lg') return;
     currentLayout.forEach((l: any) => {
-      const snappedCol = Math.max(0, Math.min(2, Math.floor(l.x / tileW)));
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
       const span = Math.max(1, Math.ceil((l.h / tileH)));
       const snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(l.y / tileH)));
       const targetX = snappedCol * tileW;
@@ -443,7 +449,8 @@ export default function Home() {
 
   const onItemChanged = (_layout: any[], _oldItem: any, newItem: any) => {
     const c = getConstraints();
-    const snappedCol = Math.max(0, Math.min(2, Math.round(newItem.x / tileW)));
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
     const span = Math.max(1, Math.ceil((newItem.h / tileH)));
     const attemptedRow = Math.floor(newItem.y / tileH);
     let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), attemptedRow));
@@ -463,7 +470,7 @@ export default function Home() {
     const colTotals = [0, 0, 0];
     constrained.forEach((it: any) => {
       if (it.i === draggedId) return;
-      const colIdx = Math.max(0, Math.min(2, Math.floor(it.x / tileW)));
+      const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
       const s = Math.max(1, Math.ceil((it.h / tileH)));
       colTotals[colIdx] += s;
     });
@@ -515,7 +522,8 @@ export default function Home() {
 
   const onDragging = (_layout: any[], _oldItem: any, newItem: any) => {
     const c = getConstraints();
-    const snappedCol = Math.max(0, Math.min(2, Math.round(newItem.x / tileW)));
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
     const span = Math.max(1, Math.ceil((newItem.h / tileH)));
     let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(newItem.y / tileH)));
     if (span === 3) snappedRow = 0;
@@ -531,7 +539,7 @@ export default function Home() {
     const colTotals = [0, 0, 0];
     _layout.forEach((it: any) => {
       if (it.i === newItem.i) return;
-      const colIdx = Math.max(0, Math.min(2, Math.floor(it.x / tileW)));
+      const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
       const s = Math.max(1, Math.ceil((it.h / tileH)));
       colTotals[colIdx] += s;
     });
@@ -545,7 +553,7 @@ export default function Home() {
       let bestRow = snappedRow;
       let bestDist = Infinity;
       const attemptedRow = Math.floor(newItem.y / tileH);
-      for (let cIdx = 0; cIdx <= 2; cIdx++) {
+      for (let cIdx = 0; cIdx <= maxColIdx; cIdx++) {
         if (colTotals[cIdx] + span > maxRows) continue;
         const candX = cIdx * tileW;
         for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
@@ -676,6 +684,9 @@ export default function Home() {
               <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowSettings(!showSettings); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Settings">
                 <SettingsIcon className="w-4 h-4" />
               </Button>
+              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowWidgetHeaders(!showWidgetHeaders); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title={showWidgetHeaders ? 'Hide Widget Titles' : 'Show Widget Titles'}>
+                {showWidgetHeaders ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </Button>
             </div>
             {needsReauth && (
               <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; handleReauth(); }} variant="secondary" size="sm" className="glass border h-8">
@@ -751,7 +762,7 @@ export default function Home() {
             className="layout"
             layouts={gridLayouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 }}
+            cols={{ lg: 3, md: 2, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
             rowHeight={rowHeight}
             maxRows={maxRows}
             isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
@@ -778,6 +789,7 @@ export default function Home() {
                 className="h-full"
               >
                 {widget.type === 'clock' && <ClockWidget />}
+                {widget.type === 'worldtime' && <WorldTimeWidget />}
                 {widget.type === 'weather' && (
                   <WeatherWidget compact={widget.layout.h <= tileH || currentBreakpoint === 'sm' || currentBreakpoint === 'xs' || currentBreakpoint === 'xxs'} />
                 )}
@@ -939,7 +951,7 @@ export default function Home() {
           </div>
         )}
 
-        <CookieConsent />
+        {/* CookieConsent is rendered globally in layout.tsx */}
 
         {!!session?.user && !isZenMode && !localStorage.getItem('privacyNoticeAccepted') && (
           <div className="fixed top-20 right-4 z-[50]">

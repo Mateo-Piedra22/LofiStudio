@@ -1,6 +1,6 @@
 'use client';
 
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -20,7 +20,11 @@ export default function Controls({ isPlaying, volume, onPlayPause, onVolumeChang
         className="rounded-full bg-primary hover:bg-primary/90 w-12 h-12"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
-        {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+        {isPlaying ? (
+          <AnimatedIcon name="Pause" className="w-6 h-6" />
+        ) : (
+          <AnimatedIcon name="Play" className="w-6 h-6 ml-0.5" />
+        )}
       </Button>
 
       <div className="flex items-center gap-2 flex-1 max-w-xs">
@@ -29,9 +33,9 @@ export default function Controls({ isPlaying, volume, onPlayPause, onVolumeChang
           className="text-foreground hover:text-primary transition-colors"
         >
           {volume === 0 ? (
-            <VolumeX className="w-5 h-5" />
+            <AnimatedIcon name="VolumeX" className="w-5 h-5" />
           ) : (
-            <Volume2 className="w-5 h-5" />
+            <AnimatedIcon name="Volume2" className="w-5 h-5" />
           )}
         </button>
         <input

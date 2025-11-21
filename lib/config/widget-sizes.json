@@ -7,6 +7,7 @@
   },
   "assignments": {
     "clock": "small",
+    "worldtime": "small",
     "weather": "small",
     "quote": "small",
     "timer": "medium",

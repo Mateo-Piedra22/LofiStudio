@@ -59,6 +59,7 @@ export function useWidgets() {
 
   const DEFAULT_SIZE: Record<WidgetConfig['type'], { w: number; h: number }> = {
     clock: { w: tileW, h: tileH },
+    worldtime: { w: tileW, h: tileH },
     weather: { w: tileW, h: tileH },
     gif: { w: tileW, h: tileH },
     tasks: { w: tileW, h: tileH },

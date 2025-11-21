@@ -6,6 +6,8 @@ import { accounts } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    secret: process.env.AUTH_SECRET,
+    trustHost: true,
     ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : { session: { strategy: 'jwt' as const } }),
     providers: [
         Google({
@@ -13,6 +15,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 params: {
                     scope: 'openid email profile',
                     include_granted_scopes: true,
+                    access_type: 'offline',
                 }
             }
         }),

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cloud, CloudRain, Sun, Wind, Droplets, MapPin, RefreshCw, Snowflake, CloudFog, Zap } from 'lucide-react';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 interface WeatherData {
@@ -24,6 +24,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
   const [inputCity, setInputCity] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{ name: string; admin1?: string; admin2?: string; country?: string; country_code?: string; postcodes?: string[]; lat: number; lon: number }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
 
   const fetchWeather = async (cityName?: string, coords?: { lat: number; lon: number }) => {
     setLoading(true);
@@ -109,12 +110,12 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
 
   const getWeatherIcon = (icon: string) => {
     const size = compact ? 'w-6 h-6' : 'w-10 h-10';
-    if (icon === 'rain' || icon.includes('rain')) return <CloudRain className={`${size} text-blue-400 motion-safe:animate-pulse`} />;
-    if (icon === 'cloud' || icon.includes('cloud')) return <Cloud className={`${size} text-gray-400`} />;
-    if (icon === 'snow') return <Snowflake className={`${size} text-cyan-200 motion-safe:animate-pulse`} />;
-    if (icon === 'fog') return <CloudFog className={`${size} text-gray-300`} />;
-    if (icon === 'storm') return <Zap className={`${size} text-yellow-300`} />;
-    return <Sun className={`${size} text-yellow-400 motion-safe:animate-pulse`} />;
+    if (icon === 'rain' || icon.includes('rain')) return <AnimatedIcon name="CloudRain" className={`${size} text-blue-400 motion-safe:animate-pulse`} />;
+    if (icon === 'cloud' || icon.includes('cloud')) return <AnimatedIcon name="Cloud" className={`${size} text-gray-400`} />;
+    if (icon === 'snow') return <AnimatedIcon name="Snowflake" className={`${size} text-cyan-200 motion-safe:animate-pulse`} />;
+    if (icon === 'fog') return <AnimatedIcon name="CloudFog" className={`${size} text-gray-300`} />;
+    if (icon === 'storm') return <AnimatedIcon name="Zap" className={`${size} text-yellow-300`} />;
+    return <AnimatedIcon name="Sun" className={`${size} text-yellow-400 motion-safe:animate-pulse`} />;
   };
 
   return (
@@ -122,39 +123,41 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
       <CardHeader className={compact ? 'pt-1 pb-1' : ''}>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
+            <AnimatedIcon name="MapPin" className="w-5 h-5" />
             Weather
           </span>
           <div className="flex items-center gap-2">
-            <div className="relative no-drag">
-              <form onSubmit={handleCitySubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputCity}
-                  onChange={(e) => setInputCity(e.target.value)}
-                  placeholder="Enter city..."
-                  className={`${compact ? 'w-[120px] md:w-[180px]' : 'w-[140px] md:w-[216px]'} px-3 py-1.5 rounded-lg bg-background/50 border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
-                />
-                <Button type="submit" size="sm" className="shrink-0 h-7 px-3">Set</Button>
-              </form>
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl max-h-56 overflow-y-auto">
-                  {suggestions.map((s, i) => {
-                    const cp = s.postcodes?.[0];
-                    const display = `${s.name}${s.admin1 ? ', ' + s.admin1 : ''}${s.admin2 ? ', ' + s.admin2 : ''}${s.country ? ', ' + s.country : ''}${cp ? ' (CP: ' + cp + ')' : ''}`;
-                    return (
-                      <button
-                        key={`${s.name}-${s.lat}-${s.lon}-${i}`}
-                        onClick={() => { setCity(display); setInputCity(''); setShowSuggestions(false); fetchWeather(display, { lat: s.lat, lon: s.lon }); }}
-                        className="w-full text-left px-3 py-2 hover:bg-accent/10 text-sm text-foreground border-b border-border last:border-0"
-                      >
-                        {display}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            {showSearchBar && (
+              <div className="relative no-drag">
+                <form onSubmit={handleCitySubmit} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={inputCity}
+                    onChange={(e) => setInputCity(e.target.value)}
+                    placeholder="Enter city..."
+                    className={`${compact ? 'w-[120px] md:w-[180px]' : 'w-[140px] md:w-[216px]'} px-3 py-1.5 rounded-lg bg-background/50 border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                  />
+                  <Button type="submit" size="sm" className="shrink-0 h-7 px-3">Set</Button>
+                </form>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl max-h-56 overflow-y-auto">
+                    {suggestions.map((s, i) => {
+                      const cp = s.postcodes?.[0];
+                      const display = `${s.name}${s.admin1 ? ', ' + s.admin1 : ''}${s.admin2 ? ', ' + s.admin2 : ''}${s.country ? ', ' + s.country : ''}${cp ? ' (CP: ' + cp + ')' : ''}`;
+                      return (
+                        <button
+                          key={`${s.name}-${s.lat}-${s.lon}-${i}`}
+                          onClick={() => { setCity(display); setInputCity(''); setShowSuggestions(false); setShowSearchBar(false); fetchWeather(display, { lat: s.lat, lon: s.lon }); }}
+                          className="w-full text-left px-3 py-2 hover:bg-accent/10 text-sm text-foreground border-b border-border last:border-0"
+                        >
+                          {display}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             <Button
               onClick={() => fetchWeather()}
               size="icon"
@@ -163,7 +166,16 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               className="h-8 w-8 hover:bg-accent/10"
               title="Refresh Weather"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <AnimatedIcon name="RefreshCw" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              onClick={() => setShowSearchBar((v) => !v)}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Search"
+            >
+              <AnimatedIcon name="Search" className="w-4 h-4" />
             </Button>
           </div>
         </CardTitle>
@@ -177,7 +189,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
                 <p className={`${compact ? 'text-2xl' : 'text-5xl md:text-6xl'} font-bold text-foreground leading-none tracking-tighter`}>{Math.round(weather.temp)}°</p>
                 <p className={`${compact ? 'text-xs' : 'text-lg'} text-muted-foreground capitalize font-medium`}>{weather.description}</p>
                 <p className="text-muted-foreground text-xs flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
+                  <AnimatedIcon name="MapPin" className="w-3 h-3" />
                   {weather.city}
                 </p>
               </div>
@@ -189,7 +201,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
             <div className={`grid grid-cols-2 gap-2 ${compact ? 'pt-2' : 'pt-3'} border-t border-border`}>
               <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <Droplets className="w-4 h-4 text-blue-400" />
+                  <AnimatedIcon name="Droplets" className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
@@ -198,7 +210,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               </div>
               <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-gray-500/20 rounded-lg">
-                  <Wind className="w-4 h-4 text-gray-400" />
+                  <AnimatedIcon name="Wind" className="w-4 h-4 text-gray-400" />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
@@ -210,7 +222,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
         ) : (
           <div className="flex-1 text-center py-8 px-4">
             <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
-              <MapPin className="w-8 h-8 text-muted-foreground" />
+              <AnimatedIcon name="MapPin" className="w-8 h-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground text-sm">Enter your city to see the local weather forecast</p>
           </div>
