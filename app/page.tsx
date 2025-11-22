@@ -64,17 +64,7 @@ export default function Home() {
   ];
   const needsReauth = requiredScopes.some(sc => !grantedScopes.includes(sc));
   const handleReauth = () => {
-    const base = ['openid','email','profile'];
-    const extra: string[] = [];
-    if (googleCalendarEnabled) extra.push('https://www.googleapis.com/auth/calendar.events');
-    if (googleTasksEnabled) extra.push('https://www.googleapis.com/auth/tasks');
-    const scope = [...base, ...extra].join(' ');
-    signIn('google', { redirectTo: '/' }, {
-      prompt: extra.length ? 'consent' : undefined,
-      access_type: 'offline',
-      include_granted_scopes: true,
-      scope,
-    });
+    signIn('google', { redirectTo: '/' })
   };
   const [currentBreakpoint, setCurrentBreakpoint] = useState<'lg' | 'md' | 'sm' | 'xs' | 'xxs'>('lg');
   const tileW = 1;

@@ -5,7 +5,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const url = searchParams.get('url')
     if (!url) return new Response('Missing url', { status: 400 })
-    const upstream = await fetch(url, { headers: { 'User-Agent': 'LofiStudio/1.0 (+https://lofi-studio-ma.vercel.app)' } })
+    const u = new URL(url)
+    const headers: Record<string,string> = { 'User-Agent': 'LofiStudio/1.0 (+https://lofi-studio-ma.vercel.app)' }
+    if (u.hostname.includes('pixabay.com')) headers['Referer'] = 'https://pixabay.com/'
+    const upstream = await fetch(url, { headers })
     if (!upstream.ok) {
       return new Response('Upstream error', { status: upstream.status })
     }

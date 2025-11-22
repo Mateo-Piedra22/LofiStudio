@@ -128,16 +128,7 @@ export default function UserAuth() {
     }
 
     const handleSignIn = () => {
-        const base = ['openid','email','profile']
-        const extra: string[] = []
-        if (googleCalendarEnabled) extra.push('https://www.googleapis.com/auth/calendar.events')
-        if (googleTasksEnabled) extra.push('https://www.googleapis.com/auth/tasks')
-        const scope = [...base, ...extra].join(' ')
-        const params = new URLSearchParams({ callbackUrl: '/', scope })
-        if (extra.length) params.set('prompt','consent')
-        params.set('access_type','offline')
-        params.set('include_granted_scopes','true')
-        window.location.href = `/api/auth/signin/google?${params.toString()}`
+        signIn('google', { redirectTo: '/' })
     }
 
     return (

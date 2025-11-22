@@ -29,6 +29,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         authorized: async ({ auth }) => {
             return !!auth
         },
+        async redirect() {
+            return '/'
+        },
         async jwt({ token, account }) {
             if (account) {
                 (token as any).scope = (account as any).scope
@@ -74,6 +77,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             return enhanced
         },
+    },
+    logger: {
+        debug: (...args: any[]) => { try { console.debug('[auth]', ...args) } catch {} },
+        warn: (...args: any[]) => { try { console.warn('[auth]', ...args) } catch {} },
+        error: (...args: any[]) => { try { console.error('[auth]', ...args) } catch {} },
     },
     events: {
         async signIn(message: any) { try { console.info('[auth] signIn event', JSON.stringify(message)) } catch {} },

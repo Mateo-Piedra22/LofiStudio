@@ -198,6 +198,11 @@ export function AnimatedIcon({ name, className }: { name: string, className?: st
     return () => { try { document.head.removeChild(s) } catch {} }
   }, [])
 
+  React.useEffect(() => {
+    const t = setTimeout(() => { if (!ready) setFailed(true) }, 2000)
+    return () => clearTimeout(t)
+  }, [ready])
+
   const ref = React.useRef<any>(null)
   React.useEffect(() => {
     const el = ref.current
