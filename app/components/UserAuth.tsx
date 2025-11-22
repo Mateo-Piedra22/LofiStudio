@@ -128,7 +128,10 @@ export default function UserAuth() {
     }
 
     const handleSignIn = () => {
-        signIn('google', { redirectTo: '/' })
+        const base = process.env.NEXT_PUBLIC_AUTH_BASE_URL || 'https://lofi-studio-ma.vercel.app'
+        const u = new URL('/api/auth/signin/google', base)
+        u.searchParams.set('redirectTo','/')
+        window.location.href = u.toString()
     }
 
     return (

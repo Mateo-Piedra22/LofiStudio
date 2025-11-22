@@ -183,51 +183,40 @@ const FALLBACK: Record<string, React.ComponentType<any>> = {
 
 export function AnimatedIcon({ name, className }: { name: string, className?: string }) {
   const [failed, setFailed] = React.useState(false)
-  const [ready, setReady] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
   const src = LOTTIE_MAP[name] ? `/api/lottie?name=${encodeURIComponent(name)}` : undefined
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.customElements?.get('lottie-player')) { setReady(true); return }
-    const s = document.createElement('script')
-    s.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js'
-    s.async = true
-    s.onload = () => { setReady(true) }
-    s.onerror = () => { setFailed(true) }
-    document.head.appendChild(s)
-    return () => { try { document.head.removeChild(s) } catch {} }
-  }, [])
-
-  React.useEffect(() => {
-    const t = setTimeout(() => { if (!ready) setFailed(true) }, 2000)
-    return () => clearTimeout(t)
-  }, [ready])
-
-  const ref = React.useRef<any>(null)
-  React.useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const onError = () => { setFailed(true); try { console.warn('[lottie] failed to render icon', name, src) } catch {} }
-    el.addEventListener('error', onError)
-    return () => el.removeEventListener('error', onError)
-  }, [src])
-
-  React.useEffect(() => {
-    let active = true
     if (!src) return
-    const ctl = new AbortController()
-    const timer = setTimeout(() => { try { ctl.abort() } catch {} }, 6000)
-    fetch(src, { signal: ctl.signal }).then(r => {
-      if (!active) return
-      if (!r.ok) { setFailed(true); try { console.warn('[lottie] fetch failed', name, src, r.status) } catch {} }
-    }).catch(() => { if (active) { setFailed(true); try { console.warn('[lottie] fetch error', name, src) } catch {} } })
-    return () => { active = false; clearTimeout(timer); ctl.abort() }
+    let disposed = false
+    const ensure = async () => {
+      try {
+        if (!(window as any).lottie) {
+          await new Promise<void>((resolve, reject) => {
+            const s = document.createElement('script')
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js'
+            s.async = true
+            s.onload = () => resolve()
+            s.onerror = () => reject(new Error('lottie script failed'))
+            document.head.appendChild(s)
+          })
+        }
+        const r = await fetch(src)
+        if (!r.ok) throw new Error('lottie json fetch failed')
+        const json = await r.json()
+        if (disposed) return
+        const anim = (window as any).lottie?.loadAnimation({ container: containerRef.current, renderer: 'svg', loop: true, autoplay: true, animationData: json })
+        return () => { try { anim?.destroy() } catch {} }
+      } catch {
+        setFailed(true)
+      }
+    }
+    const cleanup = ensure()
+    return () => { disposed = true; if (typeof cleanup === 'function') { try { (cleanup as any)() } catch {} } }
   }, [src])
 
-  if (ready && !failed && src) {
-    return (
-      <lottie-player ref={ref} src={src} background="transparent" speed="1" loop autoplay className={className} aria-hidden="true"></lottie-player>
-    )
+  if (!failed && src) {
+    return <div ref={containerRef} className={className} aria-hidden="true" />
   }
   const Comp = FALLBACK[name] || Cloud
   return <Comp className={className} />
