@@ -51,15 +51,24 @@ export default function AmbientMixer() {
                 audio.preload = 'auto';
                 audio.loop = true;
                 (audio as any).playsInline = true;
+                try { (audio as any).crossOrigin = 'anonymous' } catch {}
                 try {
                     const isExternal = /^https?:\/\//i.test(src);
-                    audio.src = isExternal ? `/api/audio/fetch?url=${encodeURIComponent(src)}` : src;
+                    const isFreesound = /freesound\.org/i.test(src);
+                    audio.src = isExternal ? (isFreesound ? src : `/api/audio/fetch?url=${encodeURIComponent(src)}`) : src;
                 } catch { audio.src = src; }
                 audio.volume = 0;
                 audio.load();
                 audio.addEventListener('canplay', () => {
                     const vol = volumesRef.current[sound.id] || 0;
                     if (vol > 0) {
+                        audio.volume = vol / 100;
+                        audio.play().catch(() => {});
+                    }
+                });
+                audio.addEventListener('canplaythrough', () => {
+                    const vol = volumesRef.current[sound.id] || 0;
+                    if (vol > 0 && audio.paused) {
                         audio.volume = vol / 100;
                         audio.play().catch(() => {});
                     }
