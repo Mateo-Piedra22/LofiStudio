@@ -66,9 +66,9 @@ export default function Home() {
   const handleReauth = () => {
     const base = process.env.NEXT_PUBLIC_AUTH_BASE_URL || 'https://lofi-studio-ma.vercel.app'
     const u = new URL('/api/auth/signin/google', base)
-    u.searchParams.set('redirectTo','/')
+    u.searchParams.set('callbackUrl','/')
     window.location.href = u.toString()
-  };
+  }; 
   const [currentBreakpoint, setCurrentBreakpoint] = useState<'lg' | 'md' | 'sm' | 'xs' | 'xxs'>('lg');
   const tileW = 1;
   const tileH = 1;

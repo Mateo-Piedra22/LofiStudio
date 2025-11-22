@@ -30,22 +30,7 @@ export default function AmbientMixer() {
     const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
     const volumesRef = useRef<Record<string, number>>({});
     const unlockedRef = useRef(false);
-    const FALLBACK_AUDIO: Record<string, string> = {
-        CloudRain: 'https://assets.mixkit.co/active_storage/sfx/2404/2404-preview.mp3',
-        CloudLightning: 'https://cdn.pixabay.com/download/audio/2023/01/25/audio_5dbf14d543.mp3?filename=thunder-and-rain-135472.mp3',
-        Wind: 'https://assets.mixkit.co/active_storage/sfx/2678/2678-preview.mp3',
-        Waves: 'https://assets.mixkit.co/active_storage/sfx/2405/2405-preview.mp3',
-        Droplets: 'https://assets.mixkit.co/active_storage/sfx/2398/2398-preview.mp3',
-        Bird: 'https://assets.mixkit.co/active_storage/sfx/1291/1291-preview.mp3',
-        Flame: 'https://assets.mixkit.co/active_storage/sfx/1258/1258-preview.mp3',
-        Train: 'https://assets.mixkit.co/active_storage/sfx/1253/1253-preview.mp3',
-        Trees: 'https://assets.mixkit.co/active_storage/sfx/2396/2396-preview.mp3',
-        Moon: 'https://cdn.pixabay.com/download/audio/2021/12/22/audio_48828b0dc2.mp3?filename=night-forest-ambient-113039.mp3',
-        Building: 'https://cdn.pixabay.com/download/audio/2022/10/24/audio_13935701cf.mp3?filename=city-night-ambience-124639.mp3',
-        Coffee: 'https://cdn.pixabay.com/download/audio/2021/12/13/audio_c8545935f9.mp3?filename=coffee-shop-ambience-111881.mp3',
-        Ship: 'https://cdn.pixabay.com/download/audio/2021/12/17/audio_0e109845a9.mp3?filename=seagulls-and-waves-112423.mp3',
-        Book: 'https://cdn.pixabay.com/download/audio/2021/09/28/audio_67a2bc1b17.mp3?filename=quiet-library-ambience-98907.mp3',
-    };
+    const FALLBACK_AUDIO: Record<string, string> = {};
 
     useEffect(() => {
         const initAll = async () => {
@@ -60,10 +45,7 @@ export default function AmbientMixer() {
                         if (d?.ok && d?.src) src = d.src as string;
                     } catch {}
                 }
-                if (!src) {
-                    const fb = FALLBACK_AUDIO[sound.iconName];
-                    if (fb) src = fb;
-                }
+                
                 if (!src) continue;
                 const audio = new Audio();
                 audio.preload = 'auto';

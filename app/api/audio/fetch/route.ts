@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const headers: Record<string,string> = { 'User-Agent': 'LofiStudio/1.0 (+https://lofi-studio-ma.vercel.app)' }
     if (u.hostname.includes('pixabay.com')) headers['Referer'] = 'https://pixabay.com/'
     if (u.hostname.includes('freesound.org')) {
-      const token = process.env.NEXT_PUBLIC_FREESOUND_TOKEN || process.env.FREESOUND_TOKEN || ''
+      const token = process.env.FREESOUND_TOKEN || ''
       if (token) headers['Authorization'] = `Token ${token}`
     }
     const upstream = await fetch(url, { headers })
