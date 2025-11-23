@@ -42,12 +42,12 @@ export default function NotesWidget() {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-start p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-start p-4`}>
         <textarea
           value={tempNotes}
           onChange={(e) => setTempNotes(e.target.value)}
           placeholder="Jot down your thoughts..."
-          className="w-full h-full min-h-[160px] px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+          className="w-full h-full min-h-0 px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           aria-label="Notes"
         />
       </div>

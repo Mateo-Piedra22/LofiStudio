@@ -80,7 +80,7 @@ export default function GifWidget() {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-start p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-start p-4`}>
         
         {/* GIF Display */}
         <div className="relative w-full h-full rounded-lg overflow-hidden bg-secondary/50 border border-border">

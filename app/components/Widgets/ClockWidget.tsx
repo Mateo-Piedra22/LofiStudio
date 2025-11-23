@@ -42,7 +42,7 @@ export default function ClockWidget() {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center overflow-hidden p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden p-4`}>
         <div className="text-center space-y-3">
           <p className="text-4xl md:text-5xl font-bold text-foreground font-mono tracking-tight leading-none">
             {format(time, timeFormat)}

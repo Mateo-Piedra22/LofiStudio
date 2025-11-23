@@ -70,7 +70,7 @@ export default function DictionaryWidget() {
                     <div className="flex items-center space-x-2" />
                 </div>
             ) : null}
-            <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex flex-col items-center justify-start gap-4 p-4`}>
+            <div data-slot="content" className={`flex-1 min-h-0 w-full flex flex-col items-center justify-start gap-4 p-4`}>
                 <form onSubmit={searchWord} className="flex gap-2">
                     <Input
                         value={query}
@@ -84,7 +84,7 @@ export default function DictionaryWidget() {
                     </Button>
                 </form>
 
-                <div className="flex-1 min-h-[100px] overflow-y-auto custom-scrollbar pr-1 w-full">
+                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 w-full">
                     {error && <p className="text-red-400 text-xs text-center mt-4">{error}</p>}
 
                     {data && (

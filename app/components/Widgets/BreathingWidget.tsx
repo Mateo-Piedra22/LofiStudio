@@ -95,7 +95,7 @@ export default function BreathingWidget() {
                     </div>
                 </div>
             ) : null}
-            <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center relative p-4`}>
+            <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-center relative p-4`}>
                 <div
                     onClick={() => setIsActive(!isActive)}
                     className="cursor-pointer relative flex items-center justify-center w-32 h-32"

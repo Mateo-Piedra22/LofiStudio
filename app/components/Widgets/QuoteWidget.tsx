@@ -109,7 +109,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-start p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-start p-4`}>
         <div className="w-full flex flex-col justify-center space-y-2 overflow-hidden">
           <p className="text-foreground text-lg leading-snug italic line-clamp-4 text-left">"{quote.text}"</p>
           <p className="text-muted-foreground text-sm text-right">— {quote.author}</p>

@@ -229,7 +229,7 @@ export default function CalendarWidget() {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-center p-4`}>
         <div className="grid grid-cols-7 gap-1">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
             <div key={day} className="text-center text-xs text-muted-foreground font-medium py-2">

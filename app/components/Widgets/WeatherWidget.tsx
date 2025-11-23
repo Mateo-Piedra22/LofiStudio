@@ -187,7 +187,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex ${compact ? 'p-2' : 'p-4'} items-center justify-start overflow-hidden`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex ${compact ? 'p-2' : 'p-4'} items-center justify-start overflow-hidden`}>
 
         {weather ? (
           <div className="w-full space-y-4 mt-0.5 animate-in fade-in slide-in-from-bottom-2">
