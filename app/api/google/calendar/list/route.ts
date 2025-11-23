@@ -7,7 +7,7 @@ export async function GET() {
   const session = await auth()
   if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
   const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
-  const required = 'https://www.googleapis.com/auth/calendar.events'
+  const required = 'https://www.googleapis.com/auth/calendar.readonly'
   if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
   const accessToken = (session as any)?.accessToken as string | undefined
   if (!accessToken) return new NextResponse('Missing access token', { status: 401 })

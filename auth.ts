@@ -25,7 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             checks: ['pkce', 'state'],
             authorization: {
                 params: {
-                    scope: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks',
+                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks',
                     include_granted_scopes: true,
                     access_type: 'offline',
                     prompt: 'consent',
