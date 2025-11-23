@@ -230,9 +230,9 @@ export default function CalendarWidget() {
         </div>
       ) : null}
       <div data-slot="content" className={`flex-1 min-h-0 w-full flex items-center justify-center p-4`}>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 w-full h-full auto-rows-[minmax(0,1fr)]">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-            <div key={day} className="text-center text-xs text-muted-foreground font-medium py-2">
+            <div key={day} className="flex items-center justify-center text-xs text-muted-foreground font-medium w-full h-full">
               {day}
             </div>
           ))}
@@ -240,7 +240,7 @@ export default function CalendarWidget() {
             <button
               key={day.toString()}
               onClick={() => openDay(day)}
-              className={`relative aspect-square flex items-center justify-center text-sm rounded-lg transition-all ${
+              className={`relative w-full h-full flex items-center justify-center text-sm rounded-lg transition-all ${
                 isToday(day)
                   ? 'bg-primary text-primary-foreground font-bold'
                 : isSameMonth(day, currentDate)
