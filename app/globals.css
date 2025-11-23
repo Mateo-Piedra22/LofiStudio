@@ -28,6 +28,7 @@
     --ring: 262.1 83.3% 57.8%;
     --radius: 1rem;
     --glass-opacity: 0.7;
+    --widget-glass-opacity: 0.7;
   }
 
   .dark {
@@ -51,6 +52,7 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
     --glass-opacity: 0.4;
+    --widget-glass-opacity: 0.4;
   }
 }
 
@@ -216,4 +218,45 @@ lottie-player {
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   opacity: 0.5;
+}
+/* Widget-scoped glass using widget opacity */
+[data-ui='widget'] .glass {
+  background-color: hsl(var(--background) / var(--widget-glass-opacity));
+  border-color: hsl(var(--border) / var(--widget-glass-opacity));
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 20px));
+}
+
+[data-ui='widget'] .glass-panel {
+  background-color: hsl(var(--background) / var(--widget-glass-opacity));
+  border-color: hsl(var(--border) / var(--widget-glass-opacity));
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 16px));
+}
+
+[data-ui='widget'] .glass-button {
+  background-color: hsl(var(--background) / calc(var(--widget-glass-opacity)));
+  border-color: hsl(var(--border) / calc(var(--widget-glass-opacity)));
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 12px));
+}
+
+.glass-widget {
+  background-color: hsl(var(--background) / var(--widget-glass-opacity));
+  border-color: hsl(var(--border) / var(--widget-glass-opacity));
+  border-width: 1px;
+  box-shadow: var(--tw-shadow);
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 20px));
+}
+
+.glass-panel-widget {
+  background-color: hsl(var(--background) / var(--widget-glass-opacity));
+  border-color: hsl(var(--border) / var(--widget-glass-opacity));
+  border-width: 1px;
+  box-shadow: var(--tw-shadow);
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 16px));
+}
+
+.glass-button-widget {
+  background-color: hsl(var(--background) / calc(var(--widget-glass-opacity)));
+  border-color: hsl(var(--border) / calc(var(--widget-glass-opacity)));
+  border-width: 1px;
+  backdrop-filter: blur(calc(var(--widget-glass-opacity) * 12px));
 }

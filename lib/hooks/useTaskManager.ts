@@ -9,9 +9,9 @@ export function useTaskManager() {
   const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', []);
   const [taskLogs, setTaskLogs] = useLocalStorage<TaskLog[]>('taskLogs', []);
   const { data: session } = useSession();
-  const [googleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
-  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
-  const [syncTaskToCalendarEnabled] = useLocalStorage('syncTaskToCalendarEnabled', true);
+  const [googleTasksEnabled] = useLocalStorage('googleTasksEnabled', false);
+  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
+  const [syncTaskToCalendarEnabled] = useLocalStorage('syncTaskToCalendarEnabled', false);
   const [googleTaskListId] = useLocalStorage('googleTaskListId', '');
   const [googleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
 
@@ -109,6 +109,33 @@ export function useTaskManager() {
             body: JSON.stringify({ listId: googleTaskListId || undefined, id: t.externalId, title: updates.title, notes: updates.description, dueAt: typeof updates.dueAt === 'number' ? updates.dueAt : undefined, completed: typeof updates.completed === 'boolean' ? updates.completed : undefined })
           });
         } else {
+          // Attempt to resolve existing remote task to avoid duplicates
+          const findRes = await fetch('/api/google/tasks');
+          if (findRes.ok) {
+            const findData = await findRes.json();
+            const remote: any[] = (findData.tasks || []);
+            const desiredTitle = (updates.title ?? t.title) || 'Task';
+            const desiredDue = typeof updates.dueAt === 'number' ? updates.dueAt : t.dueAt;
+            const match = remote.find((rt: any) => {
+              const titleMatch = (rt.title || '').trim() === desiredTitle.trim();
+              const dueMatch = typeof desiredDue === 'number' ? Math.abs(((rt.dueAt ?? 0) as number) - desiredDue) < 60_000 : true;
+              return titleMatch && dueMatch;
+            });
+            if (match) {
+              setTasks((prev: Task[]) => prev.map(x => x.id === id ? { ...x, externalSource: 'google', externalId: match.id } : x));
+              await fetch('/api/google/tasks', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listId: googleTaskListId || undefined, id: match.id, title: updates.title, notes: updates.description, dueAt: typeof updates.dueAt === 'number' ? updates.dueAt : undefined, completed: typeof updates.completed === 'boolean' ? updates.completed : undefined })
+              });
+              return;
+            }
+          }
+          // For pure status changes, prefer PATCH-only semantics and avoid creating duplicates
+          if (Object.keys(updates).length === 1 && typeof updates.completed === 'boolean') {
+            return;
+          }
+          // Otherwise, create the remote and persist externalId once available
           const res = await fetch('/api/google/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -180,6 +207,20 @@ export function useTaskManager() {
         if (!t) return;
         if (t.externalSource === 'google' && t.externalId) {
           await fetch('/api/google/tasks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listId: googleTaskListId || undefined, id: t.externalId, completed: true }) });
+        } else {
+          // Try resolve existing remote task first
+          const findRes = await fetch('/api/google/tasks');
+          if (findRes.ok) {
+            const findData = await findRes.json();
+            const remote: any[] = (findData.tasks || []);
+            const match = remote.find((rt: any) => (rt.title || '').trim() === (t.title || 'Task').trim());
+            if (match) {
+              setTasks((prev: Task[]) => prev.map(x => x.id === id ? { ...x, externalSource: 'google', externalId: match.id } : x));
+              await fetch('/api/google/tasks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listId: googleTaskListId || undefined, id: match.id, completed: true }) });
+              return;
+            }
+          }
+          // Avoid creating duplicates for status-only changes
         }
       } catch {}
     })();

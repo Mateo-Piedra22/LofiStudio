@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ export default function DictionaryWidget() {
     const [data, setData] = useState<WordData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
 
     const searchWord = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -59,13 +61,15 @@ export default function DictionaryWidget() {
 
     return (
         <Card className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-foreground text-sm">
-                    <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-4 h-4" />
-                    Dictionary
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col gap-4">
+            {showWidgetHeaders ? (
+                <CardHeader className="h-11 p-3">
+                    <CardTitle className="flex items-center justify-start gap-2 text-foreground text-sm">
+                        <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-4 h-4" />
+                        Dictionary
+                    </CardTitle>
+                </CardHeader>
+            ) : null}
+            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center gap-4`}>
                 <form onSubmit={searchWord} className="flex gap-2">
                     <Input
                         value={query}
@@ -78,7 +82,7 @@ export default function DictionaryWidget() {
                     </Button>
                 </form>
 
-                <div className="flex-1 min-h-[100px] overflow-y-auto custom-scrollbar pr-1">
+                <div className="flex-1 min-h-[100px] overflow-y-auto custom-scrollbar pr-1 w-full">
                     {error && <p className="text-red-400 text-xs text-center mt-4">{error}</p>}
 
                     {data && (

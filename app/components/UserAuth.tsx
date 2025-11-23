@@ -22,8 +22,8 @@ export default function UserAuth() {
     const { data: session } = useSession()
     const [showProfileModal, setShowProfileModal] = useState(false)
     const [showConsent, setShowConsent] = useState(false)
-    const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true)
-    const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', true)
+    const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false)
+    const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', false)
 
     useEffect(() => {
         if (session?.user) {
@@ -128,7 +128,7 @@ export default function UserAuth() {
     }
 
     const handleSignIn = () => {
-        signIn('google', { callbackUrl: '/' })
+        signIn('google', { callbackUrl: '/studio' })
     }
 
     return (

@@ -23,7 +23,7 @@ export default function KeyboardShortcutsHelp({ onClose }: KeyboardShortcutsHelp
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-200">
       <Card className="w-full max-w-2xl animate-in zoom-in-95 duration-200">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-foreground">

@@ -8,13 +8,15 @@ import { Input } from '@/components/ui/input';
 import ThemeSelector from './ThemeSelector';
 import { X, Download, Upload, Trash2, AlertCircle, Video, Box, Palette, Image, Repeat } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import FeedbackForm from '@/app/components/Settings/FeedbackForm';
+import ReviewExperience from '@/app/components/Settings/ReviewExperience';
 import { useWidgets } from '@/lib/hooks/useWidgets';
 import type { BackgroundConfig } from '@/app/components/Background';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import variants from '@/lib/config/background-variants.json';
 import loopsJson from '@/lib/config/background-loops.json';
+import { useSession, signIn } from 'next-auth/react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SettingsProps {
   theme: 'light' | 'dark' | 'auto';
@@ -34,8 +36,8 @@ export default function Settings({
   const [backgroundConfig, setBackgroundConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' });
   const defaultGlass = typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 0.4 : 0.7;
   const [glassOpacity, setGlassOpacity] = useLocalStorage('glassOpacity', defaultGlass);
-  const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
-  const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', true);
+  const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
+  const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', false);
   const [googleCalendarId, setGoogleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
   const [googleTaskListId, setGoogleTaskListId] = useLocalStorage('googleTaskListId', '');
   const [availableCalendars, setAvailableCalendars] = useState<any[]>([]);
@@ -48,9 +50,38 @@ export default function Settings({
   const LOOPS = (loopsJson as any).loops as Array<{ id: string; name: string }>;
   const roomTotal = ROOM_VARIANTS.length;
   const cafeTotal = CAFE_VARIANTS.length;
+  const { status } = useSession();
+  const { toast } = useToast();
+  const handleToggleCalendar = (v: boolean) => {
+    if (v) {
+      if (status !== 'authenticated') {
+        toast({ title: 'Inicia sesión para sincronizar con Google' });
+        signIn('google', { callbackUrl: '/studio' });
+        return;
+      }
+      setGoogleCalendarEnabled(true);
+      return;
+    }
+    setGoogleCalendarEnabled(false);
+  };
+  const handleToggleTasks = (v: boolean) => {
+    if (v) {
+      if (status !== 'authenticated') {
+        toast({ title: 'Inicia sesión para sincronizar con Google' });
+        signIn('google', { callbackUrl: '/studio' });
+        return;
+      }
+      setGoogleTasksEnabled(true);
+      return;
+    }
+    setGoogleTasksEnabled(false);
+  };
 
   const applyGlass = (v: number) => {
-    document.documentElement.style.setProperty('--glass-opacity', String(v));
+    const globalVal = Math.max(0.25, Math.min(1, v));
+    const widgetVal = Math.max(0, Math.min(1, v));
+    document.documentElement.style.setProperty('--glass-opacity', String(globalVal));
+    document.documentElement.style.setProperty('--widget-glass-opacity', String(widgetVal));
   };
 
   if (typeof window !== 'undefined') {
@@ -176,7 +207,7 @@ export default function Settings({
   const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm"
       onTouchStart={(e) => setTs(e.touches[0]?.clientY || 0)}
       onTouchMove={(e) => { if (ts == null) return; setDy((e.touches[0]?.clientY || 0) - ts); }}
       onTouchEnd={() => { if (dy > 80) onClose(); setTs(null); setDy(0); }}
@@ -361,7 +392,7 @@ export default function Settings({
                   <p className="text-sm text-foreground">Google Calendar</p>
                   <p className="text-xs text-muted-foreground">Sync tasks to calendar. Requires re-login with permissions.</p>
                 </div>
-                <Switch checked={googleCalendarEnabled} onCheckedChange={(v) => setGoogleCalendarEnabled(!!v)} />
+                <Switch checked={googleCalendarEnabled} onCheckedChange={(v) => handleToggleCalendar(!!v)} />
               </div>
               {googleCalendarEnabled && (
                 <div className="grid grid-cols-1 gap-2">
@@ -387,7 +418,7 @@ export default function Settings({
                   <p className="text-sm text-foreground">Google Tasks</p>
                   <p className="text-xs text-muted-foreground">Sync tasks with Google Tasks. Requires re-login.</p>
                 </div>
-                <Switch checked={googleTasksEnabled} onCheckedChange={(v) => setGoogleTasksEnabled(!!v)} />
+                <Switch checked={googleTasksEnabled} onCheckedChange={(v) => handleToggleTasks(!!v)} />
               </div>
               {googleTasksEnabled && (
                 <div className="grid grid-cols-1 gap-2">
@@ -485,10 +516,9 @@ export default function Settings({
 
           
 
-          {/* Feedback Section */}
           <div>
-            <h3 className="text-foreground font-semibold mb-3">Feedback</h3>
-            <FeedbackForm />
+            <h3 className="text-foreground font-semibold mb-3">Tu experiencia</h3>
+            <ReviewExperience />
           </div>
 
           {/* About */}

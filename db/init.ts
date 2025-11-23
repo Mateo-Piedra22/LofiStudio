@@ -57,4 +57,16 @@ export async function ensureSchema(sql: any) {
 
   await sql`CREATE INDEX IF NOT EXISTS account_user_idx ON "account"("userId")`;
   await sql`CREATE INDEX IF NOT EXISTS session_user_idx ON "session"("userId")`;
+
+  await sql`CREATE TABLE IF NOT EXISTS "reviews" (
+    "id" text PRIMARY KEY,
+    "userId" text NOT NULL,
+    "userName" text NOT NULL,
+    "userImage" text,
+    "rating" integer NOT NULL CHECK ("rating" >= 1 AND "rating" <= 5),
+    "comment" text,
+    "created_at" timestamp DEFAULT now(),
+    FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE
+  )`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS reviews_user_unique ON "reviews"("userId")`;
 }

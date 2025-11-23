@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
@@ -13,6 +14,7 @@ export default function GifWidget() {
   const [gif, setGif] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<string>((categories[0]?.id) || 'lofi');
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const tagFor = (id: string) => {
     const cat = categories.find(c => c.id === id);
     const tags = cat?.tags || [id];
@@ -43,43 +45,45 @@ export default function GifWidget() {
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader className="pt-2 pb-2">
-        <CardTitle className="flex items-center justify-between text-foreground">
-          <span className="flex items-center gap-2">
-            <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
-            Mood GIF
-          </span>
-          <div className="flex items-center gap-2 justify-end overflow-x-auto whitespace-nowrap no-scrollbar">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 ${
-                  category === cat.id
-                    ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                    : 'bg-accent/10 text-muted-foreground hover:bg-accent/20 hover:text-foreground'
-                }`}
+      {showWidgetHeaders ? (
+        <CardHeader className="h-11 p-3">
+          <CardTitle className="flex items-center justify-start text-foreground">
+            <span className="flex items-center gap-2">
+              <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
+              Mood GIF
+            </span>
+            <div className="ml-auto flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id)}
+                  className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 ${
+                    category === cat.id
+                      ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                      : 'bg-accent/10 text-muted-foreground hover:bg-accent/20 hover:text-foreground'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+              <Button
+                onClick={() => fetchGif(category)}
+                size="icon"
+                variant="ghost"
+                disabled={loading}
+                className="h-8 w-8 hover:bg-accent/10"
+                title="Get New GIF"
               >
-                {cat.label}
-              </button>
-            ))}
-            <Button
-              onClick={() => fetchGif(category)}
-              size="icon"
-              variant="ghost"
-              disabled={loading}
-              className="h-8 w-8 hover:bg-accent/10"
-              title="Get New GIF"
-            >
-              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 min-h-0 flex flex-col space-y-2">
+                <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+      ) : null}
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} min-h-0 flex items-center justify-center`}>
 
         {/* GIF Display */}
-        <div className="relative flex-1 min-h-0 rounded-lg overflow-hidden bg-secondary/50 border border-border">
+        <div className="relative w-full h-full rounded-lg overflow-hidden bg-secondary/50 border border-border">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-accent/20 backdrop-blur-sm z-10">
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className="w-8 h-8 text-foreground animate-spin" />

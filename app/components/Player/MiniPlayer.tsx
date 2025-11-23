@@ -13,7 +13,7 @@ interface MiniPlayerProps {
 
 export default function MiniPlayer({ video, onExpand }: MiniPlayerProps) {
   return (
-    <div className="glass p-3 sm:p-4 flex items-center gap-3 shadow-lg">
+    <div className="glass-widget p-3 sm:p-4 flex items-center gap-3 shadow-lg">
       <div className="relative flex-shrink-0">
         <img 
           src={video.thumbnail || "/placeholder.svg"} 

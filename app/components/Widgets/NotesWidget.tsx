@@ -11,6 +11,7 @@ export default function NotesWidget() {
   const [notes, setNotes] = useLocalStorage('quickNotes', '');
   const [tempNotes, setTempNotes] = useState(notes);
   const [saved, setSaved] = useState(false);
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
 
   const handleSave = () => {
     setNotes(tempNotes);
@@ -20,25 +21,27 @@ export default function NotesWidget() {
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between text-foreground">
-          <span className="flex items-center gap-2">
-            <AnimatedIcon animationSrc="/lottie/FileText.json" fallbackIcon={FileText} className="w-5 h-5" />
-            Quick Notes
-          </span>
-          <Button
-            onClick={handleSave}
-            size="sm"
-            variant="ghost"
-            className="h-8 hover:bg-accent/10"
-            disabled={saved}
-          >
-            <AnimatedIcon animationSrc="/lottie/Save.json" fallbackIcon={Save} className="w-4 h-4 mr-1" />
-            {saved ? 'Saved!' : 'Save'}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
+      {showWidgetHeaders ? (
+        <CardHeader className="h-11 p-3">
+          <CardTitle className="flex items-center justify-start text-foreground">
+            <span className="flex items-center gap-2">
+              <AnimatedIcon animationSrc="/lottie/FileText.json" fallbackIcon={FileText} className="w-5 h-5" />
+              Quick Notes
+            </span>
+            <Button
+              onClick={handleSave}
+              size="sm"
+              variant="ghost"
+              className="ml-auto h-8 hover:bg-accent/10"
+              disabled={saved}
+            >
+              <AnimatedIcon animationSrc="/lottie/Save.json" fallbackIcon={Save} className="w-4 h-4 mr-1" />
+              {saved ? 'Saved!' : 'Save'}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+      ) : null}
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex items-center justify-center`}>
         <textarea
           value={tempNotes}
           onChange={(e) => setTempNotes(e.target.value)}

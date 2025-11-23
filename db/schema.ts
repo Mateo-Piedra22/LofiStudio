@@ -5,6 +5,7 @@ import {
     boolean,
     integer,
     primaryKey,
+    uniqueIndex,
 } from "drizzle-orm/pg-core"
 import type { AdapterAccount } from "next-auth/adapters"
 
@@ -80,10 +81,26 @@ export const settings = pgTable("settings", {
     preferences: text("preferences"), // JSON string for widgets, background, etc.
 })
 
-export const feedback = pgTable("feedback", {
-    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-    userId: text("userId").references(() => users.id, { onDelete: "set null" }),
-    rating: integer("rating").notNull(),
-    message: text("message").notNull(),
-    createdAt: timestamp("created_at").defaultNow(),
-})
+// export const feedback = pgTable("feedback", {
+//     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+//     userId: text("userId").references(() => users.id, { onDelete: "set null" }),
+//     rating: integer("rating").notNull(),
+//     message: text("message").notNull(),
+//     createdAt: timestamp("created_at").defaultNow(),
+// })
+
+export const reviews = pgTable(
+    "reviews",
+    {
+        id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+        userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+        userName: text("userName").notNull(),
+        userImage: text("userImage"),
+        rating: integer("rating").notNull(),
+        comment: text("comment"),
+        createdAt: timestamp("created_at").defaultNow(),
+    },
+    (t) => ({
+        userUnique: uniqueIndex("reviews_user_unique").on(t.userId),
+    })
+)

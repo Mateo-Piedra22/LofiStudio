@@ -22,7 +22,7 @@ export default function CalendarWidget() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editTime, setEditTime] = useState('');
-  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', true);
+  const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
   const [googleCalendarId] = useLocalStorage('googleCalendarId', 'primary');
   const { data: session } = useSession();
   const [eventsByDay, setEventsByDay] = useState<Map<string, any[]>>(new Map());
@@ -31,7 +31,8 @@ export default function CalendarWidget() {
   const [eventEditingId, setEventEditingId] = useState<string | null>(null);
   const [eventEditTitle, setEventEditTitle] = useState('');
   const [eventEditTime, setEventEditTime] = useState('');
-  const [syncTaskToCalendarEnabled, setSyncTaskToCalendarEnabled] = useLocalStorage('syncTaskToCalendarEnabled', true);
+  const [syncTaskToCalendarEnabled, setSyncTaskToCalendarEnabled] = useLocalStorage('syncTaskToCalendarEnabled', false);
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -127,6 +128,8 @@ export default function CalendarWidget() {
 
   const createEvent = async () => {
     if (!selectedDay || !newEventTitle) return;
+    const hasScope = (((session as any)?.scope as string | undefined)?.split(' ') || []).includes('https://www.googleapis.com/auth/calendar.events');
+    if (!googleCalendarEnabled || !hasScope) return;
     const [h, m] = (newEventTime || '00:00').split(':').map(Number);
     const start = new Date(selectedDay);
     start.setHours(h || 0, m || 0, 0, 0);
@@ -199,34 +202,36 @@ export default function CalendarWidget() {
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between text-foreground">
-          <span className="flex items-center gap-2">
-            <AnimatedIcon animationSrc="/lottie/Calendar.json" fallbackIcon={CalendarIcon} className="w-5 h-5" />
-            Calendar
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={goToPreviousMonth}
-              className="p-1 hover:bg-accent rounded transition-colors"
-              aria-label="Previous month"
-            >
-              <AnimatedIcon animationSrc="/lottie/ChevronLeft.json" fallbackIcon={ChevronLeft} className="w-4 h-4" />
-            </button>
-            <span className="text-sm font-normal mx-2 min-w-[100px] text-center">
-              {format(currentDate, 'MMMM yyyy')}
+      {showWidgetHeaders ? (
+        <CardHeader className="h-11 p-3">
+          <CardTitle className="flex items-center justify-start text-foreground">
+            <span className="flex items-center gap-2">
+              <AnimatedIcon animationSrc="/lottie/Calendar.json" fallbackIcon={CalendarIcon} className="w-5 h-5" />
+              Calendar
             </span>
-            <button
-              onClick={goToNextMonth}
-              className="p-1 hover:bg-accent rounded transition-colors"
-              aria-label="Next month"
-            >
-              <AnimatedIcon animationSrc="/lottie/ChevronRight.json" fallbackIcon={ChevronRight} className="w-4 h-4" />
-            </button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1">
+            <div className="ml-auto flex items-center gap-1">
+              <button
+                onClick={goToPreviousMonth}
+                className="p-1 hover:bg-accent rounded transition-colors"
+                aria-label="Previous month"
+              >
+                <AnimatedIcon animationSrc="/lottie/ChevronLeft.json" fallbackIcon={ChevronLeft} className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-normal mx-2 min-w-[100px] text-center">
+                {format(currentDate, 'MMMM yyyy')}
+              </span>
+              <button
+                onClick={goToNextMonth}
+                className="p-1 hover:bg-accent rounded transition-colors"
+                aria-label="Next month"
+              >
+                <AnimatedIcon animationSrc="/lottie/ChevronRight.json" fallbackIcon={ChevronRight} className="w-4 h-4" />
+              </button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+      ) : null}
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex items-center justify-center`}>
         <div className="grid grid-cols-7 gap-1">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
             <div key={day} className="text-center text-xs text-muted-foreground font-medium py-2">
@@ -275,10 +280,16 @@ export default function CalendarWidget() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs text-muted-foreground">Sync tasks with Google Calendar</span>
-              <Checkbox checked={!!syncTaskToCalendarEnabled} onCheckedChange={(v) => setSyncTaskToCalendarEnabled(!!v)} />
-            </div>
+            {(() => {
+              const hasScope = (((session as any)?.scope as string | undefined)?.split(' ') || []).includes('https://www.googleapis.com/auth/calendar.events')
+              if (!googleCalendarEnabled || !hasScope) return null
+              return (
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs text-muted-foreground">Sync tasks with Google Calendar</span>
+                  <Checkbox checked={!!syncTaskToCalendarEnabled} onCheckedChange={(v) => setSyncTaskToCalendarEnabled(!!v)} />
+                </div>
+              )
+            })()}
             {(() => {
               const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : ''
               const list = (key && tasksByDay.get(key)) || []
@@ -324,6 +335,8 @@ export default function CalendarWidget() {
               )
             })()}
             {(() => {
+              const hasScope = (((session as any)?.scope as string | undefined)?.split(' ') || []).includes('https://www.googleapis.com/auth/calendar.events')
+              if (!googleCalendarEnabled || !hasScope) return null
               const key = selectedDay ? format(selectedDay, 'yyyy-MM-dd') : ''
               const ev = (key && eventsByDay.get(key)) || []
               const sortedEv = [...ev].sort((a: any, b: any) => ((a.start || 0) - (b.start || 0)))

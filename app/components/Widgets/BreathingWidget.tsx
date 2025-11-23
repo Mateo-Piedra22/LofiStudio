@@ -17,6 +17,7 @@ export default function BreathingWidget() {
     const [phase, setPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
     const [seconds, setSeconds] = useState(0);
     const [isActive, setIsActive] = useState(false);
+    const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
 
     useEffect(() => {
         if (!isActive) {
@@ -68,30 +69,32 @@ export default function BreathingWidget() {
 
     return (
         <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden relative">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between text-foreground text-sm">
-                    <span className="flex items-center gap-2">
-                        <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4" />
-                        Breathing
-                    </span>
-                    <select
-                        value={pattern}
-                        onChange={(e) => {
-                            setPattern(e.target.value as any);
-                            setIsActive(false);
-                        }}
-                        className="bg-accent/20 border border-border text-foreground text-xs rounded px-2 py-1 focus:ring-0 cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {Object.entries(BREATHING_PATTERNS).map(([key, val]) => (
-                            <option key={key} value={key} className="bg-background text-foreground">
-                                {val.label}
-                            </option>
-                        ))}
-                    </select>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col items-center justify-center min-h-[160px] relative">
+            {showWidgetHeaders ? (
+                <CardHeader className="h-11 p-3">
+                    <CardTitle className="flex items-center justify-start text-foreground text-sm">
+                        <span className="flex items-center gap-2">
+                            <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4" />
+                            Breathing
+                        </span>
+                        <select
+                            value={pattern}
+                            onChange={(e) => {
+                                setPattern(e.target.value as any);
+                                setIsActive(false);
+                            }}
+                            className="ml-auto bg-accent/20 border border-border text-foreground text-xs rounded px-2 py-1 focus:ring-0 cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {Object.entries(BREATHING_PATTERNS).map(([key, val]) => (
+                                <option key={key} value={key} className="bg-background text-foreground">
+                                    {val.label}
+                                </option>
+                            ))}
+                        </select>
+                    </CardTitle>
+                </CardHeader>
+            ) : null}
+            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center min-h-[160px] relative`}>
                 {/* Animated Circle */}
                 <div
                     onClick={() => setIsActive(!isActive)}

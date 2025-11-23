@@ -38,7 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return !!auth
         },
         async redirect() {
-            return '/'
+            return '/studio'
         },
         async jwt({ token, account }) {
             if (account) {
