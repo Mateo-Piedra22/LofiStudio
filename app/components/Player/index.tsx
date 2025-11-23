@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Pause, Play, Music2, ChevronUp, ChevronDown, Search, Shuffle, Repeat, SkipBack, SkipForward, List, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -486,9 +487,9 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
           )}
         >
           {isPlaying ? (
-            <AnimatedIcon name="Pause" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" />
           ) : (
-            <AnimatedIcon name="Play" className="w-5 h-5 ml-0.5" />
+            <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />
           )}
         </button>
 
@@ -502,7 +503,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                 style={{ animationDuration: '6s' }}
               />
             ) : (
-              <AnimatedIcon name="Music2" className={`w-6 h-6 ${isPlaying ? 'animate-pulse' : ''}`} />
+              <AnimatedIcon animationSrc="/lottie/Music2.json" fallbackIcon={Music2} className={`w-6 h-6 ${isPlaying ? 'animate-pulse' : ''}`} />
             )}
             <div className="max-w-[180px]">
               <p className="text-xs font-medium text-foreground truncate">{radioStation.name}</p>
@@ -545,7 +546,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
           onClick={() => setIsExpanded(true)}
           className="ml-2 p-2 rounded-full hover:bg-accent/10 transition-colors"
         >
-          <AnimatedIcon name="ChevronUp" className="w-4 h-4 text-muted-foreground" />
+          <AnimatedIcon animationSrc="/lottie/ChevronUp.json" fallbackIcon={ChevronUp} className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
     </div>
@@ -563,7 +564,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
             onClick={() => setIsExpanded(false)}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <AnimatedIcon name="ChevronDown" className="w-4 h-4" />
+            <AnimatedIcon animationSrc="/lottie/ChevronDown.json" fallbackIcon={ChevronDown} className="w-4 h-4" />
           </button>
         </div>
 
@@ -600,7 +601,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                   <span className="text-xs text-muted-foreground">Show Video</span>
                   <Switch checked={showVideoBg} onCheckedChange={(v) => setShowVideoBg(!!v)} />
                   <Button onClick={() => setShowSearch(true)} variant="ghost" size="sm" className="gap-2">
-                    <AnimatedIcon name="Search" className="w-4 h-4" />
+                    <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
                     Search
                   </Button>
                 </div>
@@ -627,7 +628,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                     className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 pl-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { if (mode === 'radio') setSearchQuery(searchQuery.trim()); else handleImportLink(); } }}
                   />
-                  <AnimatedIcon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   {mode === 'youtube' && (() => {
                     const parsed = parseYouTubeUrl(searchQuery.trim());
                     if (!parsed) return null;
@@ -684,7 +685,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                           }}
                           className="w-full flex items-center gap-3 p-3 hover:bg-accent/10 transition-colors text-left border-b border-border last:border-0"
                         >
-                          {st.favicon ? <img src={st.favicon} alt="" className="w-10 h-10 rounded object-cover" /> : <AnimatedIcon name="Music2" className="w-4 h-4" />}
+                          {st.favicon ? <img src={st.favicon} alt="" className="w-10 h-10 rounded object-cover" /> : <AnimatedIcon animationSrc="/lottie/Music2.json" fallbackIcon={Music2} className="w-4 h-4" />}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground truncate">{st.name}</p>
                             <p className="text-[11px] text-muted-foreground truncate">{st.country}</p>
@@ -705,7 +706,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                   {radioStation.favicon ? (
                     <img src={radioStation.favicon} alt={radioStation.name} className="w-16 h-16 rounded-xl object-cover shadow-lg" />
                   ) : (
-                    <div className="w-16 h-16 rounded-xl bg-accent/20 flex items-center justify-center"><AnimatedIcon name="Music2" className="w-6 h-6" /></div>
+                    <div className="w-16 h-16 rounded-xl bg-accent/20 flex items-center justify-center"><AnimatedIcon animationSrc="/lottie/Music2.json" fallbackIcon={Music2} className="w-6 h-6" /></div>
                   )}
                   <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-ring" />
                 </div>
@@ -779,7 +780,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                      size="icon"
                      className={cn("h-8 w-8 rounded-full", shuffle ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
                    >
-                     <AnimatedIcon name="Shuffle" className="w-4 h-4" />
+                     <AnimatedIcon animationSrc="/lottie/Shuffle.json" fallbackIcon={Shuffle} className="w-4 h-4" />
                    </Button>
                    <Button
                      onClick={() => setRepeat(!repeat)}
@@ -787,23 +788,23 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                      size="icon"
                      className={cn("h-8 w-8 rounded-full", repeat ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
                    >
-                     <AnimatedIcon name="Repeat" className="w-4 h-4" />
+                     <AnimatedIcon animationSrc="/lottie/Repeat.json" fallbackIcon={Repeat} className="w-4 h-4" />
                    </Button>
                  </div>
                )}
 
               <div className="flex items-center gap-4">
                 <Button onClick={handlePrevious} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform">
-                  <AnimatedIcon name="SkipBack" className="w-5 h-5" />
+                  <AnimatedIcon animationSrc="/lottie/SkipBack.json" fallbackIcon={SkipBack} className="w-5 h-5" />
                 </Button>
                 <Button
                   onClick={handlePlayPause}
                   className="h-12 w-12 rounded-full bg-foreground text-background hover:bg-foreground/90 hover:scale-105 transition-all shadow-lg flex items-center justify-center"
                 >
-                  {isPlaying ? <AnimatedIcon name="Pause" className="w-5 h-5" /> : <AnimatedIcon name="Play" className="w-5 h-5 ml-0.5" />}
+                  {isPlaying ? <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" /> : <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />}
                 </Button>
                 <Button onClick={handleNext} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform">
-                  <AnimatedIcon name="SkipForward" className="w-5 h-5" />
+                  <AnimatedIcon animationSrc="/lottie/SkipForward.json" fallbackIcon={SkipForward} className="w-5 h-5" />
                 </Button>
               </div>
 
@@ -815,7 +816,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                      size="icon"
                      className={cn("h-8 w-8 rounded-full", showPlaylist ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
                    >
-                     <AnimatedIcon name="List" className="w-4 h-4" />
+                     <AnimatedIcon animationSrc="/lottie/List.json" fallbackIcon={List} className="w-4 h-4" />
                    </Button>
                  </div>
                )}
@@ -889,7 +890,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                         }}
                         className="opacity-0 group-hover:opacity-100 p-1 hover:text-destructive transition-all"
                       >
-                        <AnimatedIcon name="X" className="w-3 h-3" />
+                        <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-3 h-3" />
                       </button>
                     </button>
                   ))}

@@ -2,6 +2,7 @@
 
 import React, { ReactNode } from 'react';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { GripHorizontal, X } from 'lucide-react'
 import { cn } from '@/lib/utils';
 
 interface DraggableWidgetProps {
@@ -56,7 +57,7 @@ const DraggableWidget = React.forwardRef<HTMLDivElement, DraggableWidgetProps>((
             {isEditing && (
                 <>
                     <div className="widget-drag-handle absolute top-2 left-1/2 -translate-x-1/2 p-1 rounded-full bg-accent/20 text-foreground backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                        <AnimatedIcon name="GripHorizontal" className="w-4 h-4" />
+                        <AnimatedIcon animationSrc="/lottie/GripHorizontal.json" fallbackIcon={GripHorizontal} className="w-4 h-4" />
                     </div>
                     {onRemove && (
                         <button
@@ -66,7 +67,7 @@ const DraggableWidget = React.forwardRef<HTMLDivElement, DraggableWidgetProps>((
                             }}
                             className="absolute -top-2 -right-2 p-1.5 rounded-full bg-destructive text-destructive-foreground shadow-lg hover:bg-destructive/90 transition-colors z-50"
                         >
-                            <AnimatedIcon name="X" className="w-3 h-3" />
+                            <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-3 h-3" />
                         </button>
                     )}
                     <div className="absolute inset-0 z-10 pointer-events-none" />

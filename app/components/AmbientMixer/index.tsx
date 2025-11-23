@@ -5,128 +5,84 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
-import ambientSounds from '@/lib/config/ambient-sounds.json';
+import {
+  CloudRain,
+  CloudLightning,
+  Wind,
+  Snowflake,
+  Waves,
+  Droplets,
+  Trees,
+  Moon,
+  Bird,
+  Flame,
+  Coffee,
+  Book,
+  Building2,
+  Train,
+  Ship,
+  Volume2,
+  X,
+  Pause,
+  Play,
+} from 'lucide-react'
+import type React from 'react'
+import ambientList from '@/lib/config/ambient-sounds.json';
+import { Howl } from 'howler';
 
-const SOUNDS = ((ambientSounds as any).sounds as Array<{id:string;label:string;icon:string;url?:string;provider?:string;query?:string;category?:string}>).map(s => ({
-    id: s.id,
-    label: s.label,
-    iconName: s.icon,
-    url: s.url,
-    provider: (s as any).provider,
-    query: (s as any).query,
-    category: (s as any).category || 'General',
-}));
-const GROUPS: Record<string, typeof SOUNDS> = SOUNDS.reduce((acc: any, sound: any) => {
-    const k = sound.category || 'General';
+type AmbientItem = { id: string; name: string; icon: string; initialVolume: number; src: string; category: string };
+const SOUNDS: AmbientItem[] = ambientList as unknown as AmbientItem[];
+const GROUPS: Record<string, AmbientItem[]> = SOUNDS.reduce((acc, s) => {
+    const k = s.category || 'General';
     if (!acc[k]) acc[k] = [];
-    acc[k].push(sound);
+    acc[k].push(s);
     return acc;
-}, {} as Record<string, typeof SOUNDS>);
+}, {} as Record<string, AmbientItem[]>);
 
 export default function AmbientMixer() {
     const [isOpen, setIsOpen] = useState(false);
-    const [volumes, setVolumes] = useState<Record<string, number>>({});
-    const [isMuted, setIsMuted] = useState(false);
-    const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
-    const volumesRef = useRef<Record<string, number>>({});
-    const unlockedRef = useRef(false);
-    const FALLBACK_AUDIO: Record<string, string> = {};
+    const [volumes, setVolumes] = useState<Record<string, number>>(() => {
+        const m: Record<string, number> = {};
+        SOUNDS.forEach(s => { m[s.id] = s.initialVolume || 0 });
+        return m;
+    });
+    const [playing, setPlaying] = useState<Record<string, boolean>>(() => {
+        const m: Record<string, boolean> = {};
+        SOUNDS.forEach(s => { m[s.id] = false });
+        return m;
+    });
+    const howlRefs = useRef<Record<string, Howl>>({});
 
     useEffect(() => {
-        const initAll = async () => {
-            for (const sound of SOUNDS) {
-                if (audioRefs.current[sound.id]) continue;
-                let src = sound.url || '';
-                if (!src && sound.provider === 'freesound' && sound.query) {
-                    try {
-                        const u = `/api/freesound/search?${new URLSearchParams({ q: sound.query, min: '60' }).toString()}`;
-                        const r = await fetch(u);
-                        const d = await r.json();
-                        if (d?.ok && d?.src) src = d.src as string;
-                    } catch {}
-                }
-                
-                if (!src) continue;
-                const audio = new Audio();
-                audio.preload = 'auto';
-                audio.loop = true;
-                (audio as any).playsInline = true;
-                try { (audio as any).crossOrigin = 'anonymous' } catch {}
-                try {
-                    const isExternal = /^https?:\/\//i.test(src);
-                    const isFreesound = /freesound\.org/i.test(src);
-                    audio.src = isExternal ? (isFreesound ? src : `/api/audio/fetch?url=${encodeURIComponent(src)}`) : src;
-                } catch { audio.src = src; }
-                audio.volume = 0;
-                audio.load();
-                audio.addEventListener('canplay', () => {
-                    const vol = volumesRef.current[sound.id] || 0;
-                    if (vol > 0) {
-                        audio.volume = vol / 100;
-                        audio.play().catch(() => {});
-                    }
-                });
-                audio.addEventListener('canplaythrough', () => {
-                    const vol = volumesRef.current[sound.id] || 0;
-                    if (vol > 0 && audio.paused) {
-                        audio.volume = vol / 100;
-                        audio.play().catch(() => {});
-                    }
-                });
-                audioRefs.current[sound.id] = audio;
-            }
-        };
-        initAll();
-
-        const unlock = () => {
-            if (unlockedRef.current) return;
-            unlockedRef.current = true;
-            Object.values(audioRefs.current).forEach(a => {
-                try {
-                    a.muted = true;
-                    a.play().then(() => { a.pause(); a.muted = false; });
-                } catch {}
-            });
-        };
-        window.addEventListener('pointerdown', unlock, { once: true });
-        window.addEventListener('touchstart', unlock, { once: true });
-        window.addEventListener('keydown', unlock, { once: true });
-
+        SOUNDS.forEach(s => {
+            if (howlRefs.current[s.id]) return;
+            const h = new Howl({ src: [s.src], loop: true, preload: true, volume: 0 });
+            howlRefs.current[s.id] = h;
+        });
         return () => {
-            Object.values(audioRefs.current).forEach(audio => {
-                try { audio.pause(); } catch {}
-                audio.src = '';
-            });
-            window.removeEventListener('pointerdown', unlock);
-            window.removeEventListener('touchstart', unlock);
-            window.removeEventListener('keydown', unlock);
+            Object.values(howlRefs.current).forEach(h => { try { h.stop(); h.unload(); } catch {} });
         };
     }, []);
 
     const handleVolumeChange = (id: string, value: number[]) => {
-        const newVolume = value[0];
-        setVolumes(prev => ({ ...prev, [id]: newVolume }));
-        volumesRef.current[id] = newVolume;
-
-        const audio = audioRefs.current[id];
-        if (audio) {
-            if (audio.readyState < 2) {
-                try { audio.load(); } catch {}
-            }
-            if (newVolume > 0 && audio.paused) {
-                audio.play().catch(() => {});
-            } else if (newVolume === 0 && !audio.paused) {
-                audio.pause();
-            }
-            audio.volume = newVolume / 100;
-        }
+        const v = value[0];
+        setVolumes(prev => ({ ...prev, [id]: v }));
+        const h = howlRefs.current[id];
+        if (h) h.volume(v / 100);
     };
 
-    const toggleMute = () => {
-        const next = !isMuted;
-        setIsMuted(next);
-        Object.values(audioRefs.current).forEach(audio => {
-            audio.muted = next;
+    const togglePlay = (id: string) => {
+        const h = howlRefs.current[id];
+        if (!h) return;
+        setPlaying(prev => {
+            const next = !prev[id];
+            if (next) {
+                if (!h.playing()) h.play();
+                h.volume((volumes[id] || 0) / 100);
+            } else {
+                try { h.pause(); } catch {}
+            }
+            return { ...prev, [id]: next };
         });
     };
 
@@ -136,7 +92,7 @@ export default function AmbientMixer() {
                 <Card className="w-72 p-4 glass animate-in slide-in-from-right-10 fade-in duration-300 mb-2 border-border">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-foreground font-semibold flex items-center gap-2">
-                            <AnimatedIcon name="Volume2" className="w-4 h-4" /> Ambient Sounds
+                            <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className="w-4 h-4" /> Ambient Sounds
                         </h3>
                         <Button
                             variant="ghost"
@@ -144,7 +100,7 @@ export default function AmbientMixer() {
                             className="h-6 w-6 hover:bg-accent/10"
                             onClick={() => setIsOpen(false)}
                         >
-                            <AnimatedIcon name="X" className="w-4 h-4" />
+                            <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-4 h-4" />
                         </Button>
                     </div>
 
@@ -152,14 +108,43 @@ export default function AmbientMixer() {
                         {Object.entries(GROUPS).map(([category, list]) => (
                             <div key={category} className="space-y-3">
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{category}</p>
-                                {list.map((sound: any) => (
+                                {list.map(sound => (
                                     <div key={sound.id} className="space-y-2">
                                         <div className="flex items-center justify-between text-sm text-muted-foreground">
                                             <span className="flex items-center gap-2">
-                                                <AnimatedIcon name={sound.iconName} className="w-4 h-4" />
-                                                {sound.label}
+                                                {(() => {
+                                                  const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+                                                    CloudRain,
+                                                    CloudLightning,
+                                                    Wind,
+                                                    Snowflake,
+                                                    Waves,
+                                                    Droplets,
+                                                    Trees,
+                                                    Moon,
+                                                    Bird,
+                                                    Flame,
+                                                    Coffee,
+                                                    Book,
+                                                    Building: Building2,
+                                                    Train,
+                                                    Ship,
+                                                  }
+                                                  const Fallback = ICON_MAP[sound.icon] || Volume2
+                                                  return <AnimatedIcon animationSrc={`/lottie/${sound.icon}.json`} fallbackIcon={Fallback} className="w-4 h-4" />
+                                                })()}
+                                                {sound.name}
                                             </span>
-                                            <span className="text-xs">{volumes[sound.id] || 0}%</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs">{volumes[sound.id] || 0}%</span>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => togglePlay(sound.id)}>
+                                                    {playing[sound.id] ? (
+                                                      <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-4 h-4" />
+                                                    ) : (
+                                                      <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-4 h-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
                                         </div>
                                         <Slider
                                             value={[volumes[sound.id] || 0]}
@@ -178,11 +163,10 @@ export default function AmbientMixer() {
 
             <Button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`h-12 w-12 rounded-full shadow-lg transition-all duration-300 ${isOpen ? 'bg-primary text-primary-foreground' : 'glass text-foreground hover:bg-accent/20'
-                    }`}
+                className={`h-12 w-12 rounded-full shadow-lg transition-all duration-300 ${isOpen ? 'bg-primary text-primary-foreground' : 'glass text-foreground hover:bg-accent/20'}`}
                 title="Ambient Sounds Mixer"
             >
-                <AnimatedIcon name="Volume2" className={`w-6 h-6 ${Object.values(volumes).some(v => v > 0) && !isOpen ? 'animate-pulse text-green-500' : ''}`} />
+                <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className={`w-6 h-6 ${Object.values(playing).some(v => v) && !isOpen ? 'animate-pulse text-green-500' : ''}`} />
             </Button>
         </div>
     );

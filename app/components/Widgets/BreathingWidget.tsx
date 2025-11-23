@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Wind } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 const BREATHING_PATTERNS = {
@@ -70,7 +71,7 @@ export default function BreathingWidget() {
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-foreground text-sm">
                     <span className="flex items-center gap-2">
-                        <AnimatedIcon name="Wind" className="w-4 h-4" />
+                        <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4" />
                         Breathing
                     </span>
                     <select

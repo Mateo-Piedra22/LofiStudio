@@ -1,0 +1,174 @@
+{
+  "expectedFiles": [
+    "X.json",
+    "Check.json",
+    "Edit2.json",
+    "GripHorizontal.json",
+    "List.json",
+    "Maximize2.json",
+    "ChevronUp.json",
+    "ChevronDown.json",
+    "ChevronLeft.json",
+    "ChevronRight.json",
+    "Loader2.json",
+    "Search.json",
+    "RefreshCw.json",
+    "Play.json",
+    "Pause.json",
+    "SkipBack.json",
+    "SkipForward.json",
+    "Shuffle.json",
+    "Repeat.json",
+    "Music.json",
+    "Music2.json",
+    "Volume2.json",
+    "VolumeX.json",
+    "Clock.json",
+    "Calendar.json",
+    "Image.json",
+    "Quote.json",
+    "Book.json",
+    "Timer.json",
+    "Trash2.json",
+    "StickyNote.json",
+    "Wind.json",
+    "MapPin.json",
+    "Droplets.json",
+    "Cloud.json",
+    "CloudRain.json",
+    "CloudLightning.json",
+    "CloudFog.json",
+    "Snowflake.json",
+    "Sun.json",
+    "Zap.json",
+    "Waves.json",
+    "Trees.json",
+    "Moon.json",
+    "Bird.json",
+    "Flame.json",
+    "Coffee.json",
+    "Building.json",
+    "Train.json",
+    "Ship.json"
+  ],
+  "example": {
+    "v": "5.7.4",
+    "fr": 60,
+    "ip": 0,
+    "op": 120,
+    "w": 256,
+    "h": 256,
+    "nm": "Example",
+    "ddd": 0,
+    "assets": [],
+    "layers": [
+      {
+        "ddd": 0,
+        "ind": 1,
+        "ty": 4,
+        "nm": "Shape Layer 1",
+        "sr": 1,
+        "ks": {
+          "o": { "a": 0, "k": 100 },
+          "r": { "a": 0, "k": 0 },
+          "p": { "a": 0, "k": [128, 128, 0] },
+          "a": { "a": 0, "k": [0, 0, 0] },
+          "s": { "a": 0, "k": [100, 100, 100] }
+        },
+        "ao": 0,
+        "shapes": [
+          {
+            "ty": "rc",
+            "d": 1,
+            "s": { "a": 0, "k": [128, 128] },
+            "p": { "a": 0, "k": [0, 0] },
+            "r": { "a": 0, "k": 24 },
+            "nm": "Rectangle Path 1",
+            "hd": false
+          },
+          {
+            "ty": "fl",
+            "c": { "a": 0, "k": [0.117647, 0.588235, 0.952941, 1] },
+            "o": { "a": 0, "k": 100 },
+            "r": 1,
+            "nm": "Fill 1",
+            "hd": false
+          },
+          {
+            "ty": "tr",
+            "p": { "a": 0, "k": [0, 0] },
+            "a": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [100, 100] },
+            "r": { "a": 0, "k": 0 },
+            "o": { "a": 0, "k": 100 },
+            "sk": { "a": 0, "k": 0 },
+            "sa": { "a": 0, "k": 0 }
+          }
+        ],
+        "ip": 0,
+        "op": 120,
+        "st": 0,
+        "bm": 0
+      }
+    ]
+  }
+  ,
+  "namingConvention": {
+    "case": "PascalCase",
+    "rule": "El nombre del archivo debe coincidir exactamente con el icono de lucide-react (ej: CloudRain.json).",
+    "examples": [
+      { "lucide": "CloudRain", "file": "CloudRain.json" },
+      { "lucide": "Search", "file": "Search.json" },
+      { "lucide": "Volume2", "file": "Volume2.json" }
+    ]
+  },
+  "directory": "/public/lottie",
+  "sources": [
+    {
+      "name": "LottieFiles",
+      "url": "https://lottiefiles.com/",
+      "notes": "Biblioteca amplia de animaciones. Verificar licencias y preferir iconos simples, monocromos y en loop."
+    },
+    {
+      "name": "Lordicon",
+      "url": "https://lordicon.com/",
+      "notes": "Ofrece iconos animados en JSON. Confirmar licencia comercial y uso permitido."
+    },
+    {
+      "name": "Export propio (After Effects + Bodymovin)",
+      "url": "https://github.com/airbnb/lottie-web",
+      "notes": "Crear animaciones a medida exportándolas a JSON con el plugin Bodymovin. Evitar imágenes rasterizadas y expresiones complejas."
+    }
+  ],
+  "licensing": {
+    "policy": "Asegurar derechos de uso y atribución adecuada antes de incluir un JSON en producción.",
+    "recommended": ["CC0", "CC BY 4.0", "Licencias comerciales explícitas"]
+  },
+  "performanceBudget": {
+    "maxBytesPerIcon": 60000,
+    "recommendedBytesPerIcon": 30000,
+    "frameRate": 30,
+    "dimensions": [128, 256]
+  },
+  "guidelines": [
+    "Usar animaciones cortas, en loop, sin dependencias externas.",
+    "Evitar assets de imagen; preferir formas vectoriales (shapes) y paths.",
+    "Reducir capas y keyframes para minimizar tamaño.",
+    "Mantener paleta simple; idealmente monocromo o fácilmente integrable con el tema.",
+    "Validar que el JSON contenga las claves estándar (v, fr, ip, op, w, h, layers).",
+    "Probar siempre el fallback: si el JSON no carga, debe verse el icono estático.",
+    "Nombrar archivos exactamente como el icono fallback de lucide (ej: Play.json)."
+  ],
+  "compatibility": {
+    "lottieReact": "^2.4.1",
+    "loop": true,
+    "autoplay": true
+  },
+  "validationChecklist": [
+    "Tamaño del archivo dentro del presupuesto definido",
+    "Animación se reproduce correctamente en lottie-react",
+    "Sin referencias a assets externos (fonts, imágenes)",
+    "Loop suave y sin saltos",
+    "Nombre y ubicación correctos (public/lottie/Icon.json)"
+  ]
+}

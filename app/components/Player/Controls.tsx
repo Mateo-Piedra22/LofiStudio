@@ -1,6 +1,7 @@
 'use client';
 
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Pause, Play, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -21,9 +22,9 @@ export default function Controls({ isPlaying, volume, onPlayPause, onVolumeChang
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? (
-          <AnimatedIcon name="Pause" className="w-6 h-6" />
+          <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-6 h-6" />
         ) : (
-          <AnimatedIcon name="Play" className="w-6 h-6 ml-0.5" />
+          <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-6 h-6 ml-0.5" />
         )}
       </Button>
 
@@ -33,9 +34,9 @@ export default function Controls({ isPlaying, volume, onPlayPause, onVolumeChang
           className="text-foreground hover:text-primary transition-colors"
         >
           {volume === 0 ? (
-            <AnimatedIcon name="VolumeX" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/VolumeX.json" fallbackIcon={VolumeX} className="w-5 h-5" />
           ) : (
-            <AnimatedIcon name="Volume2" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className="w-5 h-5" />
           )}
         </button>
         <input

@@ -6,6 +6,8 @@ import sizeConfig from '@/lib/config/widget-sizes.json';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2 } from 'lucide-react'
+import type React from 'react'
 import { WidgetConfig } from '@/lib/types';
 
 export default function WidgetManager() {
@@ -86,7 +88,22 @@ export default function WidgetManager() {
                 }`}
             >
               <span className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${span}`}</span>
-              <AnimatedIcon name={widget.iconName} className="w-8 h-8 mb-2" />
+              {(() => {
+                const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+                  Clock,
+                  Cloud,
+                  Image: ImageIcon,
+                  CheckSquare,
+                  StickyNote,
+                  Quote,
+                  Calendar: CalendarIcon,
+                  Wind,
+                  Book,
+                  Timer,
+                }
+                const Fallback = ICON_MAP[widget.iconName] || Clock
+                return <AnimatedIcon animationSrc={`/lottie/${widget.iconName}.json`} fallbackIcon={Fallback} className="w-8 h-8 mb-2" />
+              })()}
               <span className="text-sm font-medium">{widget.label}</span>
               {isAdded && <span className="text-xs mt-1 opacity-60">Added</span>}
               {(!isAdded && atCapacity) && <span className="text-xs mt-1 opacity-60">Capacity reached</span>}
@@ -114,7 +131,7 @@ export default function WidgetManager() {
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 >
-                  <AnimatedIcon name="Trash2" className="w-4 h-4" />
+                  <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
                 </Button>
               </div>
             </div>

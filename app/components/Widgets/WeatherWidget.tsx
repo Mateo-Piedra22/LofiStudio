@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { MapPin, RefreshCw, Search, Droplets, Wind } from 'lucide-react'
+import { CloudRain, Cloud, Snowflake, CloudFog, Zap, Sun } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 interface WeatherData {
@@ -110,12 +112,12 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
 
   const getWeatherIcon = (icon: string) => {
     const size = compact ? 'w-6 h-6' : 'w-10 h-10';
-    if (icon === 'rain' || icon.includes('rain')) return <AnimatedIcon name="CloudRain" className={`${size} text-blue-400 motion-safe:animate-pulse`} />;
-    if (icon === 'cloud' || icon.includes('cloud')) return <AnimatedIcon name="Cloud" className={`${size} text-gray-400`} />;
-    if (icon === 'snow') return <AnimatedIcon name="Snowflake" className={`${size} text-cyan-200 motion-safe:animate-pulse`} />;
-    if (icon === 'fog') return <AnimatedIcon name="CloudFog" className={`${size} text-gray-300`} />;
-    if (icon === 'storm') return <AnimatedIcon name="Zap" className={`${size} text-yellow-300`} />;
-    return <AnimatedIcon name="Sun" className={`${size} text-yellow-400 motion-safe:animate-pulse`} />;
+    if (icon === 'rain' || icon.includes('rain')) return <AnimatedIcon animationSrc="/lottie/CloudRain.json" fallbackIcon={CloudRain} className={`${size} text-blue-400 motion-safe:animate-pulse`} />;
+    if (icon === 'cloud' || icon.includes('cloud')) return <AnimatedIcon animationSrc="/lottie/Cloud.json" fallbackIcon={Cloud} className={`${size} text-gray-400`} />;
+    if (icon === 'snow') return <AnimatedIcon animationSrc="/lottie/Snowflake.json" fallbackIcon={Snowflake} className={`${size} text-cyan-200 motion-safe:animate-pulse`} />;
+    if (icon === 'fog') return <AnimatedIcon animationSrc="/lottie/CloudFog.json" fallbackIcon={CloudFog} className={`${size} text-gray-300`} />;
+    if (icon === 'storm') return <AnimatedIcon animationSrc="/lottie/Zap.json" fallbackIcon={Zap} className={`${size} text-yellow-300`} />;
+    return <AnimatedIcon animationSrc="/lottie/Sun.json" fallbackIcon={Sun} className={`${size} text-yellow-400 motion-safe:animate-pulse`} />;
   };
 
   return (
@@ -123,7 +125,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
       <CardHeader className={compact ? 'pt-1 pb-1' : ''}>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <AnimatedIcon name="MapPin" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-5 h-5" />
             Weather
           </span>
           <div className="flex items-center gap-2">
@@ -166,7 +168,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               className="h-8 w-8 hover:bg-accent/10"
               title="Refresh Weather"
             >
-              <AnimatedIcon name="RefreshCw" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               onClick={() => setShowSearchBar((v) => !v)}
@@ -175,7 +177,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               className="h-8 w-8 hover:bg-accent/10"
               title="Search"
             >
-              <AnimatedIcon name="Search" className="w-4 h-4" />
+              <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
             </Button>
           </div>
         </CardTitle>
@@ -189,7 +191,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
                 <p className={`${compact ? 'text-2xl' : 'text-5xl md:text-6xl'} font-bold text-foreground leading-none tracking-tighter`}>{Math.round(weather.temp)}°</p>
                 <p className={`${compact ? 'text-xs' : 'text-lg'} text-muted-foreground capitalize font-medium`}>{weather.description}</p>
                 <p className="text-muted-foreground text-xs flex items-center gap-1">
-                  <AnimatedIcon name="MapPin" className="w-3 h-3" />
+                  <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-3 h-3" />
                   {weather.city}
                 </p>
               </div>
@@ -201,7 +203,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
             <div className={`grid grid-cols-2 gap-2 ${compact ? 'pt-2' : 'pt-3'} border-t border-border ${compact ? 'place-items-center' : ''}`}>
               <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <AnimatedIcon name="Droplets" className="w-4 h-4 text-blue-400" />
+                  <AnimatedIcon animationSrc="/lottie/Droplets.json" fallbackIcon={Droplets} className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Humidity</p>
@@ -210,7 +212,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               </div>
               <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2.5'} rounded-xl bg-accent/10 border border-border`}>
                 <div className="p-2 bg-gray-500/20 rounded-lg">
-                  <AnimatedIcon name="Wind" className="w-4 h-4 text-gray-400" />
+                  <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4 text-gray-400" />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Wind</p>
@@ -222,7 +224,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
         ) : (
           <div className="flex-1 text-center py-8 px-4">
             <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
-              <AnimatedIcon name="MapPin" className="w-8 h-8 text-muted-foreground" />
+              <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-8 h-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground text-sm">Enter your city to see the local weather forecast</p>
           </div>

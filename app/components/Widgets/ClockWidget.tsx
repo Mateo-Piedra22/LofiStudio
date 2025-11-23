@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Clock as ClockIcon } from 'lucide-react'
 import { format } from 'date-fns';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
@@ -26,7 +27,7 @@ export default function ClockWidget() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <AnimatedIcon name="Clock" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
             Clock
           </span>
           <button

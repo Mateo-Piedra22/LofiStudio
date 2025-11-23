@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { FileText, Save } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 export default function NotesWidget() {
@@ -22,7 +23,7 @@ export default function NotesWidget() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <AnimatedIcon name="FileText" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/FileText.json" fallbackIcon={FileText} className="w-5 h-5" />
             Quick Notes
           </span>
           <Button
@@ -32,7 +33,7 @@ export default function NotesWidget() {
             className="h-8 hover:bg-accent/10"
             disabled={saved}
           >
-            <AnimatedIcon name="Save" className="w-4 h-4 mr-1" />
+            <AnimatedIcon animationSrc="/lottie/Save.json" fallbackIcon={Save} className="w-4 h-4 mr-1" />
             {saved ? 'Saved!' : 'Save'}
           </Button>
         </CardTitle>

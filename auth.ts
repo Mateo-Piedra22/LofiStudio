@@ -6,18 +6,18 @@ import { accounts } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    secret: process.env.AUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
     trustHost: true,
     ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : {}),
     session: { strategy: 'jwt' },
-    debug: true,
+    debug: process.env.NODE_ENV !== 'production',
     providers: [
         Google({
-            clientId: process.env.AUTH_GOOGLE_ID || '',
-            clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
+            clientId: process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || '',
             authorization: {
                 params: {
-                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks',
+                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks',
                     include_granted_scopes: true,
                     access_type: 'offline',
                     prompt: 'consent',
@@ -44,8 +44,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (needsRefresh) {
                 try {
                     const params = new URLSearchParams({
-                        client_id: process.env.AUTH_GOOGLE_ID || '',
-                        client_secret: process.env.AUTH_GOOGLE_SECRET || '',
+                        client_id: process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || '',
+                        client_secret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || '',
                         grant_type: 'refresh_token',
                         refresh_token: (token as any).refresh_token || '',
                     })
@@ -69,6 +69,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if ((token as any)?.scope) enhanced.scope = (token as any).scope
             if ((token as any)?.access_token) enhanced.accessToken = (token as any).access_token
             if ((token as any)?.expires_at) enhanced.accessTokenExpiresAt = (token as any).expires_at
+            if ((token as any)?.refresh_token) enhanced.refreshToken = (token as any).refresh_token
             if (process.env.DATABASE_URL && user?.id && !enhanced.scope) {
                 try {
                     const acc = await (db as any).query.accounts.findFirst({ where: eq(accounts.userId, user.id) })
@@ -77,18 +78,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             return enhanced
         },
-    },
-    logger: {
-        debug: (...args: any[]) => { try { console.debug('[auth]', ...args) } catch {} },
-        warn: (...args: any[]) => { try { console.warn('[auth]', ...args) } catch {} },
-        error: (...args: any[]) => { try { console.error('[auth]', ...args) } catch {} },
-    },
-    events: {
-        async signIn(message: any) { try { console.info('[auth] signIn event', JSON.stringify(message)) } catch {} },
-        async signOut(message: any) { try { console.info('[auth] signOut event', JSON.stringify(message)) } catch {} },
-        async createUser(message: any) { try { console.info('[auth] createUser event', JSON.stringify(message)) } catch {} },
-        async linkAccount(message: any) { try { console.info('[auth] linkAccount event', JSON.stringify(message)) } catch {} },
-        async session(message: any) { try { console.info('[auth] session event', JSON.stringify(message)) } catch {} },
     },
     pages: undefined,
 })

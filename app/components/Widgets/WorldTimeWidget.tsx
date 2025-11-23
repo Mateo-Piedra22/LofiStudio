@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Clock as ClockIcon, RefreshCw, Search, MapPin } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 interface Suggestion {
@@ -112,7 +113,7 @@ export default function WorldTimeWidget() {
       <CardHeader className={'pt-1 pb-1'}>
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <AnimatedIcon name="Clock" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
             World Time
           </span>
           <div className="flex items-center gap-2">
@@ -154,7 +155,7 @@ export default function WorldTimeWidget() {
               className="h-8 w-8 hover:bg-accent/10"
               title="Refresh Time"
             >
-              <AnimatedIcon name="RefreshCw" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               onClick={() => setShowSearchBar((v) => !v)}
@@ -163,7 +164,7 @@ export default function WorldTimeWidget() {
               className="h-8 w-8 hover:bg-accent/10"
               title="Search"
             >
-              <AnimatedIcon name="Search" className="w-4 h-4" />
+              <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
             </Button>
           </div>
         </CardTitle>
@@ -175,19 +176,19 @@ export default function WorldTimeWidget() {
               <div className="text-center">
                 <p className={`text-5xl md:text-6xl font-bold text-foreground leading-none tracking-tighter`}>{formatted}</p>
                 <p className="mt-2 text-muted-foreground text-xs inline-flex items-center gap-1">
-                  <AnimatedIcon name="MapPin" className="w-3 h-3" />
+                  <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-3 h-3" />
                   {location?.display || tz}
                 </p>
               </div>
               <div className="drop-shadow-lg">
-                <AnimatedIcon name="Clock" className="w-10 h-10 text-primary" />
+                <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-10 h-10 text-primary" />
               </div>
             </div>
           </div>
         ) : (
           <div className="w-full text-center py-8 px-4">
             <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
-              <AnimatedIcon name="Clock" className="w-8 h-8 text-muted-foreground" />
+              <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-8 h-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground text-sm">Select a location to view its local time</p>
           </div>

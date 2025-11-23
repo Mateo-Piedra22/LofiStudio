@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
+import { Quote as QuoteIcon, RefreshCw } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import quotesData from '@/lib/config/quotes.json';
 import tagMapJson from '@/lib/config/quote-tags.json';
@@ -64,7 +65,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
       <CardHeader className="pt-4 pb-3">
         <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-            <AnimatedIcon name="Quote" className="w-5 h-5" />
+            <AnimatedIcon animationSrc="/lottie/Quote.json" fallbackIcon={QuoteIcon} className="w-5 h-5" />
             {language === 'en' ? 'Daily Quote' : 'Cita Diaria'}
           </span>
           <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -99,7 +100,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
               className="h-8 w-8 hover:bg-accent/10"
               title="New Quote"
             >
-              <AnimatedIcon name="RefreshCw" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </CardTitle>
