@@ -75,6 +75,7 @@
   align-items: center;
   justify-content: space-between;
   text-align: left;
+  padding: 0.25rem 0.5rem;
 }
 
 @layer base {

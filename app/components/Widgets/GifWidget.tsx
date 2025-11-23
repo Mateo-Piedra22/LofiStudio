@@ -44,43 +44,45 @@ export default function GifWidget() {
   }, [category]);
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 p-3">
-          <CardTitle className="flex items-center justify-start text-foreground">
+        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
             <span className="flex items-center gap-2">
               <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
               Mood GIF
             </span>
-            <div className="ml-auto flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 ${
-                    category === cat.id
-                      ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                      : 'bg-accent/10 text-muted-foreground hover:bg-accent/20 hover:text-foreground'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-              <Button
-                onClick={() => fetchGif(category)}
-                size="icon"
-                variant="ghost"
-                disabled={loading}
-                className="h-8 w-8 hover:bg-accent/10"
-                title="Get New GIF"
-              >
-                <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
           </CardTitle>
+          <div className="flex items-center space-x-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
+                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 ${
+                  category === cat.id
+                    ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                    : 'bg-accent/10 text-muted-foreground hover:bg-accent/20 hover:text-foreground'
+                }`}
+                aria-label={`Select ${cat.label}`}
+              >
+                {cat.label}
+              </button>
+            ))}
+            <Button
+              onClick={() => fetchGif(category)}
+              size="icon"
+              variant="ghost"
+              disabled={loading}
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Get New GIF"
+              aria-label="Get New GIF"
+            >
+              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </CardHeader>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} min-h-0 flex items-center justify-center`}>
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} min-h-0 flex items-center justify-center p-4`}>
 
         {/* GIF Display */}
         <div className="relative w-full h-full rounded-lg overflow-hidden bg-secondary/50 border border-border">

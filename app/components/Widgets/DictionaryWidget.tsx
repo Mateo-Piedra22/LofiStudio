@@ -60,24 +60,26 @@ export default function DictionaryWidget() {
     };
 
     return (
-        <Card className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+        <Card className="hover:shadow-lg transition-shadow duration-300 h-full w-full flex flex-col rounded-xl overflow-hidden p-4">
             {showWidgetHeaders ? (
-                <CardHeader className="h-11 p-3">
-                    <CardTitle className="flex items-center justify-start gap-2 text-foreground text-sm">
-                        <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-4 h-4" />
+                <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+                    <CardTitle className="flex items-center justify-start gap-2 text-foreground text-lg font-semibold">
+                        <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-5 h-5" />
                         Dictionary
                     </CardTitle>
+                    <div className="flex items-center space-x-2" />
                 </CardHeader>
             ) : null}
-            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center gap-4`}>
+            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-start justify-start gap-4 p-4`}>
                 <form onSubmit={searchWord} className="flex gap-2">
                     <Input
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Define..."
                         className="h-8 bg-background/50 border-border text-xs"
+                        aria-label="Define"
                     />
-                    <Button type="submit" size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-accent/10">
+                    <Button type="submit" size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-accent/10" aria-label="Search">
                         {loading ? <AnimatedIcon animationSrc="/lottie/Loader2.json" fallbackIcon={Loader2} className="w-4 h-4 animate-spin" /> : <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />}
                     </Button>
                 </form>

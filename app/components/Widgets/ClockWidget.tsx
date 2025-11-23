@@ -24,24 +24,27 @@ export default function ClockWidget() {
   const dateFormat = 'EEEE, MMMM d, yyyy';
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 p-3">
-          <CardTitle className="flex items-center justify-start text-foreground">
+        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
             <span className="flex items-center gap-2">
               <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
               Clock
             </span>
+          </CardTitle>
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => setFormat24h(!format24h)}
-              className="ml-auto py-1.5 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full transition-all"
+              className="py-1.5 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full transition-all"
+              aria-label="Toggle time format"
             >
               {format24h ? '24h' : '12h'}
             </button>
-          </CardTitle>
+          </div>
         </CardHeader>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex items-center justify-center overflow-hidden`}>
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex ${showWidgetHeaders ? 'items-start justify-start' : 'items-center justify-center'} overflow-hidden p-4`}>
         <div className="text-center space-y-3">
           <p className="text-4xl md:text-5xl font-bold text-foreground font-mono tracking-tight leading-none">
             {format(time, timeFormat)}

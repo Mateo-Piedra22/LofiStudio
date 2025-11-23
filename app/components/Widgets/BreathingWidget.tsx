@@ -68,22 +68,25 @@ export default function BreathingWidget() {
     };
 
     return (
-        <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden relative">
+        <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300 relative">
             {showWidgetHeaders ? (
-                <CardHeader className="h-11 p-3">
-                    <CardTitle className="flex items-center justify-start text-foreground text-sm">
+                <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+                    <CardTitle className="flex items-center justify-start text-foreground text-lg font-semibold">
                         <span className="flex items-center gap-2">
-                            <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4" />
+                            <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-5 h-5" />
                             Breathing
                         </span>
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
                         <select
                             value={pattern}
                             onChange={(e) => {
                                 setPattern(e.target.value as any);
                                 setIsActive(false);
                             }}
-                            className="ml-auto bg-accent/20 border border-border text-foreground text-xs rounded px-2 py-1 focus:ring-0 cursor-pointer"
+                            className="bg-accent/20 border border-border text-foreground text-xs rounded px-2 py-1 focus:ring-0 cursor-pointer"
                             onClick={(e) => e.stopPropagation()}
+                            aria-label="Breathing pattern"
                         >
                             {Object.entries(BREATHING_PATTERNS).map(([key, val]) => (
                                 <option key={key} value={key} className="bg-background text-foreground">
@@ -91,10 +94,10 @@ export default function BreathingWidget() {
                                 </option>
                             ))}
                         </select>
-                    </CardTitle>
+                    </div>
                 </CardHeader>
             ) : null}
-            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center min-h-[160px] relative`}>
+            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center min-h-[160px] relative p-4`}>
                 {/* Animated Circle */}
                 <div
                     onClick={() => setIsActive(!isActive)}

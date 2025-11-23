@@ -122,70 +122,74 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders ? (
-        <CardHeader className={compact ? 'h-11 p-2' : 'h-11 p-3'}>
-          <CardTitle className="flex items-center justify-start text-foreground">
+        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
             <span className="flex items-center gap-2">
               <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-5 h-5" />
               Weather
             </span>
-            <div className="ml-auto flex items-center gap-2">
-              {showSearchBar && (
-                <div className="relative no-drag">
-                  <form onSubmit={handleCitySubmit} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={inputCity}
-                      onChange={(e) => setInputCity(e.target.value)}
-                      placeholder="Enter city..."
-                      className={`${compact ? 'w-[120px] md:w-[180px]' : 'w-[140px] md:w-[216px]'} px-3 py-1.5 rounded-lg bg-background/50 border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
-                    />
-                    <Button type="submit" size="sm" className="shrink-0 h-7 px-3">Set</Button>
-                  </form>
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl max-h-56 overflow-y-auto">
-                      {suggestions.map((s, i) => {
-                        const cp = s.postcodes?.[0];
-                        const display = `${s.name}${s.admin1 ? ', ' + s.admin1 : ''}${s.admin2 ? ', ' + s.admin2 : ''}${s.country ? ', ' + s.country : ''}${cp ? ' (CP: ' + cp + ')' : ''}`;
-                        return (
-                          <button
-                            key={`${s.name}-${s.lat}-${s.lon}-${i}`}
-                            onClick={() => { setCity(display); setInputCity(''); setShowSuggestions(false); setShowSearchBar(false); fetchWeather(display, { lat: s.lat, lon: s.lon }); }}
-                            className="w-full text-left px-3 py-2 hover:bg-accent/10 text-sm text-foreground border-b border-border last:border-0"
-                          >
-                            {display}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-              <Button
-                onClick={() => fetchWeather()}
-                size="icon"
-                variant="ghost"
-                disabled={loading}
-                className="h-8 w-8 hover:bg-accent/10"
-                title="Refresh Weather"
-              >
-                <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button
-                onClick={() => setShowSearchBar((v) => !v)}
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 hover:bg-accent/10"
-                title="Search"
-              >
-                <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
-              </Button>
-            </div>
           </CardTitle>
+          <div className="flex items-center space-x-2">
+            {showSearchBar && (
+              <div className="relative no-drag">
+                <form onSubmit={handleCitySubmit} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={inputCity}
+                    onChange={(e) => setInputCity(e.target.value)}
+                    placeholder="Enter city..."
+                    className={`${compact ? 'w-[120px] md:w-[180px]' : 'w-[140px] md:w-[216px]'} px-3 py-1.5 rounded-lg bg-background/50 border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                    aria-label="City"
+                  />
+                  <Button type="submit" size="sm" className="shrink-0 h-7 px-3" aria-label="Set city">Set</Button>
+                </form>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl max-h-56 overflow-y-auto">
+                    {suggestions.map((s, i) => {
+                      const cp = s.postcodes?.[0];
+                      const display = `${s.name}${s.admin1 ? ', ' + s.admin1 : ''}${s.admin2 ? ', ' + s.admin2 : ''}${s.country ? ', ' + s.country : ''}${cp ? ' (CP: ' + cp + ')' : ''}`;
+                      return (
+                        <button
+                          key={`${s.name}-${s.lat}-${s.lon}-${i}`}
+                          onClick={() => { setCity(display); setInputCity(''); setShowSuggestions(false); setShowSearchBar(false); fetchWeather(display, { lat: s.lat, lon: s.lon }); }}
+                          className="w-full text-left px-3 py-2 hover:bg-accent/10 text-sm text-foreground border-b border-border last:border-0"
+                          aria-label={`Select ${display}`}
+                        >
+                          {display}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            <Button
+              onClick={() => fetchWeather()}
+              size="icon"
+              variant="ghost"
+              disabled={loading}
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Refresh Weather"
+              aria-label="Refresh Weather"
+            >
+              <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              onClick={() => setShowSearchBar((v) => !v)}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Search"
+              aria-label="Search"
+            >
+              <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
+            </Button>
+          </div>
         </CardHeader>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col ${compact ? 'space-y-2' : 'space-y-3'} items-center justify-center overflow-hidden`}>
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col ${compact ? 'p-2' : 'p-4'} items-start justify-start overflow-hidden`}>
 
         {weather ? (
           <div className="w-full space-y-4 mt-0.5 animate-in fade-in slide-in-from-bottom-2">

@@ -201,37 +201,37 @@ export default function CalendarWidget() {
   };
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 p-3">
-          <CardTitle className="flex items-center justify-start text-foreground">
+        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
+          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
             <span className="flex items-center gap-2">
               <AnimatedIcon animationSrc="/lottie/Calendar.json" fallbackIcon={CalendarIcon} className="w-5 h-5" />
               Calendar
             </span>
-            <div className="ml-auto flex items-center gap-1">
-              <button
-                onClick={goToPreviousMonth}
-                className="p-1 hover:bg-accent rounded transition-colors"
-                aria-label="Previous month"
-              >
-                <AnimatedIcon animationSrc="/lottie/ChevronLeft.json" fallbackIcon={ChevronLeft} className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-normal mx-2 min-w-[100px] text-center">
-                {format(currentDate, 'MMMM yyyy')}
-              </span>
-              <button
-                onClick={goToNextMonth}
-                className="p-1 hover:bg-accent rounded transition-colors"
-                aria-label="Next month"
-              >
-                <AnimatedIcon animationSrc="/lottie/ChevronRight.json" fallbackIcon={ChevronRight} className="w-4 h-4" />
-              </button>
-            </div>
           </CardTitle>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={goToPreviousMonth}
+              className="p-1 hover:bg-accent rounded transition-colors"
+              aria-label="Previous month"
+            >
+              <AnimatedIcon animationSrc="/lottie/ChevronLeft.json" fallbackIcon={ChevronLeft} className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-normal mx-2 min-w-[100px] text-center">
+              {format(currentDate, 'MMMM yyyy')}
+            </span>
+            <button
+              onClick={goToNextMonth}
+              className="p-1 hover:bg-accent rounded transition-colors"
+              aria-label="Next month"
+            >
+              <AnimatedIcon animationSrc="/lottie/ChevronRight.json" fallbackIcon={ChevronRight} className="w-4 h-4" />
+            </button>
+          </div>
         </CardHeader>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex items-center justify-center`}>
+      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-start justify-start p-4`}>
         <div className="grid grid-cols-7 gap-1">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
             <div key={day} className="text-center text-xs text-muted-foreground font-medium py-2">

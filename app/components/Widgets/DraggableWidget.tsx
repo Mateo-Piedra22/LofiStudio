@@ -49,7 +49,7 @@ const DraggableWidget = React.forwardRef<HTMLDivElement, DraggableWidgetProps>((
             {...props}
         >
             <div className={cn(
-                "h-full w-full overflow-hidden rounded-2xl transition-all duration-300",
+                "h-full w-full overflow-hidden rounded-xl transition-all duration-300",
                 !isEditing && "hover:shadow-lg"
             )}>
                 {children}
