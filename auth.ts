@@ -21,6 +21,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || '',
+            issuer: 'https://accounts.google.com',
+            checks: ['pkce', 'state'],
             authorization: {
                 params: {
                     scope: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks',
@@ -83,6 +85,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 } catch {}
             }
             return enhanced
+        },
+    },
+    events: {
+        async signIn(message) {
+            console.info('[auth][event][signIn]', { user: (message as any)?.user?.email || (message as any)?.user?.id, provider: (message as any)?.account?.provider })
+        },
+    },
+    logger: {
+        error(code, ...message) {
+            console.error('[auth][logger][error]', code, ...message)
+        },
+        warn(code, ...message) {
+            console.warn('[auth][logger][warn]', code, ...message)
+        },
+        debug(code, ...message) {
+            console.debug('[auth][logger][debug]', code, ...message)
         },
     },
     pages: undefined,
