@@ -5,19 +5,25 @@ import { db } from "@/db"
 import { accounts } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
+const hasSecret = !!(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)
+if (!hasSecret) {
+    console.error("[auth] Missing AUTH_SECRET or NEXTAUTH_SECRET")
+    throw new Error("AUTH secret is not configured")
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
     trustHost: true,
     ...(process.env.DATABASE_URL ? { adapter: DrizzleAdapter(db) } : {}),
     session: { strategy: 'jwt' },
-    debug: process.env.NODE_ENV !== 'production',
+    debug: true,
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || '',
             authorization: {
                 params: {
-                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks',
+                    scope: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks',
                     include_granted_scopes: true,
                     access_type: 'offline',
                     prompt: 'consent',
