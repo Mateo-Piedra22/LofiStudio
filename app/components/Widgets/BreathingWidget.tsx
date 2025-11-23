@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Wind } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
@@ -68,15 +68,13 @@ export default function BreathingWidget() {
     };
 
     return (
-        <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300 relative">
+        <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300 relative">
             {showWidgetHeaders ? (
-                <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-                    <CardTitle className="flex items-center justify-start text-foreground text-lg font-semibold">
-                        <span className="flex items-center gap-2">
-                            <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-5 h-5" />
-                            Breathing
-                        </span>
-                    </CardTitle>
+                <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+                    <div className="flex items-center gap-2">
+                        <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-5 h-5" />
+                        <span className="text-lg font-semibold text-foreground">Breathing</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                         <select
                             value={pattern}
@@ -95,10 +93,9 @@ export default function BreathingWidget() {
                             ))}
                         </select>
                     </div>
-                </CardHeader>
+                </div>
             ) : null}
-            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center min-h-[160px] relative p-4`}>
-                {/* Animated Circle */}
+            <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center relative p-4`}>
                 <div
                     onClick={() => setIsActive(!isActive)}
                     className="cursor-pointer relative flex items-center justify-center w-32 h-32"
@@ -122,7 +119,7 @@ export default function BreathingWidget() {
                         )}
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

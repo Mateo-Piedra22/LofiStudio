@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
@@ -60,17 +60,17 @@ export default function DictionaryWidget() {
     };
 
     return (
-        <Card className="hover:shadow-lg transition-shadow duration-300 h-full w-full flex flex-col rounded-xl overflow-hidden p-4">
+        <div data-ui="widget" className="hover:shadow-lg transition-shadow duration-300 h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
             {showWidgetHeaders ? (
-                <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-                    <CardTitle className="flex items-center justify-start gap-2 text-foreground text-lg font-semibold">
+                <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+                    <div className="flex items-center justify-start gap-2 text-foreground">
                         <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-5 h-5" />
-                        Dictionary
-                    </CardTitle>
+                        <span className="text-lg font-semibold">Dictionary</span>
+                    </div>
                     <div className="flex items-center space-x-2" />
-                </CardHeader>
+                </div>
             ) : null}
-            <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-start justify-start gap-4 p-4`}>
+            <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex flex-col items-center justify-start gap-4 p-4`}>
                 <form onSubmit={searchWord} className="flex gap-2">
                     <Input
                         value={query}
@@ -125,7 +125,7 @@ export default function DictionaryWidget() {
                         </div>
                     )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

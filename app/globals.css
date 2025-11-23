@@ -66,6 +66,10 @@
   display: none;
 }
 
+[data-hide-headers='true'] [data-ui='widget'] [data-slot='header'] {
+  display: none;
+}
+
 /* Centrado de contenido al ocultar headers se manejará por widget específico */
 
 /* Widget header alignment */

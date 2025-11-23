@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Image as ImageIcon, RefreshCw } from 'lucide-react'
@@ -44,15 +44,13 @@ export default function GifWidget() {
   }, [category]);
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2">
-              <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
-              Mood GIF
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Mood GIF</span>
+          </div>
           <div className="flex items-center space-x-2 overflow-x-auto whitespace-nowrap no-scrollbar">
             {categories.map((cat) => (
               <button
@@ -80,10 +78,10 @@ export default function GifWidget() {
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
-        </CardHeader>
+        </div>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} min-h-0 flex items-center justify-center p-4`}>
-
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-start p-4`}>
+        
         {/* GIF Display */}
         <div className="relative w-full h-full rounded-lg overflow-hidden bg-secondary/50 border border-border">
           {loading && (
@@ -107,7 +105,7 @@ export default function GifWidget() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

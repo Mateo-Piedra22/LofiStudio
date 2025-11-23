@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -201,15 +201,13 @@ export default function CalendarWidget() {
   };
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2">
-              <AnimatedIcon animationSrc="/lottie/Calendar.json" fallbackIcon={CalendarIcon} className="w-5 h-5" />
-              Calendar
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Calendar.json" fallbackIcon={CalendarIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Calendar</span>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={goToPreviousMonth}
@@ -229,9 +227,9 @@ export default function CalendarWidget() {
               <AnimatedIcon animationSrc="/lottie/ChevronRight.json" fallbackIcon={ChevronRight} className="w-4 h-4" />
             </button>
           </div>
-        </CardHeader>
+        </div>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-start justify-start p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center p-4`}>
         <div className="grid grid-cols-7 gap-1">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
             <div key={day} className="text-center text-xs text-muted-foreground font-medium py-2">
@@ -270,7 +268,7 @@ export default function CalendarWidget() {
             </button>
           ))}
         </div>
-      </CardContent>
+      </div>
       <Dialog open={!!selectedDay} onOpenChange={(o) => !o && closeDay()}>
         <DialogContent>
           <DialogHeader>
@@ -381,6 +379,6 @@ export default function CalendarWidget() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }

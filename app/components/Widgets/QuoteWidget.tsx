@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Quote as QuoteIcon, RefreshCw } from 'lucide-react'
@@ -62,15 +62,13 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
   };
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-              <AnimatedIcon animationSrc="/lottie/Quote.json" fallbackIcon={QuoteIcon} className="w-5 h-5" />
-              {language === 'en' ? 'Daily Quote' : 'Cita Diaria'}
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+            <AnimatedIcon animationSrc="/lottie/Quote.json" fallbackIcon={QuoteIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">{language === 'en' ? 'Daily Quote' : 'Cita Diaria'}</span>
+          </div>
           <div className="flex items-center space-x-2 flex-wrap justify-end">
             <span className={`px-2 py-1 rounded-full text-[10px] ${source === 'api' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}`}>
               {source === 'api' ? (language === 'en' ? 'Online' : 'En línea') : (language === 'en' ? 'Local' : 'Local')}
@@ -109,14 +107,14 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
-        </CardHeader>
-      ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col items-center justify-center p-4 text-center`}>
-        <div className="w-full flex flex-col justify-center items-center space-y-2 overflow-hidden">
-          <p className="text-foreground text-lg leading-snug italic line-clamp-4">"{quote.text}"</p>
-          <p className="text-muted-foreground text-sm">— {quote.author}</p>
         </div>
-      </CardContent>
-    </Card>
+      ) : null}
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-start p-4`}>
+        <div className="w-full flex flex-col justify-center space-y-2 overflow-hidden">
+          <p className="text-foreground text-lg leading-snug italic line-clamp-4 text-left">"{quote.text}"</p>
+          <p className="text-muted-foreground text-sm text-right">— {quote.author}</p>
+        </div>
+      </div>
+    </div>
   );
 }

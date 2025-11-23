@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { MapPin, RefreshCw, Search, Droplets, Wind } from 'lucide-react'
@@ -122,15 +122,13 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
   };
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2">
-              <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-5 h-5" />
-              Weather
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/MapPin.json" fallbackIcon={MapPin} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Weather</span>
+          </div>
           <div className="flex items-center space-x-2">
             {showSearchBar && (
               <div className="relative no-drag">
@@ -187,9 +185,9 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
               <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
             </Button>
           </div>
-        </CardHeader>
+        </div>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col ${compact ? 'p-2' : 'p-4'} items-start justify-start overflow-hidden`}>
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex ${compact ? 'p-2' : 'p-4'} items-center justify-start overflow-hidden`}>
 
         {weather ? (
           <div className="w-full space-y-4 mt-0.5 animate-in fade-in slide-in-from-bottom-2">
@@ -236,7 +234,7 @@ export default function WeatherWidget({ compact = false }: WeatherWidgetProps) {
             <p className="text-muted-foreground text-sm">Enter your city to see the local weather forecast</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

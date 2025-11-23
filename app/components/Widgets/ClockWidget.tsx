@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Clock as ClockIcon } from 'lucide-react'
 import { format } from 'date-fns';
@@ -24,15 +24,13 @@ export default function ClockWidget() {
   const dateFormat = 'EEEE, MMMM d, yyyy';
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2">
-              <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
-              Clock
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Clock</span>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setFormat24h(!format24h)}
@@ -42,9 +40,9 @@ export default function ClockWidget() {
               {format24h ? '24h' : '12h'}
             </button>
           </div>
-        </CardHeader>
+        </div>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex ${showWidgetHeaders ? 'items-start justify-start' : 'items-center justify-center'} overflow-hidden p-4`}>
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex items-center justify-center overflow-hidden p-4`}>
         <div className="text-center space-y-3">
           <p className="text-4xl md:text-5xl font-bold text-foreground font-mono tracking-tight leading-none">
             {format(time, timeFormat)}
@@ -53,7 +51,7 @@ export default function ClockWidget() {
             {format(time, dateFormat)}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

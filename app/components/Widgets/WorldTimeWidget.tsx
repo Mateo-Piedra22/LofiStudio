@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ 
 import { Button } from '@/components/ui/button';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Clock as ClockIcon, RefreshCw, Search, MapPin } from 'lucide-react'
@@ -110,15 +110,13 @@ export default function WorldTimeWidget() {
   }, [input]);
 
   return (
-    <Card className="h-full w-full flex flex-col rounded-xl overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
       {showWidgetHeaders ? (
-        <CardHeader className="h-11 px-2 py-1 flex items-center justify-between">
-          <CardTitle className="flex items-center justify-start text-lg font-semibold text-foreground">
-            <span className="flex items-center gap-2">
-              <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
-              World Time
-            </span>
-          </CardTitle>
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Clock.json" fallbackIcon={ClockIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">World Time</span>
+          </div>
           <div className="flex items-center space-x-2">
             {showSearchBar && (
               <div className="relative no-drag">
@@ -174,11 +172,11 @@ export default function WorldTimeWidget() {
               <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
             </Button>
           </div>
-        </CardHeader>
+        </div>
       ) : null}
-      <CardContent className={`flex-1 ${showWidgetHeaders ? '' : 'h-full w-full'} flex flex-col p-4 ${showWidgetHeaders ? 'items-start justify-start' : 'items-center justify-center'} overflow-hidden`}>
+      <div data-slot="content" className={`flex-1 min-h-0 h-full w-full flex p-4 ${showWidgetHeaders ? 'items-center justify-start' : 'items-center justify-start'} overflow-hidden`}>
         {timeISO ? (
-          <div className={`w-full flex ${showWidgetHeaders ? 'items-start justify-start' : 'items-center justify-center'} animate-in fade-in slide-in-from-bottom-2`}>
+          <div className={`w-full flex ${showWidgetHeaders ? 'items-center justify-start' : 'items-center justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <p className={`text-5xl md:text-6xl font-bold text-foreground leading-none tracking-tighter`}>{formatted}</p>
@@ -200,7 +198,7 @@ export default function WorldTimeWidget() {
             <p className="text-muted-foreground text-sm">Select a location to view its local time</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
