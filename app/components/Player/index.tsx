@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type React from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 export interface VideoInfo {
@@ -74,6 +75,8 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   const progressInterval = useRef<NodeJS.Timeout>();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [userPaused, setUserPaused] = useLocalStorage('playerUserPaused', false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const opts: YouTubeProps['opts'] = {
     height: '0',
@@ -821,8 +824,8 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
               )}
             </div>
           </div>
-          {showSearch && (
-            <div className="fixed inset-0 z-[120] flex items-end justify-center p-4" onClick={() => { setSearchResults([]); }}>
+          {showSearch && mounted && createPortal(
+            <div className="fixed inset-0 z-[120] flex items-end justify-center p-4" onClick={() => { setShowSearch(false); setSearchResults([]); }}>
               <div className="w-full max-w-2xl glass-panel rounded-2xl border border-border shadow-2xl p-4" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
                 <div className="relative">
                   <input
@@ -880,7 +883,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                   {mode === 'radio' && radioResults.length > 0 && null}
                 </div>
               </div>
-            </div>
+            </div>, document.body
           )}
 
           <div className="flex flex-col gap-4">
@@ -1103,13 +1106,13 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
         </div>
       ) : null}
       {showVideoBg && mode !== 'radio' && currentVideo ? (
-        <div style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none' }}>
-          <YouTube
-            videoId={currentVideo!.id}
-            opts={{ height: '100%', width: '100%', playerVars: { autoplay: 1, controls: 0, modestbranding: 1, playsinline: 1, mute: 1, rel: 0, fs: 0, cc_load_policy: 0, disablekb: 1, origin: typeof window !== 'undefined' ? window.location.origin : undefined } }}
-            onReady={onReadyBg}
-          />
-        </div>
+        <YouTube
+          videoId={currentVideo!.id}
+          className="yt-bg-container"
+          iframeClassName="yt-bg-iframe"
+          opts={{ height: '100%', width: '100%', playerVars: { autoplay: 1, controls: 0, modestbranding: 1, playsinline: 1, mute: 1, rel: 0, fs: 0, cc_load_policy: 0, disablekb: 1, origin: typeof window !== 'undefined' ? window.location.origin : undefined } }}
+          onReady={onReadyBg}
+        />
       ) : null}
       {mode === 'radio' && radioStation ? (
         <audio
