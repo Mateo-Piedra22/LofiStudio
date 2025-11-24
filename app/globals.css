@@ -89,6 +89,12 @@
   }
 }
 
+@layer base {
+  html, body, #__next {
+    height: 100%;
+  }
+}
+
 /* Lottie centering and sizing */
 lottie-player {
   display: inline-flex;

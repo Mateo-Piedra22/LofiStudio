@@ -64,6 +64,17 @@ export default function AmbientMixer() {
         };
     }, []);
 
+    useEffect(() => {
+        const open = () => setIsOpen(true)
+        const close = () => setIsOpen(false)
+        window.addEventListener('open-ambient-mixer', open as any)
+        window.addEventListener('close-ambient-mixer', close as any)
+        return () => {
+            window.removeEventListener('open-ambient-mixer', open as any)
+            window.removeEventListener('close-ambient-mixer', close as any)
+        }
+    }, [])
+
     const handleVolumeChange = (id: string, value: number[]) => {
         const v = value[0];
         setVolumes(prev => ({ ...prev, [id]: v }));

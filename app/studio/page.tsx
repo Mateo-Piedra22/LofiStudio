@@ -10,6 +10,7 @@ import { useCloudSync } from '@/lib/hooks/useCloudSync';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useToast, ToastContainer } from '@/app/components/Toast';
 import Player from '@/app/components/Player';
+import TopNavbar from '@/app/components/TopNavbar';
 import PomodoroTimer from '@/app/components/Timer/PomodoroTimer';
 import WeatherWidget from '@/app/components/Widgets/WeatherWidget';
 import ClockWidget from '@/app/components/Widgets/ClockWidget';
@@ -33,7 +34,7 @@ import DraggableWidget from '@/app/components/Widgets/DraggableWidget';
 import { SettingsIcon, Activity, BarChart3, X, Layout, Menu, Keyboard, EyeOff, Eye, Check, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { VideoInfo } from '@/app/components/Player';
-import UserAuth from '@/app/components/UserAuth';
+ 
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { z } from 'zod';
@@ -46,7 +47,6 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showWidgetManager, setShowWidgetManager] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
@@ -151,14 +151,49 @@ export default function Home() {
         else if (showStats) setShowStats(false);
         else if (showLogs) setShowLogs(false);
         else if (showWidgetManager) setShowWidgetManager(false);
-        else if (showMobileMenu) setShowMobileMenu(false);
         else if (isEditingLayout) setIsEditingLayout(false);
         else if (isZenMode) setIsZenMode(false);
       }
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [showKeyboardHelp, showSettings, showStats, showLogs, showWidgetManager, showMobileMenu, isEditingLayout]);
+  }, [showKeyboardHelp, showSettings, showStats, showLogs, showWidgetManager, isEditingLayout]);
+
+  useEffect(() => {
+    const toggle = () => setIsZenMode((prev) => !prev)
+    window.addEventListener('toggle-zen-mode', toggle as any)
+    return () => window.removeEventListener('toggle-zen-mode', toggle as any)
+  }, [])
+
+  useEffect(() => {
+    const toggleEdit = () => setIsEditingLayout((p) => !p)
+    const toggleHeaders = () => setShowWidgetHeaders((p: boolean) => !p)
+    const reauth = () => handleReauth()
+    const openStats = () => setShowStats(true)
+    const openLogs = () => setShowLogs(true)
+    const openSettingsEv = () => setShowSettings(true)
+    const openWM = () => setShowWidgetManager(true)
+    window.addEventListener('toggle-edit-layout', toggleEdit as any)
+    window.addEventListener('toggle-hide-headers', toggleHeaders as any)
+    window.addEventListener('open-reauth', reauth as any)
+    window.addEventListener('open-stats', openStats as any)
+    window.addEventListener('open-logs', openLogs as any)
+    window.addEventListener('open-settings', openSettingsEv as any)
+    window.addEventListener('open-widget-manager', openWM as any)
+    return () => {
+      window.removeEventListener('toggle-edit-layout', toggleEdit as any)
+      window.removeEventListener('toggle-hide-headers', toggleHeaders as any)
+      window.removeEventListener('open-reauth', reauth as any)
+      window.removeEventListener('open-stats', openStats as any)
+      window.removeEventListener('open-logs', openLogs as any)
+      window.removeEventListener('open-settings', openSettingsEv as any)
+      window.removeEventListener('open-widget-manager', openWM as any)
+    }
+  }, [])
+
+  useEffect(() => {
+    try { window.dispatchEvent(new CustomEvent('editing-layout-change', { detail: isEditingLayout })); } catch {}
+  }, [isEditingLayout])
 
   useEffect(() => {
     const openWidgetManagerHandler = () => setShowWidgetManager(true);
@@ -235,13 +270,12 @@ export default function Home() {
   useEffect(() => {
     const target = (() => {
       if (currentBreakpoint === 'lg') return { cols: 3, rows: 3, cap: 9 };
-      if (currentBreakpoint === 'md') return { cols: 2, rows: 3, cap: 6 };
-      if (currentBreakpoint === 'sm') return isLandscape ? { cols: 2, rows: 2, cap: 4 } : { cols: 1, rows: 3, cap: 3 };
+      if (currentBreakpoint === 'md') return { cols: 3, rows: 3, cap: 9 };
       return { cols: 1, rows: 3, cap: 3 };
     })();
     const ev = new CustomEvent('responsive:capacity', { detail: { capacity: target.cap } });
     window.dispatchEvent(ev);
-    if (currentBreakpoint === 'lg') return;
+    if (currentBreakpoint === 'lg' || currentBreakpoint === 'md') return;
     const enabled = widgets.filter(w => w.enabled);
     const heightUnitsFor = (t: string) => {
       const groupName = (sizeConfig.assignments as any)[t] || 'small';
@@ -659,46 +693,12 @@ export default function Home() {
     <>
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
 
-      <main className="relative h-screen w-full overflow-hidden font-sans selection:bg-primary/30">
+      <main className="h-screen w-full flex flex-col overflow-hidden font-sans selection:bg-primary/30">
+        <TopNavbar />
         <CommandPalette />
         <div className="absolute inset-0 z-0">
           <Background />
         </div>
-
-        {/* Floating Top Bar */}
-        {(!isEditingLayout || !isTopbarHidden) && (
-          <div data-ui="topbar" className={`fixed top-0 left-0 right-0 z-40 p-3 md:p-6 flex items-start justify-end transition-all duration-500 ${isZenMode ? 'opacity-0' : 'opacity-100'} ${isEditingLayout ? 'blur-sm' : ''}`} style={{ pointerEvents: 'none' }}>
-
-          <div className="flex items-center gap-3 pointer-events-auto mr-6">
-            <div className={`hidden md:flex items-center gap-2 glass-button p-1.5 rounded-full ${!canTopbarInteract ? 'pointer-events-none opacity-60' : 'pointer-events-auto'}`}>
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; toggleZenMode(); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Zen Mode">
-                <EyeOff className="w-4 h-4" />
-              </Button>
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; handleEditLayoutToggle(); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Edit Layout">
-                <Edit2 className="w-4 h-4" />
-              </Button>
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowStats(!showStats); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Stats">
-                <BarChart3 className="w-4 h-4" />
-              </Button>
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowSettings(!showSettings); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title="Settings">
-                <SettingsIcon className="w-4 h-4" />
-              </Button>
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowWidgetHeaders(!showWidgetHeaders); }} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10" title={showWidgetHeaders ? 'Hide Headers' : 'Show Headers'}>
-                {showWidgetHeaders ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </Button>
-            </div>
-            {needsReauth && (
-              <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; handleReauth(); }} variant="secondary" size="sm" className="glass border h-8">
-                Completar permisos
-              </Button>
-            )}
-            <UserAuth />
-            <Button disabled={!canTopbarInteract} onClick={() => { if (!canTopbarInteract) return; setShowMobileMenu(!showMobileMenu); }} variant="ghost" size="icon" className="md:hidden glass-button h-10 w-10 rounded-full text-foreground">
-              <Menu className="w-5 h-5" />
-            </Button>
-          </div>
-          </div>
-        )}
 
         {/* Edit Layout Dock */}
         {isEditingLayout && !isZenMode && !isTopbarHidden && (
@@ -710,7 +710,7 @@ export default function Home() {
                 <span className="text-xs text-muted-foreground">Grid</span>
                 <Button variant="default" size="sm" className="h-8">{(() => {
                   if (currentBreakpoint === 'lg') return '3x3';
-                  if (currentBreakpoint === 'md') return '2x3';
+                  if (currentBreakpoint === 'md') return '3x3';
                   if (currentBreakpoint === 'sm') return isLandscape ? '2x2' : '1x3';
                   return '1x3';
                 })()}</Button>
@@ -761,10 +761,10 @@ export default function Home() {
             className="layout"
             layouts={gridLayouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 3, md: 2, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
+            cols={{ lg: 3, md: 3, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
             rowHeight={rowHeight}
             maxRows={maxRows}
-            isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
+            isDraggable={(currentBreakpoint === 'lg' || currentBreakpoint === 'md') ? isEditingLayout : false}
             isResizable={false}
             isBounded
             draggableHandle=".widget-drag-handle"
@@ -780,7 +780,7 @@ export default function Home() {
             preventCollision
             compactType={null as any}
           >
-            {widgets.filter(w => w.enabled).slice(0, (currentBreakpoint === 'lg' ? 9 : currentBreakpoint === 'md' ? 6 : currentBreakpoint === 'sm' ? (isLandscape ? 4 : 3) : 3)).map(widget => (
+            {widgets.filter(w => w.enabled).slice(0, (currentBreakpoint === 'lg' ? 9 : currentBreakpoint === 'md' ? 9 : currentBreakpoint === 'sm' ? (isLandscape ? 4 : 3) : 3)).map(widget => (
               <DraggableWidget
                 key={widget.id}
                 isEditing={isEditingLayout}
@@ -806,9 +806,9 @@ export default function Home() {
           {isEditingLayout && (
             <div className="pointer-events-none absolute inset-0 z-20 px-4 py-4">
               {(() => {
-                const dims = currentBreakpoint === 'lg' ? { cols: 3, rows: 3 } : currentBreakpoint === 'md' ? { cols: 2, rows: 3 } : currentBreakpoint === 'sm' ? (isLandscape ? { cols: 2, rows: 2 } : { cols: 1, rows: 3 }) : { cols: 1, rows: 3 };
+                const dims = currentBreakpoint === 'lg' ? { cols: 3, rows: 3 } : currentBreakpoint === 'md' ? { cols: 3, rows: 3 } : { cols: 1, rows: 3 };
                 return (
-                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : dims.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-4`}>
+                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : 'grid-cols-1'} gap-x-4`}>
                     {Array.from({ length: dims.cols }).map((_, col) => (
                       <div key={col} className="flex flex-col gap-y-3">
                         {Array.from({ length: dims.rows }).map((_, row) => (

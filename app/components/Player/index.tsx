@@ -41,6 +41,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
   const [error, setError] = useState<string | null>(null);
   const [showVideoBg, setShowVideoBg] = useLocalStorage('playerVideoBg', false);
   const [mode, setMode] = useLocalStorage<'radio' | 'youtube'>('playerMode', 'radio');
+  const [isMobile, setIsMobile] = useState(false);
   type RadioStation = { stationuuid: string; name: string; favicon: string; url_resolved: string; country?: string; tags?: string };
   const [radioStation, setRadioStation] = useLocalStorage<RadioStation | null>('radioStation', null);
   const [radioResults, setRadioResults] = useState<RadioStation[]>([]);
@@ -130,6 +131,13 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
   }, [isPlaying]);
+
+  useEffect(() => {
+    const check = () => { try { setIsMobile((typeof window !== 'undefined' ? window.innerWidth : 1024) < 768); } catch {} };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const handlePlayPause = () => {
     if (mode === 'radio') {
@@ -474,24 +482,82 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   const collapsedUI = (
-    <div className="fixed left-1/2 -translate-x-1/2 z-[100] pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
-      <div className="glass-panel rounded-full p-1.5 pr-3 flex items-center gap-2 shadow-2xl border border-border hover:scale-105 transition-all group">
-        <button
-          onClick={handlePlayPause}
-          disabled={mode === 'radio' ? !radioStation : !currentVideo}
-          className={cn(
-            "h-9 w-9 rounded-full flex items-center justify-center transition-all shadow-lg",
-            mode === 'radio'
-              ? radioStation ? "bg-primary text-primary-foreground hover:scale-110" : "bg-accent/20 text-muted-foreground cursor-not-allowed"
-              : currentVideo ? "bg-primary text-primary-foreground hover:scale-110" : "bg-accent/20 text-muted-foreground cursor-not-allowed"
-          )}
-        >
-          {isPlaying ? (
-            <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" />
-          ) : (
-            <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />
-          )}
-        </button>
+    isMobile ? (
+      <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-auto">
+        <div className="glass-widget border-t px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {mode === 'radio' && radioStation && (
+              <div className="flex items-center gap-3">
+                {radioStation.favicon ? (
+                  <img src={radioStation.favicon} alt={radioStation.name} className={`w-10 h-10 rounded object-cover ${isPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
+                ) : (
+                  <AnimatedIcon animationSrc="/lottie/Music2.json" fallbackIcon={Music2} className={`w-6 h-6 ${isPlaying ? 'animate-pulse' : ''}`} />
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{radioStation.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{isPlaying ? 'Playing' : 'Paused'}</p>
+                </div>
+              </div>
+            )}
+            {mode !== 'radio' && currentVideo && (
+              <div className="flex items-center gap-3">
+                <img src={currentVideo.thumbnail} alt={currentVideo.title} className={`w-10 h-10 rounded object-cover ${isPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{currentVideo.title}</p>
+                  <p className="text-[11px] text-muted-foreground">{isPlaying ? 'Playing' : 'Paused'}</p>
+                </div>
+              </div>
+            )}
+            {mode !== 'radio' && !currentVideo && (
+              <p className="text-sm text-muted-foreground">No music selected</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handlePlayPause}
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-primary text-primary-foreground"
+              disabled={mode === 'radio' ? !radioStation : !currentVideo}
+            >
+              {isPlaying ? (
+                <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" />
+              ) : (
+                <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />
+              )}
+            </Button>
+            <Badge
+              variant={mode === 'radio' ? 'secondary' : 'default'}
+              className="px-2 py-0.5 text-[10px] cursor-pointer"
+              onClick={() => setMode(mode === 'radio' ? 'youtube' : 'radio')}
+            >
+              {mode === 'radio' ? 'Lofi Radio' : 'YouTube'}
+            </Badge>
+            <button onClick={() => setIsExpanded(true)} className="p-2 rounded-full hover:bg-accent/10 transition-colors">
+              <AnimatedIcon animationSrc="/lottie/ChevronUp.json" fallbackIcon={ChevronUp} className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="fixed left-1/2 -translate-x-1/2 z-[100] pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
+        <div className="glass-panel rounded-full p-1.5 pr-3 flex items-center gap-2 shadow-2xl border border-border hover:scale-105 transition-all group">
+          <button
+            onClick={handlePlayPause}
+            disabled={mode === 'radio' ? !radioStation : !currentVideo}
+            className={cn(
+              "h-9 w-9 rounded-full flex items-center justify-center transition-all shadow-lg",
+              mode === 'radio'
+                ? radioStation ? "bg-primary text-primary-foreground hover:scale-110" : "bg-accent/20 text-muted-foreground cursor-not-allowed"
+                : currentVideo ? "bg-primary text-primary-foreground hover:scale-110" : "bg-accent/20 text-muted-foreground cursor-not-allowed"
+            )}
+          >
+            {isPlaying ? (
+              <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" />
+            ) : (
+              <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />
+            )}
+          </button>
 
         {mode === 'radio' && radioStation && (
           <div className="flex items-center gap-3">
@@ -542,31 +608,132 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
           {mode === 'radio' ? 'Lofi Radio' : 'YouTube'}
         </Badge>
 
-        <button
-          onClick={() => setIsExpanded(true)}
-          className="ml-2 p-2 rounded-full hover:bg-accent/10 transition-colors"
-        >
-          <AnimatedIcon animationSrc="/lottie/ChevronUp.json" fallbackIcon={ChevronUp} className="w-4 h-4 text-muted-foreground" />
-        </button>
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="ml-2 p-2 rounded-full hover:bg-accent/10 transition-colors"
+          >
+            <AnimatedIcon animationSrc="/lottie/ChevronUp.json" fallbackIcon={ChevronUp} className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
       </div>
-    </div>
+    )
   );
 
   const expandedUI = (
-    <div className="fixed left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 animate-in slide-in-from-bottom-4 fade-in duration-300 pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
-      <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-border">
-        <div className="flex items-center justify-between px-6 py-3 bg-background/50 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Lofi Player</span>
+    isMobile ? (
+      <div className="fixed inset-0 z-[120] flex items-end justify-center">
+        <div className="w-full max-w-none glass-panel rounded-t-3xl overflow-hidden shadow-2xl border border-border">
+          <div className="flex items-center justify-between px-6 py-3 bg-background/50 border-b border-border">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Lofi Player</span>
+            </div>
+            <button onClick={() => setIsExpanded(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+              <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <AnimatedIcon animationSrc="/lottie/ChevronDown.json" fallbackIcon={ChevronDown} className="w-4 h-4" />
-          </button>
+          <div className="p-6 space-y-6">
+            {error && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 flex items-center justify-between">
+                <p className="text-sm text-destructive">{error}</p>
+                {currentVideo && (
+                  <a href={`https://youtube.com/watch?v=${currentVideo.id}`} target="_blank" rel="noopener noreferrer" className="text-xs px-2 py-1 rounded bg-destructive text-destructive-foreground hover:bg-destructive/90">Open on YouTube</a>
+                )}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button variant={mode === 'radio' ? 'default' : 'ghost'} size="sm" onClick={() => setMode('radio')}>Radio</Button>
+                <Button variant={mode === 'youtube' ? 'default' : 'ghost'} size="sm" onClick={() => setMode('youtube')}>YouTube</Button>
+              </div>
+              <div className="flex items-center gap-2">
+                {mode === 'radio' ? (
+                  <div className="flex items-center gap-1">
+                    <Button variant={radioGenre === 'lofi' ? 'default' : 'ghost'} size="sm" onClick={() => { setRadioGenre('lofi'); setRadioQuery(''); setRadioResults([]); }}>Lofi</Button>
+                    <Button variant={radioGenre === 'chillhop' ? 'default' : 'ghost'} size="sm" onClick={() => { setRadioGenre('chillhop'); setRadioQuery(''); setRadioResults([]); }}>Chillhop</Button>
+                    <Button variant={radioGenre === 'jazzhop' ? 'default' : 'ghost'} size="sm" onClick={() => { setRadioGenre('jazzhop'); setRadioQuery(''); setRadioResults([]); }}>Jazzhop</Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">Show Video</span>
+                    <Switch checked={showVideoBg} onCheckedChange={(v) => setShowVideoBg(!!v)} />
+                    <Button onClick={() => setShowSearch(true)} variant="ghost" size="sm" className="gap-2">
+                      <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
+                      Search
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+            {showSearch && (
+              <div className="fixed inset-0 z-[130] flex items-end justify-center" onClick={() => { setShowSearch(false); setSearchResults([]); }}>
+                <div className="w-full glass-panel rounded-t-2xl border border-border shadow-2xl p-4" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Button variant={mode === 'radio' ? 'default' : 'ghost'} size="sm" onClick={() => { setMode('radio'); setSearchQuery(''); setSearchResults([]); }}>Radio</Button>
+                      <Button variant={mode === 'youtube' ? 'default' : 'ghost'} size="sm" onClick={() => { setMode('youtube'); setSearchQuery(''); setRadioResults([]); }}>YouTube</Button>
+                    </div>
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={mode === 'radio' ? 'Search radio stations' : 'Search or paste a YouTube link'} className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 pl-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { if (mode === 'radio') setSearchQuery(searchQuery.trim()); else handleImportLink(); } }} />
+                    <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    {mode === 'youtube' && (() => {
+                      const parsed = parseYouTubeUrl(searchQuery.trim());
+                      if (!parsed) return null;
+                      return (
+                        <div className="absolute right-24 top-1/2 -translate-y-1/2">
+                          <Badge variant={parsed.type === 'playlist' ? 'secondary' : 'default'} className="px-2 py-0.5 text-[10px]">{parsed.type === 'playlist' ? 'Playlist link' : 'Video link'}</Badge>
+                        </div>
+                      );
+                    })()}
+                    {mode === 'youtube' && linkPreviewRef.current && (
+                      <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50">
+                        <div className="flex items-center gap-3 p-3">
+                          <img src={linkPreviewRef.current.thumbnail} className="w-10 h-10 rounded object-cover" />
+                          <span className="text-xs text-foreground truncate">{linkPreviewRef.current.title}</span>
+                          <Button onClick={handleImportLink} size="sm" className="ml-auto">Add</Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {mode === 'radio' ? (
+              <div className="text-center py-4 text-muted-foreground text-sm">Use the controls below to manage playback.</div>
+            ) : null}
+            <div className="flex items-center justify-between">
+              {mode !== 'radio' && (
+                <div className="flex items-center gap-2">
+                  <Button onClick={handlePrevious} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform"><AnimatedIcon animationSrc="/lottie/SkipBack.json" fallbackIcon={SkipBack} className="w-5 h-5" /></Button>
+                  <Button onClick={handlePlayPause} className="h-12 w-12 rounded-full bg-foreground text-background hover:bg-foreground/90 hover:scale-105 transition-all shadow-lg flex items-center justify-center">{isPlaying ? <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" /> : <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />}</Button>
+                  <Button onClick={handleNext} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform"><AnimatedIcon animationSrc="/lottie/SkipForward.json" fallbackIcon={SkipForward} className="w-5 h-5" /></Button>
+                </div>
+              )}
+              <div className="w-28 hidden sm:flex items-center gap-1">
+                <div className="flex-1 h-2 bg-muted rounded-full relative cursor-pointer" onClick={(e: React.MouseEvent<HTMLDivElement>) => { const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect(); const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)); handleVolumeChange(Math.round(ratio * 100)); }}>
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${volume}%` }} />
+                </div>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleVolumeChange(Math.max(0, volume - 10))}>-</Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleVolumeChange(Math.min(100, volume + 10))}>+</Button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    ) : (
+      <div className="fixed left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 animate-in slide-in-from-bottom-4 fade-in duration-300 pointer-events-auto" style={{ bottom: `calc(16px + env(safe-area-inset-bottom))` }}>
+        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-border">
+          <div className="flex items-center justify-between px-6 py-3 bg-background/50 border-b border-border">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Lofi Player</span>
+            </div>
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <AnimatedIcon animationSrc="/lottie/ChevronDown.json" fallbackIcon={ChevronDown} className="w-4 h-4" />
+            </button>
+          </div>
 
         <div className="p-6 space-y-6">
           {error && (
@@ -899,8 +1066,9 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+    )
   );
 
   return (
