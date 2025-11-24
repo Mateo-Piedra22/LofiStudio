@@ -14,6 +14,8 @@ export interface BackgroundConfig {
   videoId?: string; // For YouTube video backgrounds
   videoUrl?: string; // For direct video URLs
   imageUrl?: string;
+  imageKey?: string;
+  videoKey?: string;
 }
 
 const DEFAULT_VIDEO_ID = 'jfKfPfyJRdk';
@@ -28,6 +30,9 @@ export default function Background() {
   const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
   const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0);
   const [playerSize, setPlayerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [imgErrorCount, setImgErrorCount] = useState(0);
+  const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
+  const [cachedVideoUrl, setCachedVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -83,6 +88,88 @@ export default function Background() {
     }
   }, [])
 
+  useEffect(() => {
+    let active = true
+    const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open('lofi-cache', 1)
+      req.onupgradeneeded = () => {
+        const db = req.result
+        if (!db.objectStoreNames.contains('background')) db.createObjectStore('background')
+      }
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error)
+    })
+    const putBlob = async (key: string, blob: Blob) => {
+      const db = await openDB()
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction('background', 'readwrite')
+        const store = tx.objectStore('background')
+        const r = store.put(blob, key)
+        r.onsuccess = () => resolve()
+        r.onerror = () => reject(r.error)
+      })
+      db.close()
+    }
+    const getBlob = async (key: string) => {
+      const db = await openDB()
+      const blob = await new Promise<Blob | null>((resolve, reject) => {
+        const tx = db.transaction('background')
+        const store = tx.objectStore('background')
+        const r = store.get(key)
+        r.onsuccess = () => resolve((r.result as Blob) || null)
+        r.onerror = () => reject(r.error)
+      })
+      db.close()
+      return blob
+    }
+    const cacheImage = async () => {
+      if (config.type !== 'image') return
+      const key = config.imageKey || 'background_image'
+      if (config.imageKey) {
+        const blob = await getBlob(key)
+        if (blob && active) setCachedImageUrl(URL.createObjectURL(blob))
+        return
+      }
+      const url = config.imageUrl
+      if (!url) return
+      try {
+        const res = await fetch(url)
+        if (!res.ok) return
+        const blob = await res.blob()
+        await putBlob(key, blob)
+        if (active) {
+          setCachedImageUrl(URL.createObjectURL(blob))
+          setConfig({ ...config, imageKey: key })
+        }
+      } catch {}
+    }
+    const cacheVideo = async () => {
+      if (config.type !== 'video') return
+      if (config.videoId) return
+      const key = config.videoKey || 'background_video'
+      if (config.videoKey) {
+        const blob = await getBlob(key)
+        if (blob && active) setCachedVideoUrl(URL.createObjectURL(blob))
+        return
+      }
+      const url = config.videoUrl
+      if (!url) return
+      try {
+        const res = await fetch(url)
+        if (!res.ok) return
+        const blob = await res.blob()
+        await putBlob(key, blob)
+        if (active) {
+          setCachedVideoUrl(URL.createObjectURL(blob))
+          setConfig({ ...config, videoKey: key })
+        }
+      } catch {}
+    }
+    cacheImage()
+    cacheVideo()
+    return () => { active = false }
+  }, [config])
+
   if (!isLoaded) return null;
 
   return (
@@ -93,11 +180,8 @@ export default function Background() {
         )}
 
         {config.type === 'video' && config.videoId && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60"
-              style={{ width: `${playerSize.w}px`, height: `${playerSize.h}px` }}
-            >
+          <div className="yt-bg-container">
+            <div className="yt-bg-iframe opacity-60">
               <div className="absolute inset-0">
                 <YouTube
                   videoId={config.videoId}
@@ -150,11 +234,25 @@ export default function Background() {
           loops={SCENIC_LOOPS}
         />
       )}
-      {config.type === 'video' && config.videoUrl && (
-        <video src={config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" />
+      {config.type === 'video' && (config.videoUrl || cachedVideoUrl) && (
+        <video src={cachedVideoUrl || config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" />
       )}
-      {config.type === 'image' && config.imageUrl && (
-        <img src={config.imageUrl} className="fixed inset-0 -z-50 w-full h-full object-cover" />
+      {config.type === 'image' && (config.imageUrl || cachedImageUrl) && (
+        <img
+          src={cachedImageUrl || config.imageUrl}
+          className="fixed inset-0 -z-50 w-full h-full object-cover"
+          onError={() => {
+            try {
+              if (imgErrorCount < 2) {
+                setImgErrorCount((v) => v + 1);
+                const fallback = `https://source.unsplash.com/1920x1080/?${encodeURIComponent('lofi,study')}&sig=${Date.now()}`;
+                setConfig({ type: 'image', imageUrl: fallback });
+              } else {
+                setConfig({ type: 'gradient' });
+              }
+            } catch {}
+          }}
+        />
       )}
     </>
   );

@@ -344,7 +344,7 @@ export default function Settings({
                 <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Image className="w-4 h-4" /> Unsplash</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Search Unsplash (e.g., cozy room, rainy day)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm" onChange={(e) => setUnsplashQuery(e.target.value)} />
-                  <Button onClick={() => setBackgroundConfig({ type: 'image', imageUrl: `https://source.unsplash.com/random/1920x1080/?${unsplashQuery || 'lofi,study'}` })} className="w-full" variant="secondary">Load Random Unsplash Image</Button>
+                  <Button onClick={() => setBackgroundConfig({ type: 'image', imageUrl: `https://source.unsplash.com/1920x1080/?${encodeURIComponent(unsplashQuery || 'lofi,study')}&sig=${Date.now()}` })} className="w-full" variant="secondary">Load Random Unsplash Image</Button>
                   <Button onClick={() => window.open('https://unsplash.com/wallpapers', '_blank', 'noopener')} className="w-full" variant="outline">Open Unsplash Wallpapers</Button>
                 </div>
               </div>

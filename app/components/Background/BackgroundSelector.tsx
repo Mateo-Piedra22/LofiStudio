@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,11 +16,16 @@ interface BackgroundSelectorProps {
 
 export default function BackgroundSelector({ current, onChange, onClose, loops }: BackgroundSelectorProps) {
   const [unsplashQuery, setUnsplashQuery] = useState('')
+  const [unsplashSeed, setUnsplashSeed] = useState(0)
   const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0)
   const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0)
   const ROOM = ((variants as any).room as Array<{ id: string; name: string }>)
   const CAFE = ((variants as any).cafe as Array<{ id: string; name: string }>)
   if (typeof window === 'undefined') return null
+  const encodedQuery = useMemo(() => encodeURIComponent(unsplashQuery || 'lofi,study'), [unsplashQuery])
+  const unsplashResults = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/1920x1080/?${encodedQuery}&sig=${unsplashSeed * 100 + i + 1}`)
+  }, [encodedQuery, unsplashSeed])
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-md animate-in fade-in duration-200">
       <Card className="w-full max-w-3xl max-h-[80vh] overflow-y-auto">
@@ -111,12 +116,31 @@ export default function BackgroundSelector({ current, onChange, onClose, loops }
                 onChange={(e) => setUnsplashQuery(e.target.value)}
               />
               <Button
-                onClick={() => onChange({ type: 'image', imageUrl: `https://source.unsplash.com/random/1920x1080/?${unsplashQuery || 'lofi,study'}` })}
+                onClick={() => onChange({ type: 'image', imageUrl: `https://source.unsplash.com/1920x1080/?${encodedQuery}&sig=${Date.now()}` })}
                 className="w-full"
                 variant="secondary"
               >
                 Load Random Unsplash Image
               </Button>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
+                {unsplashResults.map((url, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => onChange({ type: 'image', imageUrl: url })}
+                    className={`relative group overflow-hidden rounded-xl border transition-all text-left aspect-video ${current.type === 'image' && current.imageUrl === url ? 'border-primary ring-2 ring-primary/50' : 'glass-button'}`}
+                    aria-label={`Unsplash result ${idx + 1}`}
+                  >
+                    <img
+                      src={url}
+                      alt={`Unsplash ${unsplashQuery || 'lofi study'}`}
+                      className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+                  </button>
+                ))}
+              </div>
+              <Button onClick={() => setUnsplashSeed((v) => v + 1)} className="w-full" variant="outline">Regenerate Results</Button>
               <Button
                 onClick={() => window.open('https://unsplash.com/wallpapers', '_blank', 'noopener')}
                 className="w-full"
