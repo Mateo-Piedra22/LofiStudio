@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,7 @@ export default function Settings({
   const [availableCalendars, setAvailableCalendars] = useState<any[]>([]);
   const [availableTaskLists, setAvailableTaskLists] = useState<any[]>([]);
   const [unsplashQuery, setUnsplashQuery] = useState('');
+  const [unsplashSeed, setUnsplashSeed] = useState(0);
   const ROOM_VARIANTS = (variants as any).room as Array<{ id: string; name: string }>;
   const CAFE_VARIANTS = (variants as any).cafe as Array<{ id: string; name: string }>;
   const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
@@ -202,6 +203,16 @@ export default function Settings({
     }
   };
 
+  const buildUnsplashQuery = (q: string) => {
+    const base = (q || 'lofi,study').trim();
+    const parts = base.split(',').map((p) => p.trim().replace(/\s+/g, '+')).filter(Boolean);
+    return parts.join(',');
+  };
+  const unsplashQueryStr = useMemo(() => buildUnsplashQuery(unsplashQuery), [unsplashQuery]);
+  const unsplashResults = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/featured/400x300?${unsplashQueryStr}&sig=${unsplashSeed * 100 + i + 1}`);
+  }, [unsplashQueryStr, unsplashSeed]);
+
   const [ts, setTs] = useState<number | null>(null);
   const [dy, setDy] = useState<number>(0);
   const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
@@ -344,7 +355,16 @@ export default function Settings({
                 <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Image className="w-4 h-4" /> Unsplash</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Search Unsplash (e.g., cozy room, rainy day)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm" onChange={(e) => setUnsplashQuery(e.target.value)} />
-                  <Button onClick={() => setBackgroundConfig({ type: 'image', imageUrl: `https://source.unsplash.com/1920x1080/?${encodeURIComponent(unsplashQuery || 'lofi,study')}&sig=${Date.now()}` })} className="w-full" variant="secondary">Load Random Unsplash Image</Button>
+                  <Button onClick={() => setBackgroundConfig({ type: 'image', imageUrl: `https://source.unsplash.com/1920x1080/?${unsplashQueryStr}&sig=${Date.now()}` })} className="w-full" variant="secondary">Load Random Unsplash Image</Button>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
+                    {unsplashResults.map((url, idx) => (
+                      <button key={idx} onClick={() => setBackgroundConfig({ type: 'image', imageUrl: url })} className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'image' && backgroundConfig.imageUrl === url ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`} aria-label={`Unsplash result ${idx + 1}`}>
+                        <img src={url} alt={unsplashQuery || 'unsplash'} className="absolute inset-0 w-full h-full object-cover opacity-70" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+                      </button>
+                    ))}
+                  </div>
+                  <Button onClick={() => setUnsplashSeed((v) => v + 1)} className="w-full" variant="outline">Regenerate Results</Button>
                   <Button onClick={() => window.open('https://unsplash.com/wallpapers', '_blank', 'noopener')} className="w-full" variant="outline">Open Unsplash Wallpapers</Button>
                 </div>
               </div>
@@ -354,20 +374,56 @@ export default function Settings({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-xs text-muted-foreground">Upload Image</label>
-                    <input type="file" accept="image/*" onChange={(e) => {
+                    <input type="file" accept="image/*" onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      const url = URL.createObjectURL(file);
-                      setBackgroundConfig({ type: 'image', imageUrl: url } as any);
+                      const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
+                        const req = indexedDB.open('lofi-cache', 1);
+                        req.onupgradeneeded = () => {
+                          const db = req.result;
+                          if (!db.objectStoreNames.contains('background')) db.createObjectStore('background');
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                      });
+                      const db = await openDB();
+                      await new Promise<void>((resolve, reject) => {
+                        const tx = db.transaction('background', 'readwrite');
+                        const store = tx.objectStore('background');
+                        const r = store.put(file, 'background_image');
+                        r.onsuccess = () => resolve();
+                        r.onerror = () => reject(r.error);
+                      });
+                      db.close();
+                      const objectUrl = URL.createObjectURL(file);
+                      setBackgroundConfig({ type: 'image', imageUrl: objectUrl, imageKey: 'background_image' } as any);
                     }} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs text-muted-foreground">Upload Video</label>
-                    <input type="file" accept="video/*" onChange={(e) => {
+                    <input type="file" accept="video/*" onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      const url = URL.createObjectURL(file);
-                      setBackgroundConfig({ type: 'video', videoUrl: url });
+                      const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
+                        const req = indexedDB.open('lofi-cache', 1);
+                        req.onupgradeneeded = () => {
+                          const db = req.result;
+                          if (!db.objectStoreNames.contains('background')) db.createObjectStore('background');
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                      });
+                      const db = await openDB();
+                      await new Promise<void>((resolve, reject) => {
+                        const tx = db.transaction('background', 'readwrite');
+                        const store = tx.objectStore('background');
+                        const r = store.put(file, 'background_video');
+                        r.onsuccess = () => resolve();
+                        r.onerror = () => reject(r.error);
+                      });
+                      db.close();
+                      const objectUrl = URL.createObjectURL(file);
+                      setBackgroundConfig({ type: 'video', videoUrl: objectUrl, videoKey: 'background_video' } as any);
                     }} />
                   </div>
                 </div>
