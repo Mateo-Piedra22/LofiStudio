@@ -71,7 +71,8 @@ export default function GifWidget() {
               size="icon"
               variant="ghost"
               disabled={loading}
-              className="md:h-8 md:w-8 h-11 w-11 hover:bg-accent/10"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Get New GIF"
               aria-label="Get New GIF"
             >
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

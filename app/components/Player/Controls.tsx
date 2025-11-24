@@ -29,19 +29,16 @@ export default function Controls({ isPlaying, volume, onPlayPause, onVolumeChang
       </Button>
 
       <div className="flex items-center gap-2 flex-1 max-w-xs">
-        <Button
+        <button
           onClick={() => onVolumeChange(volume === 0 ? 50 : 0)}
-          variant="ghost"
-          size="icon"
-          className="md:h-8 md:w-8 h-11 w-11"
-          aria-label={volume === 0 ? 'Unmute' : 'Mute'}
+          className="text-foreground hover:text-primary transition-colors"
         >
           {volume === 0 ? (
             <AnimatedIcon animationSrc="/lottie/VolumeX.json" fallbackIcon={VolumeX} className="w-5 h-5" />
           ) : (
             <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className="w-5 h-5" />
           )}
-        </Button>
+        </button>
         <input
           type="range"
           min="0"

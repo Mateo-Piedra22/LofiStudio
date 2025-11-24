@@ -155,20 +155,22 @@ export default function WorldTimeWidget() {
               size="icon"
               variant="ghost"
               disabled={loading}
-              className="md:h-8 md:w-8 h-11 w-11 hover:bg-accent/10"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Refresh Time"
               aria-label="Refresh Time"
             >
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-              <Button
-                onClick={() => setShowSearchBar((v) => !v)}
-                size="icon"
-                variant="ghost"
-                className="md:h-8 md:w-8 h-11 w-11 hover:bg-accent/10"
-                aria-label="Search"
-              >
-                <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
-              </Button>
+            <Button
+              onClick={() => setShowSearchBar((v) => !v)}
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 hover:bg-accent/10"
+              title="Search"
+              aria-label="Search"
+            >
+              <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       ) : null}

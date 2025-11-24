@@ -27,7 +27,7 @@ export default function BackgroundSelector({ current, onChange, onClose, loops }
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-foreground">
             <span>Customize Atmosphere</span>
-            <Button onClick={onClose} size="icon" variant="ghost" className="md:h-10 md:w-10 h-11 w-11 hover:bg-accent hover:text-accent-foreground">
+            <Button onClick={onClose} size="icon" variant="ghost" className="hover:bg-accent hover:text-accent-foreground">
               <X className="w-5 h-5" />
             </Button>
           </CardTitle>

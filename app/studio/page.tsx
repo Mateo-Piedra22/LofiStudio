@@ -24,7 +24,6 @@ import CommandPalette from '@/app/components/CommandPalette';
 import Background from '@/app/components/Background';
 import Settings from '@/app/components/Settings';
 import AmbientMixer from '@/app/components/AmbientMixer';
-import { useIsMobile } from '@/hooks/use-mobile';
 import QuoteWidget from '@/app/components/Widgets/QuoteWidget';
 import CalendarWidget from '@/app/components/Widgets/CalendarWidget';
 import NotesWidget from '@/app/components/Widgets/NotesWidget';
@@ -74,7 +73,6 @@ export default function Home() {
   const maxRows = 3;
   const [rowHeight, setRowHeight] = useState<number>(60);
   const [isLandscape, setIsLandscape] = useState<boolean>(true);
-  const isMobile = useIsMobile();
   const touchStartYRef = useRef<number | null>(null);
   const touchDeltaYRef = useRef<number>(0);
   const [beforeDrag, setBeforeDrag] = useState<any[]>([]);
@@ -763,10 +761,10 @@ export default function Home() {
             className="layout"
             layouts={gridLayouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 3, md: 2, sm: 1, xs: 1, xxs: 1 }}
+            cols={{ lg: 3, md: 2, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
             rowHeight={rowHeight}
             maxRows={maxRows}
-            isDraggable={currentBreakpoint === 'lg' && isEditingLayout && !isMobile}
+            isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
             isResizable={false}
             isBounded
             draggableHandle=".widget-drag-handle"
@@ -777,7 +775,7 @@ export default function Home() {
             onDrag={onDragging}
             onDragStop={onItemChanged}
             onResizeStop={onItemChanged}
-            margin={[16, 16]}
+            margin={[16, 12]}
             containerPadding={[16, 16]}
             preventCollision
             compactType={null as any}

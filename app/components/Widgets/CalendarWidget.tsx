@@ -274,7 +274,7 @@ export default function CalendarWidget() {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span className="text-foreground">Tasks for {selectedDay ? format(selectedDay, 'PPP') : ''}</span>
-              <Button onClick={closeDay} variant="ghost" size="icon" className="md:h-8 md:w-8 h-11 w-11"><AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-4 h-4" /></Button>
+              <Button onClick={closeDay} variant="ghost" size="icon"><AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-4 h-4" /></Button>
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">

@@ -216,7 +216,7 @@ export default function Settings({
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-foreground">
             <span>Settings</span>
-            <Button onClick={onClose} size="icon" variant="ghost" className="md:h-10 md:w-10 h-11 w-11">
+            <Button onClick={onClose} size="icon" variant="ghost">
               <X className="w-5 h-5" />
             </Button>
           </CardTitle>

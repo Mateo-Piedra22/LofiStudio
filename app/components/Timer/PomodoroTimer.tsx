@@ -115,13 +115,13 @@ export default function PomodoroTimer({ currentVideo }: PomodoroTimerProps) {
               onClick={() => reset()}
               variant="ghost"
               size="icon"
-              className="md:h-10 md:w-10 h-11 w-11 text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full"
             >
               <RotateCcw className="w-5 h-5" />
             </Button>
             <Button
               onClick={isActive ? pause : start}
-              className="md:h-9 md:w-9 h-11 w-11 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all shadow-lg flex items-center justify-center"
+              className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all shadow-lg flex items-center justify-center"
             >
               {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
             </Button>
@@ -129,7 +129,7 @@ export default function PomodoroTimer({ currentVideo }: PomodoroTimerProps) {
               onClick={() => setNotificationsEnabled(!notificationsEnabled)}
               variant="ghost"
               size="icon"
-              className={`md:h-10 md:w-10 h-11 w-11 rounded-full ${notificationsEnabled ? 'text-foreground' : 'text-muted-foreground'}`}
+              className={`rounded-full ${notificationsEnabled ? 'text-foreground' : 'text-muted-foreground'}`}
             >
               {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
             </Button>
