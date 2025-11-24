@@ -44,6 +44,7 @@ export default function Settings({
   const [availableTaskLists, setAvailableTaskLists] = useState<any[]>([]);
   const [unsplashQuery, setUnsplashQuery] = useState('');
   const [unsplashSeed, setUnsplashSeed] = useState(0);
+  const [backgroundBlur, setBackgroundBlur] = useLocalStorage('backgroundBlur', 0);
   const ROOM_VARIANTS = (variants as any).room as Array<{ id: string; name: string }>;
   const CAFE_VARIANTS = (variants as any).cafe as Array<{ id: string; name: string }>;
   const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
@@ -237,23 +238,39 @@ export default function Settings({
           <div>
             <h3 className="text-foreground font-semibold mb-3">Theme</h3>
             <ThemeSelector theme={theme} setTheme={setTheme} />
-            <div className="mt-4 p-4 rounded-lg glass border">
-              <label className="text-sm text-muted-foreground mb-2 block">Glass Intensity</label>
-              <div className="flex items-center gap-3">
-                <Slider
-                  value={[glassOpacity]}
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  onValueChange={(val: number[]) => {
-                    const v = Math.max(0, Math.min(1, val[0]));
-                    setGlassOpacity(v);
-                    applyGlass(v);
-                  }}
-                />
-                <span className="text-xs text-muted-foreground min-w-[3ch] text-right">{glassOpacity.toFixed(2)}</span>
-              </div>
+          <div className="mt-4 p-4 rounded-lg glass border">
+            <label className="text-sm text-muted-foreground mb-2 block">Glass Intensity</label>
+            <div className="flex items-center gap-3">
+              <Slider
+                value={[glassOpacity]}
+                min={0}
+                max={1}
+                step={0.05}
+                onValueChange={(val: number[]) => {
+                  const v = Math.max(0, Math.min(1, val[0]));
+                  setGlassOpacity(v);
+                  applyGlass(v);
+                }}
+              />
+              <span className="text-xs text-muted-foreground min-w-[3ch] text-right">{glassOpacity.toFixed(2)}</span>
             </div>
+          </div>
+          <div className="mt-3 p-4 rounded-lg glass border">
+            <label className="text-sm text-muted-foreground mb-2 block">Background Blur</label>
+            <div className="flex items-center gap-3">
+              <Slider
+                value={[backgroundBlur]}
+                min={0}
+                max={30}
+                step={1}
+                onValueChange={(val: number[]) => {
+                  const v = Math.max(0, Math.min(30, val[0]));
+                  setBackgroundBlur(v);
+                }}
+              />
+              <span className="text-xs text-muted-foreground min-w-[3ch] text-right">{Number(backgroundBlur).toFixed(0)}px</span>
+            </div>
+          </div>
           </div>
 
           <div>

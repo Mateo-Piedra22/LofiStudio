@@ -33,6 +33,7 @@ export default function Background() {
   const [imgErrorCount, setImgErrorCount] = useState(0);
   const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
   const [cachedVideoUrl, setCachedVideoUrl] = useState<string | null>(null);
+  const [backgroundBlur] = useLocalStorage('backgroundBlur', 0);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -180,12 +181,12 @@ export default function Background() {
     <>
       <div className="fixed inset-0 -z-50 overflow-hidden">
         {config.type === 'gradient' && (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 animate-gradient-xy" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 animate-gradient-xy" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }} />
         )}
 
         {config.type === 'video' && config.videoId && (
           <div className="yt-bg-container">
-            <div className="yt-bg-iframe opacity-60">
+            <div className="yt-bg-iframe opacity-60" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }}>
               <div className="absolute inset-0">
                 <YouTube
                   videoId={config.videoId}
@@ -239,12 +240,13 @@ export default function Background() {
         />
       )}
       {config.type === 'video' && (config.videoUrl || cachedVideoUrl) && (
-        <video src={cachedVideoUrl || config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" />
+        <video src={cachedVideoUrl || config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }} />
       )}
       {config.type === 'image' && (cachedImageUrl || (config.imageUrl && !config.imageKey)) && (
         <img
           src={cachedImageUrl || config.imageUrl}
           className="fixed inset-0 -z-50 w-full h-full object-cover"
+          style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }}
           onError={() => {
             try {
               if (imgErrorCount < 2) {
