@@ -18,6 +18,7 @@ export interface VideoInfo {
   title: string;
   thumbnail: string;
   duration?: string | null;
+  viewCount?: number;
 }
 
 interface PlayerProps {
@@ -251,6 +252,16 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
       const mm = String(Math.floor(total / 60) % 60).padStart(2, '0');
       const ss = String(total % 60).padStart(2, '0');
       return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+    } catch { return ''; }
+  };
+
+  const formatViews = (n?: number): string => {
+    try {
+      const v = typeof n === 'number' ? n : 0;
+      if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(1)}B views`;
+      if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M views`;
+      if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K views`;
+      return `${v} views`;
     } catch { return ''; }
   };
 
@@ -860,7 +871,9 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                           <img src={video.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground truncate">{video.title}</p>
-                            {video.duration ? <p className="text-[11px] text-muted-foreground">{formatIsoDuration(video.duration)}</p> : null}
+                            <p className="text-[11px] text-muted-foreground">
+                              {video.duration ? `${formatIsoDuration(video.duration)} • ${formatViews((video as any).viewCount)}` : `${formatViews((video as any).viewCount)}`}
+                            </p>
                           </div>
                         </button>
                       ))}

@@ -24,11 +24,8 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
         query + ' lofi'
-      )}&type=video&videoCategoryId=10&maxResults=10&key=${apiKey}`,
-      {
-        // Add timeout and cache
-        next: { revalidate: 3600 },
-      }
+      )}&type=video&order=viewCount&videoCategoryId=10&maxResults=25&key=${apiKey}`,
+      { next: { revalidate: 3600 } }
     );
 
     if (!response.ok) {
@@ -50,11 +47,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const items = (data.items || []).map((item: any) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.medium.url,
-    }));
+    type SearchItem = { id: string; title: string; thumbnail: string; channelTitle?: string; publishedAt?: string; viewCount?: number; duration?: string };
+    const baseItems: SearchItem[] = (data.items || [])
+      .filter((it: any) => !!it?.id?.videoId)
+      .map((item: any): SearchItem => ({
+        id: item.id.videoId,
+        title: item.snippet?.title,
+        thumbnail: item.snippet?.thumbnails?.medium?.url || `https://img.youtube.com/vi/${item.id.videoId}/mqdefault.jpg`,
+        channelTitle: item.snippet?.channelTitle,
+        publishedAt: item.snippet?.publishedAt,
+      }));
+
+    if (baseItems.length === 0) {
+      return NextResponse.json({ items: [] });
+    }
+
+    const ids = baseItems.map((x: SearchItem) => x.id).join(',');
+    const detailsResp = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails,snippet&id=${ids}&key=${apiKey}`, { next: { revalidate: 3600 } });
+    const detailsJson = await detailsResp.json().catch(() => ({ items: [] }));
+    const statsMap = new Map<string, { viewCount: number; duration?: string }>();
+    for (const v of detailsJson.items || []) {
+      const vc = Number(v?.statistics?.viewCount || 0);
+      statsMap.set(v.id, { viewCount: isNaN(vc) ? 0 : vc, duration: v?.contentDetails?.duration || undefined });
+    }
+    const items: SearchItem[] = baseItems
+      .map((x: SearchItem): SearchItem => ({ ...x, viewCount: statsMap.get(x.id)?.viewCount || 0, duration: statsMap.get(x.id)?.duration }))
+      .sort((a: SearchItem, b: SearchItem) => (b.viewCount || 0) - (a.viewCount || 0));
 
     return NextResponse.json({ items });
   } catch (error: any) {
