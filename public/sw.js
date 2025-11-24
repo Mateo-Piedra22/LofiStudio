@@ -17,18 +17,20 @@ async function networkFirst(req) {
     return fresh
   } catch (e) {
     const cached = await caches.match(req)
-    return cached || caches.match('/')
+    return cached || new Response('', { status: 503 })
   }
 }
 
 async function staleWhileRevalidate(req) {
   const cache = await caches.open(CACHE_NAME)
   const cached = await cache.match(req)
-  const fetchPromise = fetch(req).then((resp) => {
+  try {
+    const resp = await fetch(req)
     cache.put(req, resp.clone())
     return resp
-  }).catch(() => cached)
-  return cached || fetchPromise
+  } catch (e) {
+    return cached || new Response('', { status: 503 })
+  }
 }
 
 self.addEventListener('fetch', (event) => {
@@ -44,9 +46,5 @@ self.addEventListener('fetch', (event) => {
       return
     }
   }
-  if (url.hostname === 'source.unsplash.com') {
-    event.respondWith(staleWhileRevalidate(event.request))
-    return
-  }
-  event.respondWith(staleWhileRevalidate(event.request))
+  // Do not intercept cross-origin requests to avoid CORS/opaque response issues
 })

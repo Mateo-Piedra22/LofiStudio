@@ -29,7 +29,7 @@ export default function BackgroundSelector({ current, onChange, onClose, loops }
   }
   const queryStr = useMemo(() => buildUnsplashQuery(unsplashQuery), [unsplashQuery])
   const unsplashResults = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/featured/400x300?${queryStr}&sig=${unsplashSeed * 100 + i + 1}`)
+    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/400x300/?${queryStr}&sig=${unsplashSeed * 100 + i + 1}`)
   }, [queryStr, unsplashSeed])
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-md animate-in fade-in duration-200">

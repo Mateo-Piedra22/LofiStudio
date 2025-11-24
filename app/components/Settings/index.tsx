@@ -210,7 +210,7 @@ export default function Settings({
   };
   const unsplashQueryStr = useMemo(() => buildUnsplashQuery(unsplashQuery), [unsplashQuery]);
   const unsplashResults = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/featured/400x300?${unsplashQueryStr}&sig=${unsplashSeed * 100 + i + 1}`);
+    return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/400x300/?${unsplashQueryStr}&sig=${unsplashSeed * 100 + i + 1}`);
   }, [unsplashQueryStr, unsplashSeed]);
 
   const [ts, setTs] = useState<number | null>(null);

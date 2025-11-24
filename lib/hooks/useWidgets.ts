@@ -68,7 +68,7 @@ export function useWidgets() {
   const presets: WidgetPreset[] = (presetsJson as any).presets as any;
   // We need to access the background setter, but it's in another component.
   // We can store the background preference in localStorage directly here as a side effect of applying a preset.
-  const [, setBackgroundConfig] = useLocalStorage('backgroundConfig', { type: 'gradient' });
+  const [backgroundConfig, setBackgroundConfig] = useLocalStorage('backgroundConfig', { type: 'gradient' });
   const [, setPlaylist] = useLocalStorage<any[]>('playlist', []);
   const [, setCurrentVideo] = useLocalStorage<any | null>('currentVideo', null);
   const [, setQuoteCategory] = useLocalStorage('quoteCategory', 'motivation');
@@ -220,7 +220,18 @@ export function useWidgets() {
       setWidgets(newWidgets);
 
       if (preset.background) {
-        setBackgroundConfig(preset.background);
+        try {
+          let existing: any = null;
+          try {
+            existing = JSON.parse(window.localStorage.getItem('backgroundConfig') || 'null');
+          } catch {}
+          const current = existing || (backgroundConfig as any);
+          if (!current || current.type === 'gradient') {
+            setBackgroundConfig(preset.background);
+          }
+        } catch {
+          setBackgroundConfig(preset.background);
+        }
       }
 
       if (preset.musicPlaylist && preset.musicPlaylist.length > 0) {
