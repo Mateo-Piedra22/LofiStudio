@@ -35,7 +35,7 @@ export default function KeyboardShortcutsHelp({ onClose }: KeyboardShortcutsHelp
               onClick={onClose}
               variant="ghost"
               size="icon"
-              className="text-foreground hover:bg-accent/10"
+              className="md:h-10 md:w-10 h-11 w-11 text-foreground hover:bg-accent/10"
             >
               <X className="w-5 h-5" />
             </Button>

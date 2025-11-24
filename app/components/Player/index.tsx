@@ -774,27 +774,27 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
             <div className="flex items-center justify-between">
                {mode !== 'radio' && (
                  <div className="flex items-center gap-2">
-                   <Button
-                     onClick={() => setShuffle(!shuffle)}
-                     variant="ghost"
-                     size="icon"
-                     className={cn("h-8 w-8 rounded-full", shuffle ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
-                   >
-                     <AnimatedIcon animationSrc="/lottie/Shuffle.json" fallbackIcon={Shuffle} className="w-4 h-4" />
-                   </Button>
-                   <Button
-                     onClick={() => setRepeat(!repeat)}
-                     variant="ghost"
-                     size="icon"
-                     className={cn("h-8 w-8 rounded-full", repeat ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
-                   >
-                     <AnimatedIcon animationSrc="/lottie/Repeat.json" fallbackIcon={Repeat} className="w-4 h-4" />
-                   </Button>
+                  <Button
+                    onClick={() => setShuffle(!shuffle)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn("md:h-8 md:w-8 h-11 w-11 rounded-full", shuffle ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
+                  >
+                    <AnimatedIcon animationSrc="/lottie/Shuffle.json" fallbackIcon={Shuffle} className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setRepeat(!repeat)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn("md:h-8 md:w-8 h-11 w-11 rounded-full", repeat ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
+                  >
+                    <AnimatedIcon animationSrc="/lottie/Repeat.json" fallbackIcon={Repeat} className="w-4 h-4" />
+                  </Button>
                  </div>
                )}
 
               <div className="flex items-center gap-4">
-                <Button onClick={handlePrevious} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform">
+                <Button onClick={handlePrevious} variant="ghost" size="icon" className="md:h-10 md:w-10 h-11 w-11 text-foreground hover:scale-110 transition-transform">
                   <AnimatedIcon animationSrc="/lottie/SkipBack.json" fallbackIcon={SkipBack} className="w-5 h-5" />
                 </Button>
                 <Button
@@ -803,21 +803,21 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                 >
                   {isPlaying ? <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-5 h-5" /> : <AnimatedIcon animationSrc="/lottie/Play.json" fallbackIcon={Play} className="w-5 h-5 ml-0.5" />}
                 </Button>
-                <Button onClick={handleNext} variant="ghost" size="icon" className="text-foreground hover:scale-110 transition-transform">
+                <Button onClick={handleNext} variant="ghost" size="icon" className="md:h-10 md:w-10 h-11 w-11 text-foreground hover:scale-110 transition-transform">
                   <AnimatedIcon animationSrc="/lottie/SkipForward.json" fallbackIcon={SkipForward} className="w-5 h-5" />
                 </Button>
               </div>
 
                {mode !== 'radio' && (
                  <div className="flex items-center gap-2">
-                   <Button
-                     onClick={() => setShowPlaylist(!showPlaylist)}
-                     variant="ghost"
-                     size="icon"
-                     className={cn("h-8 w-8 rounded-full", showPlaylist ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
-                   >
-                     <AnimatedIcon animationSrc="/lottie/List.json" fallbackIcon={List} className="w-4 h-4" />
-                   </Button>
+                  <Button
+                    onClick={() => setShowPlaylist(!showPlaylist)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn("md:h-8 md:w-8 h-11 w-11 rounded-full", showPlaylist ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
+                  >
+                    <AnimatedIcon animationSrc="/lottie/List.json" fallbackIcon={List} className="w-4 h-4" />
+                  </Button>
                  </div>
                )}
                 <div className="w-28 hidden sm:flex items-center gap-1">

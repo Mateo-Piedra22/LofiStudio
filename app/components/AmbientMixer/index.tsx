@@ -97,7 +97,7 @@ export default function AmbientMixer() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 hover:bg-accent/10"
+                            className="md:h-6 md:w-6 h-11 w-11 hover:bg-accent/10"
                             onClick={() => setIsOpen(false)}
                         >
                             <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-4 h-4" />
@@ -137,7 +137,7 @@ export default function AmbientMixer() {
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs">{volumes[sound.id] || 0}%</span>
-                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => togglePlay(sound.id)}>
+                                                <Button variant="ghost" size="icon" className="md:h-6 md:w-6 h-11 w-11" onClick={() => togglePlay(sound.id)}>
                                                     {playing[sound.id] ? (
                                                       <AnimatedIcon animationSrc="/lottie/Pause.json" fallbackIcon={Pause} className="w-4 h-4" />
                                                     ) : (
@@ -164,7 +164,6 @@ export default function AmbientMixer() {
             <Button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`h-12 w-12 rounded-full shadow-lg transition-all duration-300 ${isOpen ? 'bg-primary text-primary-foreground' : 'glass text-foreground hover:bg-accent/20'}`}
-                title="Ambient Sounds Mixer"
             >
                 <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className={`w-6 h-6 ${Object.values(playing).some(v => v) && !isOpen ? 'animate-pulse text-green-500' : ''}`} />
             </Button>

@@ -90,8 +90,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
               onClick={toggleLanguage}
               size="icon"
               variant="ghost"
-              className="h-8 w-8 hover:bg-accent/10 text-xs font-bold"
-              title={language === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés'}
+              className="md:h-8 md:w-8 h-11 w-11 hover:bg-accent/10 text-xs font-bold"
               aria-label={language === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés'}
             >
               {language.toUpperCase()}
@@ -100,8 +99,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
               onClick={() => fetchQuote(currentCategory)}
               size="icon"
               variant="ghost"
-              className="h-8 w-8 hover:bg-accent/10"
-              title="New Quote"
+              className="md:h-8 md:w-8 h-11 w-11 hover:bg-accent/10"
               aria-label="New Quote"
             >
               <AnimatedIcon animationSrc="/lottie/RefreshCw.json" fallbackIcon={RefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

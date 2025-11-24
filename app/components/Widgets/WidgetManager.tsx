@@ -56,7 +56,7 @@ export default function WidgetManager() {
           <div className={`h-full ${danger ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${percent}%` }} />
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
           const rowsFor = (t: WidgetConfig['type']) => {
@@ -129,7 +129,7 @@ export default function WidgetManager() {
                   onClick={() => removeWidget(widget.id)}
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  className="h-11 w-11 text-muted-foreground hover:text-destructive"
                 >
                   <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
                 </Button>

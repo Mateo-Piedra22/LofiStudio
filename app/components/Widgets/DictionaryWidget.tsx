@@ -79,7 +79,7 @@ export default function DictionaryWidget() {
                         className="h-8 bg-background/50 border-border text-xs"
                         aria-label="Define"
                     />
-                    <Button type="submit" size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-accent/10" aria-label="Search">
+                    <Button type="submit" size="sm" variant="ghost" className="md:h-8 md:w-8 h-11 w-11 p-0 hover:bg-accent/10" aria-label="Search">
                         {loading ? <AnimatedIcon animationSrc="/lottie/Loader2.json" fallbackIcon={Loader2} className="w-4 h-4 animate-spin" /> : <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="w-4 h-4" />}
                     </Button>
                 </form>
@@ -95,7 +95,7 @@ export default function DictionaryWidget() {
                                     <p className="text-muted-foreground text-xs font-mono">{data.phonetic}</p>
                                 </div>
                                 {data.phonetics.some(p => p.audio) && (
-                                    <Button onClick={playAudio} size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
+                                    <Button onClick={playAudio} size="icon" variant="ghost" className="md:h-8 md:w-8 h-11 w-11 rounded-full hover:bg-primary/20 hover:text-primary">
                                         <AnimatedIcon animationSrc="/lottie/Volume2.json" fallbackIcon={Volume2} className="w-4 h-4" />
                                     </Button>
                                 )}

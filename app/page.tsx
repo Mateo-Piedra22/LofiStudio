@@ -228,10 +228,10 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start text-center md:text-left">
             <div className="space-y-2">
               <div className="flex items-center justify-center md:justify-start gap-3">
-                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
+                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-16 w-auto rounded-md" />
                 <span className="text-white text-lg font-bold uppercase tracking-wider">LofiStudio</span>
               </div>
-              <p className="text-sm">A calm workspace for creators.</p>
+              <p className="text-sm">A peaceful place to be the creator of whatever you desire.</p>
             </div>
             <div className="space-y-2">
               <p className="text-white font-semibold">Navigation</p>
