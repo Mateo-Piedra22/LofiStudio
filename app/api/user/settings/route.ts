@@ -12,6 +12,14 @@ export async function GET() {
     }
 
     try {
+        if (!process.env.DATABASE_URL) {
+            return NextResponse.json({
+                theme: "dark",
+                pomodoroWork: 25,
+                pomodoroBreak: 5,
+                preferences: null,
+            })
+        }
         const userSettings = await db.query.settings.findFirst({
             where: eq(settings.userId, session.user.id),
         })
@@ -41,6 +49,9 @@ export async function POST(req: Request) {
     }
 
     try {
+        if (!process.env.DATABASE_URL) {
+            return NextResponse.json({ success: true })
+        }
         const body = await req.json()
         const { theme, pomodoroWork, pomodoroBreak, preferences } = body
 
@@ -72,6 +83,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error("[SETTINGS_POST]", error)
-        return new NextResponse("Internal Error", { status: 500 })
+        return NextResponse.json({ success: false }, { status: 500 })
     }
 }

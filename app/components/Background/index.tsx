@@ -133,6 +133,10 @@ export default function Background() {
       const url = config.imageUrl
       if (!url) return
       try {
+        const u = new URL(url, typeof window !== 'undefined' ? window.location.href : 'http://localhost')
+        if (u.origin !== (typeof window !== 'undefined' ? window.location.origin : 'http://localhost')) {
+          return
+        }
         const res = await fetch(url)
         if (!res.ok) return
         const blob = await res.blob()
@@ -237,7 +241,7 @@ export default function Background() {
       {config.type === 'video' && (config.videoUrl || cachedVideoUrl) && (
         <video src={cachedVideoUrl || config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" />
       )}
-      {config.type === 'image' && (config.imageUrl || cachedImageUrl) && (
+      {config.type === 'image' && (cachedImageUrl || (config.imageUrl && !config.imageKey)) && (
         <img
           src={cachedImageUrl || config.imageUrl}
           className="fixed inset-0 -z-50 w-full h-full object-cover"

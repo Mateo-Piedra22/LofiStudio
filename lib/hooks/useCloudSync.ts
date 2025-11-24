@@ -41,7 +41,17 @@ export function useCloudSync() {
                             try {
                                 const prefs = JSON.parse(data.preferences);
                                 if (prefs.widgets) window.localStorage.setItem('widgets', JSON.stringify(prefs.widgets));
-                                if (prefs.background) window.localStorage.setItem('backgroundConfig', JSON.stringify(prefs.background));
+                                if (prefs.background) {
+                                    try {
+                                        const current = JSON.parse(window.localStorage.getItem('backgroundConfig') || 'null');
+                                        const hasUserChoice = current && (current.imageKey || current.videoKey || current.imageUrl || current.videoUrl || current.videoId);
+                                        if (!hasUserChoice || current.type === 'gradient') {
+                                            window.localStorage.setItem('backgroundConfig', JSON.stringify(prefs.background));
+                                        }
+                                    } catch {
+                                        window.localStorage.setItem('backgroundConfig', JSON.stringify(prefs.background));
+                                    }
+                                }
                             } catch (e) {
                                 console.error("Failed to parse preferences", e);
                             }
