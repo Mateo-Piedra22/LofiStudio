@@ -143,45 +143,39 @@ export default function TopNavbar() {
 
                 <Separator className="bg-white/10" />
 
-                <div className="space-y-3">
-                  <div className="text-sm uppercase tracking-wider text-white/60">Tools</div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" onClick={toggleFullscreen} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc={isFullscreen ? '/lottie/Minimize2.json' : '/lottie/Maximize2.json'} fallbackIcon={isFullscreen ? Minimize2 : Maximize2} className="w-5 h-5" />
-                        <span className="ml-2">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
-                      </Button>
-                      <Button variant="ghost" onClick={toggleZen} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc="/lottie/EyeOff.json" fallbackIcon={EyeOff} className="w-5 h-5" />
-                        <span className="ml-2">Focus Mode</span>
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" onClick={toggleEditLayout} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
-                        <span className="ml-2">Edit Layout</span>
-                      </Button>
-                      <Button variant="ghost" onClick={openWidgetManager} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
-                        <span className="ml-2">Add Widgets</span>
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" onClick={toggleHeaders} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc={showHeaders ? '/lottie/EyeOff.json' : '/lottie/Eye.json'} fallbackIcon={showHeaders ? EyeOff : Eye} className="w-5 h-5" />
-                        <span className="ml-2">{showHeaders ? 'Hide Headers' : 'Show Headers'}</span>
-                      </Button>
-                      <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-stats')); } catch {} setOpen(false); }} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc="/lottie/BarChart3.json" fallbackIcon={BarChart3} className="w-5 h-5" />
-                        <span className="ml-2">Stats</span>
-                      </Button>
-                      <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-logs')); } catch {} setOpen(false); }} className="rounded-full text-white/90">
-                        <AnimatedIcon animationSrc="/lottie/Keyboard.json" fallbackIcon={Keyboard} className="w-5 h-5" />
-                        <span className="ml-2">Activity Log</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                 <div className="space-y-3">
+                   <div className="text-sm uppercase tracking-wider text-white/60">Tools</div>
+                   <div className="grid grid-cols-2 gap-2">
+                     <Button variant="ghost" onClick={toggleFullscreen} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc={isFullscreen ? '/lottie/Minimize2.json' : '/lottie/Maximize2.json'} fallbackIcon={isFullscreen ? Minimize2 : Maximize2} className="w-5 h-5" />
+                       <span className="ml-2">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
+                     </Button>
+                     <Button variant="ghost" onClick={toggleZen} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc="/lottie/EyeOff.json" fallbackIcon={EyeOff} className="w-5 h-5" />
+                       <span className="ml-2">Focus Mode</span>
+                     </Button>
+                     <Button variant="ghost" onClick={toggleEditLayout} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
+                       <span className="ml-2">Edit Layout</span>
+                     </Button>
+                     <Button variant="ghost" onClick={openWidgetManager} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
+                       <span className="ml-2">Add Widgets</span>
+                     </Button>
+                     <Button variant="ghost" onClick={toggleHeaders} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc={showHeaders ? '/lottie/EyeOff.json' : '/lottie/Eye.json'} fallbackIcon={showHeaders ? EyeOff : Eye} className="w-5 h-5" />
+                       <span className="ml-2">{showHeaders ? 'Hide Headers' : 'Show Headers'}</span>
+                     </Button>
+                     <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-stats')); } catch {} setOpen(false); }} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc="/lottie/BarChart3.json" fallbackIcon={BarChart3} className="w-5 h-5" />
+                       <span className="ml-2">Stats</span>
+                     </Button>
+                     <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-logs')); } catch {} setOpen(false); }} className="rounded-full text-white/90 justify-start">
+                       <AnimatedIcon animationSrc="/lottie/Keyboard.json" fallbackIcon={Keyboard} className="w-5 h-5" />
+                       <span className="ml-2">Activity Log</span>
+                     </Button>
+                   </div>
+                 </div>
 
                 <Separator className="bg-white/10" />
 

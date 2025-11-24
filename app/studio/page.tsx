@@ -51,6 +51,7 @@ export default function Home() {
   const [isZenMode, setIsZenMode] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
   const [isTopbarHidden, setIsTopbarHidden] = useState(false);
+  const [hideBackground, setHideBackground] = useState(false);
   const canTopbarInteract = (!isEditingLayout || !isTopbarHidden) && !isZenMode;
   const { widgets, updateWidgetLayout, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
   const { data: session } = useSession();
@@ -165,6 +166,11 @@ export default function Home() {
     return () => window.removeEventListener('toggle-zen-mode', toggle as any)
   }, [])
 
+  useEffect(() => {
+    const handler = (e: any) => { try { setHideBackground(!!(e?.detail)); } catch {} }
+    window.addEventListener('player:show-video-bg', handler as any)
+    return () => window.removeEventListener('player:show-video-bg', handler as any)
+  }, [])
   useEffect(() => {
     const toggleEdit = () => setIsEditingLayout((p) => !p)
     const toggleHeaders = () => setShowWidgetHeaders((p: boolean) => !p)
@@ -697,7 +703,7 @@ export default function Home() {
         <TopNavbar />
         <CommandPalette />
         <div className="absolute inset-0 z-0">
-          <Background />
+          {!hideBackground && <Background />}
         </div>
 
         {/* Edit Layout Dock */}

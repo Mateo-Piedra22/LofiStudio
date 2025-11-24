@@ -140,6 +140,13 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  useEffect(() => {
+    try {
+      const active = showVideoBg && mode !== 'radio' && !!currentVideo;
+      window.dispatchEvent(new CustomEvent('player:show-video-bg', { detail: active }));
+    } catch {}
+  }, [showVideoBg, mode, currentVideo]);
+
   const handlePlayPause = () => {
     if (mode === 'radio') {
       if (!audioRef.current || !radioStation) return;
@@ -815,27 +822,20 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
             </div>
           </div>
           {showSearch && (
-            <div className="fixed inset-0 z-[120] flex items-end justify-center p-4" onClick={() => { setShowSearch(false); setSearchResults([]); }}>
+            <div className="fixed inset-0 z-[120] flex items-end justify-center p-4" onClick={() => { setSearchResults([]); }}>
               <div className="w-full max-w-2xl glass-panel rounded-2xl border border-border shadow-2xl p-4" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
                 <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Button variant={mode === 'radio' ? 'default' : 'ghost'} size="sm" onClick={() => { setMode('radio'); setSearchQuery(''); setSearchResults([]); }}>
-                      Radio
-                    </Button>
-                    <Button variant={mode === 'youtube' ? 'default' : 'ghost'} size="sm" onClick={() => { setMode('youtube'); setSearchQuery(''); setRadioResults([]); }}>
-                      YouTube
-                    </Button>
-                  </div>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={mode === 'radio' ? 'Search radio stations' : 'Search or paste a YouTube link'}
+                    placeholder={'Search or paste a YouTube link'}
                     className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 pl-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { if (mode === 'radio') setSearchQuery(searchQuery.trim()); else handleImportLink(); } }}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { handleImportLink(); } }}
+                    onFocus={() => { if (searchQuery.trim().length >= 2) handleSearch(); }}
                   />
                   <AnimatedIcon animationSrc="/lottie/Search.json" fallbackIcon={Search} className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  {mode === 'youtube' && (() => {
+                  {(() => {
                     const parsed = parseYouTubeUrl(searchQuery.trim());
                     if (!parsed) return null;
                     return (
@@ -846,8 +846,8 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                       </div>
                     );
                   })()}
-                  {mode === 'youtube' && searchResults.length > 0 && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-[70vh] overflow-y-auto">
+                  {searchResults.length > 0 && (
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-[80vh] overflow-y-auto">
                       {searchResults.map((video) => (
                         <button
                           key={video.id}
@@ -877,30 +877,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                       </button>
                     </div>
                   )}
-                  {mode === 'radio' && radioResults.length > 0 && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-[70vh] overflow-y-auto">
-                      {radioResults.map((st, idx) => (
-                        <button
-                          key={`${st.stationuuid}-${idx}`}
-                          onClick={() => {
-                            setRadioStation({ stationuuid: st.stationuuid, name: st.name, favicon: st.favicon || '', url_resolved: st.url_resolved, country: st.country, tags: st.tags });
-                            setShowSearch(false);
-                            setIsPlaying(true);
-                            setMode('radio');
-                            setUserPaused(false);
-                            if (audioRef.current) { audioRef.current.src = st.url_resolved; audioRef.current.play().catch(() => {}); audioRef.current.volume = volume / 100; }
-                          }}
-                          className="w-full flex items-center gap-3 p-3 hover:bg-accent/10 transition-colors text-left border-b border-border last:border-0"
-                        >
-                          {st.favicon ? <img src={st.favicon} alt="" className="w-10 h-10 rounded object-cover" /> : <AnimatedIcon animationSrc="/lottie/Music2.json" fallbackIcon={Music2} className="w-4 h-4" />}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-foreground truncate">{st.name}</p>
-                            <p className="text-[11px] text-muted-foreground truncate">{st.country}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {mode === 'radio' && radioResults.length > 0 && null}
                 </div>
               </div>
             </div>
@@ -1126,10 +1103,10 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
         </div>
       ) : null}
       {showVideoBg && mode !== 'radio' && currentVideo ? (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none' }}>
           <YouTube
             videoId={currentVideo!.id}
-            opts={{ height: '100%', width: '100%', playerVars: { autoplay: 1, controls: 0, modestbranding: 1, playsinline: 1, mute: 1, origin: typeof window !== 'undefined' ? window.location.origin : undefined } }}
+            opts={{ height: '100%', width: '100%', playerVars: { autoplay: 1, controls: 0, modestbranding: 1, playsinline: 1, mute: 1, rel: 0, fs: 0, cc_load_policy: 0, disablekb: 1, origin: typeof window !== 'undefined' ? window.location.origin : undefined } }}
             onReady={onReadyBg}
           />
         </div>
