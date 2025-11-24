@@ -99,11 +99,16 @@ export default function TopNavbar() {
                   <span className="ml-2">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-black/90 backdrop-blur-md border-l border-white/10 text-white w-[420px] sm:w-[460px] max-w-[90vw] overflow-y-auto">
+              <SheetContent side="right" className="bg-black/90 backdrop-blur-md border-l border-white/10 text-white w-[520px] lg:w-[600px] xl:w-[640px] max-w-[92vw] overflow-y-auto overflow-x-hidden custom-scrollbar">
                 <div className="flex flex-col gap-6 py-2">
-                <div className="flex items-center gap-3">
-                  <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
-                  <span className="text-white text-base font-semibold">Control Center</span>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
+                    <span className="text-white text-base font-semibold">Control Center</span>
+                  </div>
+                  <div className="flex items-center">
+                    <UserAuth />
+                  </div>
                 </div>
                 <Separator className="bg-white/10" />
 
@@ -195,9 +200,6 @@ export default function TopNavbar() {
                       <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
                       <span>Completar permisos</span>
                     </button>
-                  </div>
-                  <div className="mt-3">
-                    <UserAuth />
                   </div>
                 </div>
               </div>

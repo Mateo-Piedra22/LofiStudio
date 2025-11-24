@@ -16,6 +16,7 @@ export interface VideoInfo {
   id: string;
   title: string;
   thumbnail: string;
+  duration?: string | null;
 }
 
 interface PlayerProps {
@@ -226,6 +227,44 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     const id = setTimeout(() => { handleSearch(); }, 300);
     return () => clearTimeout(id);
   }, [searchQuery, mode]);
+
+  const formatIsoDuration = (iso?: string | null): string => {
+    try {
+      if (!iso) return '';
+      const re = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
+      const m = iso.match(re);
+      if (!m) return '';
+      const h = parseInt(m[1] || '0', 10);
+      const min = parseInt(m[2] || '0', 10);
+      const s = parseInt(m[3] || '0', 10);
+      const total = h * 3600 + min * 60 + s;
+      const mm = String(Math.floor(total / 60) % 60).padStart(2, '0');
+      const ss = String(total % 60).padStart(2, '0');
+      return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+    } catch { return ''; }
+  };
+
+  useEffect(() => {
+    const enrich = async () => {
+      try {
+        if (mode !== 'youtube') return;
+        if (!Array.isArray(searchResults) || searchResults.length === 0) return;
+        const missing = searchResults.filter(v => !v.duration);
+        if (missing.length === 0) return;
+        const updates = await Promise.all(missing.map(async v => {
+          try {
+            const r = await fetch(`/api/youtube/video?id=${encodeURIComponent(v.id)}`);
+            const d = await r.json();
+            const item: VideoInfo = d.item || v;
+            return { id: v.id, duration: item.duration || null } as { id: string; duration: string | null };
+          } catch { return { id: v.id, duration: null }; }
+        }));
+        const mapDur = new Map(updates.map(u => [u.id, u.duration]));
+        setSearchResults(prev => prev.map(v => ({ ...v, duration: mapDur.has(v.id) ? mapDur.get(v.id) || null : v.duration || null })));
+      } catch {}
+    };
+    enrich();
+  }, [searchResults, mode]);
 
   useEffect(() => {
     const once = () => {
@@ -808,16 +847,17 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                     );
                   })()}
                   {mode === 'youtube' && searchResults.length > 0 && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-60 overflow-y-auto">
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-[70vh] overflow-y-auto">
                       {searchResults.map((video) => (
                         <button
                           key={video.id}
                           onClick={() => { handleSelectVideo(video); setShowSearch(false); }}
                           className="w-full flex items-center gap-3 p-3 hover:bg-accent/10 transition-colors text-left border-b border-border last:border-0"
                         >
-                          <img src={video.thumbnail} alt="" className="w-10 h-10 rounded object-cover" />
+                          <img src={video.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground truncate">{video.title}</p>
+                            {video.duration ? <p className="text-[11px] text-muted-foreground">{formatIsoDuration(video.duration)}</p> : null}
                           </div>
                         </button>
                       ))}
@@ -838,7 +878,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                     </div>
                   )}
                   {mode === 'radio' && radioResults.length > 0 && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-60 overflow-y-auto">
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-50 max-h-[70vh] overflow-y-auto">
                       {radioResults.map((st, idx) => (
                         <button
                           key={`${st.stationuuid}-${idx}`}
@@ -1085,7 +1125,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
           />
         </div>
       ) : null}
-      {showVideoBg && mode !== 'radio' && currentVideo && isPlaying ? (
+      {showVideoBg && mode !== 'radio' && currentVideo ? (
         <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
           <YouTube
             videoId={currentVideo!.id}
@@ -1106,7 +1146,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
           onStalled={() => { if (!userPaused) handleNext(); }}
           style={{ display: 'none' }}
         />
-      ) : null}
+  ) : null}
     </>
   );
 }
