@@ -84,22 +84,23 @@ export default function TopNavbar() {
   };
 
   return (
-    <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: isEditing ? 'none' : 'none' }}>
+    <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
       <div className="px-4 md:px-6">
-        <div className="h-16 flex items-center justify-between rounded-b-2xl border-b glass-panel" style={{ pointerEvents: 'auto' }}>
-          <div className="flex items-center gap-3 pl-2">
-            <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-9 w-auto rounded-md shadow-md" />
-            <span className="text-foreground text-lg font-bold tracking-wide">LofiStudio</span>
-          </div>
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="lg" className="h-10 rounded-full text-foreground">
-                <AnimatedIcon animationSrc="/lottie/Menu.json" fallbackIcon={Menu} className="w-6 h-6" />
-                <span className="ml-2">Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="bg-black/90 backdrop-blur-md border-l border-white/10 text-white">
-              <div className="flex flex-col gap-6 py-2">
+        <div className="h-16 flex items-center">
+          <div className="flex items-center gap-2 glass-panel rounded-full border px-2 py-1" style={{ pointerEvents: 'auto', ['--glass-opacity' as any]: String(minGlass) }}>
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-9 w-auto rounded-md shadow-md" />
+              <span className="text-foreground text-lg font-bold tracking-wide">LofiStudio</span>
+            </Link>
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="lg" className="h-10 rounded-full text-foreground">
+                  <AnimatedIcon animationSrc="/lottie/Menu.json" fallbackIcon={Menu} className="w-6 h-6" />
+                  <span className="ml-2">Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-black/90 backdrop-blur-md border-l border-white/10 text-white w-[420px] sm:w-[460px] max-w-[90vw] overflow-y-auto">
+                <div className="flex flex-col gap-6 py-2">
                 <div className="flex items-center gap-3">
                   <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
                   <span className="text-white text-base font-semibold">Control Center</span>
@@ -200,8 +201,9 @@ export default function TopNavbar() {
                   </div>
                 </div>
               </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 40 }} />

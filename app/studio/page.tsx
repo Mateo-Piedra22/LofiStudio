@@ -823,17 +823,7 @@ export default function Home() {
           )}
         </div>
 
-        {!isZenMode && (
-          <div className="fixed bottom-3 left-3 z-40" style={{ pointerEvents: 'auto' }}>
-            <div className="glass border rounded-xl px-[6px] py-[6px] flex items-center gap-2">
-              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="w-auto rounded-lg shadow-xl ring-0 ring-white/10 dark:ring-black/20" style={{ height: '54px' }} />
-              <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight">LofiStudio</h1>
-                <p className="text-[11px] text-muted-foreground font-medium tracking-widest uppercase">Focus Space</p>
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         {/* Floating Player */}
         <div className={(isEditingLayout || isZenMode) ? 'opacity-0 pointer-events-none transition-opacity' : 'transition-opacity'}>
