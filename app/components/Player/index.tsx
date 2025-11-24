@@ -15,10 +15,14 @@ import { cn } from '@/lib/utils';
 
 export interface VideoInfo {
   id: string;
+  kind?: 'video' | 'playlist';
   title: string;
   thumbnail: string;
   duration?: string | null;
   viewCount?: number;
+  isOfficial?: boolean;
+  itemCount?: number;
+  channelTitle?: string;
 }
 
 interface PlayerProps {
@@ -265,12 +269,20 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     } catch { return ''; }
   };
 
+  const formatItems = (n?: number): string => {
+    try {
+      const v = typeof n === 'number' ? n : 0;
+      if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k items`;
+      return `${v} items`;
+    } catch { return ''; }
+  };
+
   useEffect(() => {
     const enrich = async () => {
       try {
         if (mode !== 'youtube') return;
         if (!Array.isArray(searchResults) || searchResults.length === 0) return;
-        const missing = searchResults.filter(v => !v.duration);
+        const missing = searchResults.filter(v => !v.duration && (v as any).kind !== 'playlist');
         if (missing.length === 0) return;
         const updates = await Promise.all(missing.map(async v => {
           try {
@@ -425,20 +437,40 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
     }
   }, [searchQuery]);
 
-  const handleSelectVideo = (video: VideoInfo) => {
-    setCurrentVideo(video);
-    setSearchResults([]);
-    setSearchQuery('');
-    setIsPlaying(true);
-    setUserPaused(false);
-    setError(null);
-    if (!playlist.find(v => v.id === video.id)) {
-      setPlaylist([...playlist, video]);
-      setCurrentIndex(playlist.length);
-    } else {
-      setCurrentIndex(playlist.findIndex(v => v.id === video.id));
-    }
-    setMode('youtube');
+  const handleSelectVideo = async (video: VideoInfo) => {
+    try {
+      if ((video as any).kind === 'playlist') {
+        const resp = await fetch(`/api/youtube/playlist?id=${encodeURIComponent(video.id)}`);
+        const d = await resp.json();
+        const items: VideoInfo[] = (d.items || []).map((it: any) => ({ id: it.id, title: it.title, thumbnail: it.thumbnail }));
+        if (items.length > 0) {
+          const newPlaylist = [...playlist, ...items.filter(it => !playlist.find(v => v.id === it.id))];
+          setPlaylist(newPlaylist);
+          setCurrentVideo(items[0]);
+          setCurrentIndex(newPlaylist.findIndex(v => v.id === items[0].id));
+          setMode('youtube');
+          setSearchResults([]);
+          setSearchQuery('');
+          setIsPlaying(true);
+          setUserPaused(false);
+          setError(null);
+          return;
+        }
+      }
+      setCurrentVideo(video);
+      setSearchResults([]);
+      setSearchQuery('');
+      setIsPlaying(true);
+      setUserPaused(false);
+      setError(null);
+      if (!playlist.find(v => v.id === video.id)) {
+        setPlaylist([...playlist, video]);
+        setCurrentIndex(playlist.length);
+      } else {
+        setCurrentIndex(playlist.findIndex(v => v.id === video.id));
+      }
+      setMode('youtube');
+    } catch {}
   };
 
   const handleNext = () => {
@@ -871,8 +903,21 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
                           <img src={video.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground truncate">{video.title}</p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {video.duration ? `${formatIsoDuration(video.duration)} • ${formatViews((video as any).viewCount)}` : `${formatViews((video as any).viewCount)}`}
+                            {video.channelTitle ? <p className="text-[11px] text-muted-foreground truncate">{video.channelTitle}</p> : null}
+                            <p className="text-[11px] text-muted-foreground flex items-center gap-2">
+                              {video.kind === 'playlist' ? (
+                                <>
+                                  <span>Playlist • {formatItems((video as any).itemCount)}</span>
+                                </>
+                              ) : (
+                                <span>{video.duration ? `${formatIsoDuration(video.duration)} • ${formatViews((video as any).viewCount)}` : `${formatViews((video as any).viewCount)}`}</span>
+                              )}
+                              {(video as any).isOfficial ? <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px]">Official</span> : null}
+                              {video.kind && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px]">
+                                  {video.kind === 'playlist' ? 'Playlist' : 'Video'}
+                                </span>
+                              )}
                             </p>
                           </div>
                         </button>

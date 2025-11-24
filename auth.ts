@@ -78,9 +78,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if ((token as any)?.access_token) enhanced.accessToken = (token as any).access_token
             if ((token as any)?.expires_at) enhanced.accessTokenExpiresAt = (token as any).expires_at
             if ((token as any)?.refresh_token) enhanced.refreshToken = (token as any).refresh_token
-            if (process.env.DATABASE_URL && user?.id && !enhanced.scope) {
+            const uid = user?.id || (token as any)?.sub || (token as any)?.userId
+            if (!enhanced.user) enhanced.user = {}
+            if (uid) enhanced.user.id = uid
+            if (process.env.DATABASE_URL && uid && !enhanced.scope) {
                 try {
-                    const acc = await (db as any).query.accounts.findFirst({ where: eq(accounts.userId, user.id) })
+                    const acc = await (db as any).query.accounts.findFirst({ where: eq(accounts.userId, uid) })
                     if (acc?.scope) enhanced.scope = acc.scope
                 } catch {}
             }
