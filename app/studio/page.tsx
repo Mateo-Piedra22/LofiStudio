@@ -38,6 +38,7 @@ import type { VideoInfo } from '@/app/components/Player';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { z } from 'zod';
+import { cn } from '@/lib/utils';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -53,7 +54,7 @@ export default function Home() {
   const [isTopbarHidden, setIsTopbarHidden] = useState(false);
   const [hideBackground, setHideBackground] = useState(false);
   const canTopbarInteract = (!isEditingLayout || !isTopbarHidden) && !isZenMode;
-  const { widgets, updateWidgetLayout, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
+  const { widgets, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
   const { data: session } = useSession();
   const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
@@ -370,11 +371,11 @@ export default function Home() {
     });
 
   const [gridLayouts, setGridLayouts, gridLoaded] = useLocalStorage<any>('gridLayouts', {
-    lg: layout,
-    md: layout,
-    sm: layout,
-    xs: layout,
-    xxs: layout,
+    lg: [],
+    md: [],
+    sm: [],
+    xs: [],
+    xxs: [],
   });
 
   const validateGridLayouts = (gl: any) => {
@@ -404,55 +405,12 @@ export default function Home() {
 
   useEffect(() => {
     if (!gridLoaded) return;
-    const ok = validateGridLayouts(gridLayouts);
-    if (!ok) {
-      setGridLayouts({
-        lg: layout,
-        md: layout,
-        sm: layout,
-        xs: layout,
-        xxs: layout,
-      });
-    }
+    setGridLayouts({ lg: [], md: [], sm: [], xs: [], xxs: [] });
   }, [gridLoaded]);
 
   useEffect(() => {
-    const ids = new Set(layout.map(l => l.i));
-    const currentLg = (gridLayouts?.lg || []) as any[];
-    const needSync = currentLg.length !== layout.length || currentLg.some(l => !ids.has(l.i)) || currentLg.some((l: any) => {
-      const target = layout.find(t => t.i === l.i);
-      if (!target) return true;
-      const col = Math.max(0, Math.min(2, Math.floor((l.x ?? 0) / tileW)));
-      const span = Math.max(1, Math.ceil(((l.h ?? tileH) / tileH)));
-      let row = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor((l.y ?? 0) / tileH)));
-      if (span === 3) row = 0;
-      if (span === 2 && row > 1) row = 1;
-      const x = col * tileW;
-      const y = row * tileH;
-      return x !== target.x || y !== target.y || (l.h ?? tileH) !== target.h || (l.w ?? tileW) !== tileW;
-    });
-    if (needSync) {
-      const byId = new Map(layout.map(l => [l.i, l] as const));
-      const snap = (it: any) => {
-        const c = getConstraints();
-        const col = Math.max(0, Math.min(2, Math.floor((it.x ?? 0) / tileW)));
-        const span = Math.max(1, Math.ceil(((it.h ?? tileH) / tileH)));
-        let row = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor((it.y ?? 0) / tileH)));
-        if (span === 3) row = 0;
-        if (span === 2 && row > 1) row = 1;
-        const target = byId.get(it.i);
-        const effectiveH = target ? target.h : (it.h ?? tileH);
-        return { ...it, ...c, x: col * tileW, y: row * tileH, w: tileW, h: effectiveH };
-      };
-      setGridLayouts({
-        lg: layout.map(snap),
-        md: (gridLayouts?.md || layout).map(snap),
-        sm: (gridLayouts?.sm || layout).map(snap),
-        xs: (gridLayouts?.xs || layout).map(snap),
-        xxs: (gridLayouts?.xxs || layout).map(snap),
-      });
-    }
-  }, [widgets.length, tileW, tileH, maxRows]);
+    // No sincronizar posiciones; el orden es por índice del array
+  }, [widgets.length]);
 
   const onLayoutChange = (currentLayout: any[], allLayouts?: any) => {
     if (allLayouts) {
@@ -480,7 +438,7 @@ export default function Home() {
       const snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(l.y / tileH)));
       const targetX = snappedCol * tileW;
       const targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
-      updateWidgetLayout(l.i, { x: targetX, y: targetY, w: tileW, h: l.h });
+      
     });
   };
 
@@ -557,8 +515,8 @@ export default function Home() {
         it.i === draggedId ? { ...it, x: targetX, y: targetY } : it
       )),
     }));
+    // No persistimos coordenadas; el orden lo define el índice del array
     if (currentBreakpoint !== 'lg') return;
-    updateWidgetLayout(draggedId, { x: targetX, y: targetY, w: tileW, h: newItem.h });
   };
 
   const onDragging = (_layout: any[], _oldItem: any, newItem: any) => {
@@ -683,7 +641,7 @@ export default function Home() {
         const hUnits = ci.h;
         const x = colIdx * tileW;
         updates.push({ i: wId, x, y, w: tileW, h: hUnits, minW: tileW, minH: tileH, maxW: tileW, maxH: tileH * rows });
-        updateWidgetLayout(wId, { x, y, w: tileW, h: hUnits });
+        // No persistimos coordenadas; el orden lo define el índice del array
         y += hUnits;
       });
     });
@@ -766,74 +724,54 @@ export default function Home() {
 
         {/* Main Grid Area */}
         <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100dvh' }}>
-        <ResponsiveGridLayout
-          key={currentBreakpoint}
-          className="layout"
-          layouts={gridLayouts}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 3, md: 3, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
-          rowHeight={rowHeight}
-          maxRows={maxRows}
-          isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
-          isResizable={false}
-          isBounded
-          draggableHandle=".widget-drag-handle"
-          draggableCancel=".no-drag"
-          onLayoutChange={onLayoutChange}
-          onBreakpointChange={(bp: any) => {
-            setCurrentBreakpoint(bp);
-            if (bp === 'lg') {
-              const byId = new Map(layout.map(l => [l.i, l] as const));
-              const c = getConstraints();
-              const snap = (it: any) => {
-                const col = Math.max(0, Math.min(2, Math.floor((it.x ?? 0) / tileW)));
-                const span = Math.max(1, Math.ceil(((it.h ?? tileH) / tileH)));
-                let row = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor((it.y ?? 0) / tileH)));
-                if (span === 3) row = 0;
-                if (span === 2 && row > 1) row = 1;
-                const target = byId.get(it.i);
-                const effectiveH = target ? target.h : (it.h ?? tileH);
-                return { ...it, ...c, x: col * tileW, y: row * tileH, w: tileW, h: effectiveH };
-              };
-              setGridLayouts((prev: any) => ({
-                ...prev,
-                lg: (prev.lg || layout).map(snap),
-              }));
-            }
-          }}
-          onDragStart={(layout: any[]) => { setBeforeDrag(layout); }}
-          onDrag={onDragging}
-          onDragStop={onItemChanged}
-          onResizeStop={onItemChanged}
-          margin={[16, 12]}
-          containerPadding={[16, 16]}
-          preventCollision
-          compactType={null as any}
-        >
-            {widgets.filter(w => w.enabled).slice(0, (currentBreakpoint === 'lg' ? 9 : currentBreakpoint === 'md' ? 9 : currentBreakpoint === 'sm' ? (isLandscape ? 4 : 3) : 3)).map(widget => (
-              <DraggableWidget
-                key={widget.id}
-                isEditing={isEditingLayout}
-                onRemove={() => removeWidget(widget.id)}
-                className="h-full"
+          {(() => {
+            const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
+            const cap = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 9 : (isLandscape ? 4 : 3);
+            const items = widgets.filter(w => w.enabled).slice(0, cap);
+            const rowsFor = (t: string) => {
+              const groupName = (sizeConfig.assignments as any)[t] || 'small';
+              const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
+              const capped = Math.max(1, Math.min(3, rawRows));
+              return Math.ceil(capped);
+            };
+            const spanClassForRows = (rows: number) => rows === 3 ? 'row-span-3' : rows === 2 ? 'row-span-2' : 'row-span-1';
+            return (
+              <div
+                className={cn('grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
+                key={currentBreakpoint}
+                style={{ gridAutoRows: `${rowHeight}px` }}
               >
-                {widget.type === 'clock' && <ClockWidget />}
-                {widget.type === 'worldtime' && <WorldTimeWidget />}
-                {widget.type === 'weather' && (
-                  <WeatherWidget compact={!showWidgetHeaders || widget.layout.h <= tileH || currentBreakpoint === 'sm' || currentBreakpoint === 'xs' || currentBreakpoint === 'xxs'} />
-                )}
-                {widget.type === 'gif' && <GifWidget />}
-                {widget.type === 'notes' && <NotesWidget />}
-                {widget.type === 'quote' && <QuoteWidget />}
-                {widget.type === 'calendar' && <CalendarWidget />}
-                {widget.type === 'tasks' && <TaskManager />}
-                {widget.type === 'breathing' && <BreathingWidget />}
-                {widget.type === 'dictionary' && <DictionaryWidget />}
-                {widget.type === 'timer' && <PomodoroTimer currentVideo={currentVideo} />}
-              </DraggableWidget>
-            ))}
-          </ResponsiveGridLayout>
-          {isEditingLayout && (
+                {items.map(widget => {
+                  const rows = rowsFor(widget.type);
+                  const spanCls = spanClassForRows(rows);
+                  return (
+                    <div key={widget.id} className={cn('col-span-1', spanCls)}>
+                      <DraggableWidget
+                        isEditing={false}
+                        onRemove={() => removeWidget(widget.id)}
+                        className="h-full"
+                      >
+                        {widget.type === 'clock' && <ClockWidget />}
+                        {widget.type === 'worldtime' && <WorldTimeWidget />}
+                        {widget.type === 'weather' && (
+                          <WeatherWidget compact={!showWidgetHeaders || rows <= 1 || currentBreakpoint === 'sm' || currentBreakpoint === 'xs' || currentBreakpoint === 'xxs'} />
+                        )}
+                        {widget.type === 'gif' && <GifWidget />}
+                        {widget.type === 'notes' && <NotesWidget />}
+                        {widget.type === 'quote' && <QuoteWidget />}
+                        {widget.type === 'calendar' && <CalendarWidget />}
+                        {widget.type === 'tasks' && <TaskManager />}
+                        {widget.type === 'breathing' && <BreathingWidget />}
+                        {widget.type === 'dictionary' && <DictionaryWidget />}
+                        {widget.type === 'timer' && <PomodoroTimer currentVideo={currentVideo} />}
+                      </DraggableWidget>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        {isEditingLayout && (
             <div className="pointer-events-none absolute inset-0 z-20 px-4 py-4">
               {(() => {
                 const dims = currentBreakpoint === 'lg' ? { cols: 3, rows: 3 } : currentBreakpoint === 'md' ? { cols: 3, rows: 3 } : { cols: 1, rows: 3 };

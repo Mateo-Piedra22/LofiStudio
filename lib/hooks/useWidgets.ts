@@ -75,73 +75,36 @@ export function useWidgets() {
   const [, setQuoteCategory] = useLocalStorage('quoteCategory', 'motivation');
   const [lastPresetId, setLastPresetId] = useLocalStorage<string>('lastPresetId', 'empty');
 
-  const addWidget = useCallback((type: WidgetConfig['type']) => {
+  const addWidget = useCallback((type: WidgetConfig['type'], size?: WidgetConfig['size']) => {
     setWidgets((prev) => {
       const exists = prev.some((w) => w.type === type && w.enabled);
       if (exists) return prev;
-      const usedBlocks = prev
-        .filter((w) => w.enabled && w.layout)
-        .reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout!.h || tileH) / tileH))), 0);
-      const heightFor = (t: WidgetConfig['type']) => {
-        const groupName = (sizeConfig.assignments as any)[t] || 'small';
+      const spanForSize = (s?: WidgetConfig['size']) => {
+        if (s === '1x2' || s === '2x2') return 2;
+        return 1;
+      };
+      const defaultRows = (() => {
+        const groupName = (sizeConfig.assignments as any)[type] || 'small';
         const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
         const capped = Math.max(1, Math.min(3, rawRows));
-        const rowsInt = Math.ceil(capped);
-        return rowsInt * tileH;
-      };
-      const newSpan = Math.max(1, Math.ceil(heightFor(type) / tileH));
+        return Math.ceil(capped);
+      })();
+      const resolvedSize: WidgetConfig['size'] = size || (`1x${defaultRows}` as WidgetConfig['size']);
+      const usedBlocks = prev.filter(w => w.enabled).reduce((sum, w) => sum + spanForSize(w.size), 0);
+      const newSpan = spanForSize(resolvedSize);
       if (usedBlocks + newSpan > capacity) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
         }
         return prev;
       }
-      const occupied = new Set<string>();
-      prev
-        .filter((w) => w.enabled && w.layout)
-        .forEach((w) => {
-          const span = Math.max(1, Math.ceil((w.layout.h || tileH) / tileH));
-          for (let k = 0; k < span; k++) {
-            occupied.add(`${w.layout.x},${(w.layout.y || 0) + k * tileH}`);
-          }
-        });
-      const colTotals = [0, 0, 0];
-      prev
-        .filter((w) => w.enabled && w.layout)
-        .forEach((w) => {
-          const colIdx = Math.max(0, Math.min(2, Math.floor((w.layout.x || 0) / tileW)));
-          const span = Math.max(1, Math.ceil((w.layout.h || tileH) / tileH));
-          colTotals[colIdx] += span;
-        });
-      let placeX = -1;
-      let placeY = -1;
-      const span = newSpan;
-      for (let idx = 0; idx < capacity; idx++) {
-        const col = idx % 3;
-        const row = Math.floor(idx / 3);
-        if (row + span > 3) continue;
-        if (colTotals[col] + span > 3) continue;
-        if (span === 3 && row !== 0) continue;
-        if (span === 2 && row > 1) continue;
-        const x = col * tileW;
-        const y = row * tileH;
-        let fits = true;
-        for (let k = 0; k < span; k++) {
-          const key = `${x},${y + k * tileH}`;
-          if (occupied.has(key)) { fits = false; break; }
-        }
-        if (fits) { placeX = x; placeY = y; break; }
-      }
-      if (placeX < 0 || placeY < 0) {
-        window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
-        return prev;
-      }
       const newWidget: WidgetConfig = {
         id: crypto.randomUUID(),
         type,
-        layout: { x: placeX, y: placeY, w: tileW, h: heightFor(type) },
+        layout: { x: 0, y: 0, w: tileW, h: newSpan * tileH },
         enabled: true,
         settings: type === 'weather' ? { city: '' } : {},
+        size: resolvedSize,
       };
       return [...prev, newWidget];
     });
@@ -156,10 +119,7 @@ export function useWidgets() {
     applyPreset(target);
   }, [widgetsLoaded]);
 
-  const updateWidgetLayout = useCallback((id: string, layout: { x: number; y: number; w: number; h: number }) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1200) return;
-    setWidgets((prev) => prev.map((w) => (w.id === id ? { ...w, layout } : w)));
-  }, [setWidgets]);
+  
 
   const removeWidget = useCallback((id: string) => {
     setWidgets(widgets.filter(w => w.id !== id));
@@ -260,7 +220,6 @@ export function useWidgets() {
     addWidget,
     removeWidget,
     updateWidget,
-    updateWidgetLayout,
     toggleWidget,
     applyPreset,
     capacity,

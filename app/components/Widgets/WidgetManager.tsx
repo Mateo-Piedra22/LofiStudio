@@ -1,7 +1,6 @@
 'use client';
 
 import { useWidgets } from '@/lib/hooks/useWidgets';
-import sizeConfig from '@/lib/config/widget-sizes.json';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
@@ -47,7 +46,7 @@ function SortableItem({ id, children, className }: { id: string; children: React
 }
 
 export default function WidgetManager() {
-  const { widgets, addWidget, removeWidget, updateWidget, updateWidgetLayout, presets, applyPreset, capacity, lastPresetId, reorderWidgets } = useWidgets();
+  const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
@@ -57,61 +56,49 @@ export default function WidgetManager() {
   const [activeIds, setActiveIds] = React.useState<string[]>(enabledWidgets.map(w => w.id));
   React.useEffect(() => { setActiveIds(enabledWidgets.map(w => w.id)); }, [widgets]);
 
-  const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string }[] = [
-    { type: 'clock', label: 'Clock', iconName: 'Clock' },
-    { type: 'worldtime', label: 'World Time', iconName: 'Clock' },
-    { type: 'weather', label: 'Weather', iconName: 'Cloud' },
-    { type: 'gif', label: 'GIF', iconName: 'Image' },
-    { type: 'tasks', label: 'Tasks', iconName: 'CheckSquare' },
-    { type: 'notes', label: 'Notes', iconName: 'StickyNote' },
-    { type: 'quote', label: 'Quote', iconName: 'Quote' },
-    { type: 'calendar', label: 'Calendar', iconName: 'Calendar' },
-    { type: 'breathing', label: 'Breathing', iconName: 'Wind' },
-    { type: 'dictionary', label: 'Dictionary', iconName: 'Book' },
-    { type: 'timer', label: 'Timer', iconName: 'Timer' },
+  const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string; size: WidgetConfig['size'] }[] = [
+    { type: 'clock', label: 'Clock', iconName: 'Clock', size: '1x1' },
+    { type: 'worldtime', label: 'World Time', iconName: 'Clock', size: '1x1' },
+    { type: 'weather', label: 'Weather', iconName: 'Cloud', size: '1x1' },
+    { type: 'gif', label: 'GIF', iconName: 'Image', size: '1x2' },
+    { type: 'tasks', label: 'Tasks', iconName: 'CheckSquare', size: '1x2' },
+    { type: 'notes', label: 'Notes', iconName: 'StickyNote', size: '1x2' },
+    { type: 'quote', label: 'Quote', iconName: 'Quote', size: '1x1' },
+    { type: 'calendar', label: 'Calendar', iconName: 'Calendar', size: '1x2' },
+    { type: 'breathing', label: 'Breathing', iconName: 'Wind', size: '1x2' },
+    { type: 'dictionary', label: 'Dictionary', iconName: 'Book', size: '1x2' },
+    { type: 'timer', label: 'Timer', iconName: 'Timer', size: '1x1' },
   ];
 
-  const rowsFor = (t: WidgetConfig['type']) => {
-    const groupName = (sizeConfig.assignments as any)[t] || 'small';
-    const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-    const capped = Math.max(1, Math.min(3, rawRows));
-    const rowsInt = Math.ceil(capped);
-    return rowsInt;
-  };
   const enabled = widgets.filter(w => w.enabled);
   const visible = enabled.slice(0, capacity);
-  const blocksForSize = (s: WidgetConfig['size'] | undefined, t: WidgetConfig['type']) => {
-    const size = s ?? (`1x${rowsFor(t)}` as WidgetConfig['size']);
-    if (size === '1x2') return 2;
-    if (size === '1x3') return 3;
+  const blocksForSize = (s: WidgetConfig['size'] | undefined) => {
+    if (s === '1x2' || s === '2x2') return 2;
     return 1;
   };
-  const usedBlocksVisible = visible.reduce((sum, w) => sum + blocksForSize(w.size, w.type), 0);
+  const usedBlocksVisible = visible.reduce((sum, w) => sum + blocksForSize(w.size), 0);
   const percent = Math.min(100, Math.round((usedBlocksVisible / capacity) * 100));
   const danger = usedBlocksVisible >= capacity;
   const hiddenCount = Math.max(0, enabled.length - visible.length);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!active?.id || !over?.id || active.id === over.id) return;
-    const oldIndex = widgets.findIndex(w => w.id === String(active.id));
-    const newIndex = widgets.findIndex(w => w.id === String(over.id));
-    if (oldIndex < 0 || newIndex < 0) return;
-    reorderWidgets(oldIndex, newIndex);
+    if (!active?.id || !over?.id) return;
+    if (active.id !== over.id) {
+      const oldIndex = widgets.findIndex(w => w.id === active.id);
+      const newIndex = widgets.findIndex(w => w.id === over.id);
+      reorderWidgets(oldIndex, newIndex);
+    }
   };
-
-  const idsToRender = enabledWidgets.map(w => w.id);
 
   const getSize = (w: WidgetConfig): WidgetConfig['size'] => {
     if (w.size) return w.size;
-    const rows = rowsFor(w.type);
-    return (`1x${rows}`) as WidgetConfig['size'];
+    return '1x1';
   };
   const spanClassForSize = (s: WidgetConfig['size'] | undefined) => {
     if (s === '2x1') return 'col-span-1 lg:col-span-2';
     if (s === '1x2') return 'col-span-1 row-span-2';
-    if (s === '1x3') return 'col-span-1 row-span-3';
-    if (s === '3x1') return 'col-span-1 lg:col-span-3';
+    if (s === '2x2') return 'col-span-1 lg:col-span-2 row-span-2';
     return 'col-span-1 row-span-1';
   };
 
@@ -132,8 +119,8 @@ export default function WidgetManager() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
-          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(w.size, w.type), 0);
-          const span = rowsFor(widget.type);
+          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(w.size), 0);
+          const span = widget.size === '1x2' || widget.size === '2x2' ? 2 : 1;
           const atCapacity = usedBlocks + span > capacity;
           return (
             <button
@@ -144,7 +131,7 @@ export default function WidgetManager() {
                   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
                   return;
                 }
-                addWidget(widget.type);
+                addWidget(widget.type, widget.size);
               }}
               className={`relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${isAdded
                   ? 'bg-primary/10 border-primary/50 text-primary'
@@ -153,7 +140,7 @@ export default function WidgetManager() {
                     : 'bg-accent/10 border-border text-muted-foreground hover:bg-accent/20 hover:text-foreground'
                 }`}
             >
-              <span className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${span}`}</span>
+              <span className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{widget.size}</span>
               {(() => {
                 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
                   Clock,
@@ -182,15 +169,15 @@ export default function WidgetManager() {
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         {isDesktop ? (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext items={idsToRender} strategy={rectSortingStrategy}>
-              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
-                {idsToRender.map((id) => {
-                  const widget = widgets.find(w => w.id === id);
+            <SortableContext items={enabled.map(w => w.id)} strategy={rectSortingStrategy}>
+              <div className={cn('grid gap-3 auto-rows-[60px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
+                {enabled.map((w) => {
+                  const widget = w;
                   if (!widget) return null;
                   const size = getSize(widget);
                   const spanCls = spanClassForSize(size);
                   return (
-                    <SortableItem key={id} id={id} className={cn(spanCls)}>
+                    <SortableItem key={widget.id} id={widget.id} className={cn(spanCls)}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
@@ -212,14 +199,14 @@ export default function WidgetManager() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
-            {idsToRender.map((id) => {
-              const widget = widgets.find(w => w.id === id);
+          <div className={cn('grid gap-3 auto-rows-[60px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
+            {enabled.map((w) => {
+              const widget = w;
               if (!widget) return null;
               const size = getSize(widget);
               const spanCls = spanClassForSize(size);
               return (
-                <div key={id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3')}> 
+                <div key={widget.id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3')}> 
                   <div className="flex items-center gap-3">
                     <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
                     <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
