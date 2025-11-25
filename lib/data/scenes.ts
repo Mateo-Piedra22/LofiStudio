@@ -108,7 +108,7 @@ export const SCENES: Scene[] = [
   {
     id: 'urban-city',
     name: 'Urban & City',
-    thumbnail: 'https://img.youtube.com/vi/21zF15q67GQ/maxresdefault.jpg',
+    thumbnail: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     variants: [
       { id: 'night-drive', name: 'Night City Drive', youtubeId: '21zF15q67GQ' },
       { id: 'shibuya', name: 'Shibuya Crossing', youtubeId: 'etGrJw94B80' },

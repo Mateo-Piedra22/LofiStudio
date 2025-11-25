@@ -295,13 +295,50 @@ export function useWidgets() {
     setWidgets((prev) => padToCapacity(arrayMove(prev, oldIndex, newIndex)));
   }, [setWidgets]);
 
-  const swapWidgets = useCallback((a: number, b: number) => {
+  const moveWidgetToGrid = useCallback((sourceIndex: number, targetIndex: number, cols: number = 3) => {
     setWidgets((prev) => {
       const next = [...prev];
-      if (a < 0 || b < 0 || a >= next.length || b >= next.length) return padToCapacity(next);
-      const tmp = next[a];
-      next[a] = next[b];
-      next[b] = tmp;
+      if (sourceIndex < 0 || sourceIndex >= next.length || targetIndex < 0 || targetIndex >= next.length) return prev;
+      if (sourceIndex === targetIndex) return prev;
+
+      // Helper to get block height (rows)
+      const getRows = (w: WidgetConfig) => {
+        if (!w) return 1;
+        const parts = String(w.size || '1x1').split('x');
+        const h = Number(parts[1]) || 1;
+        return Math.max(1, Math.min(3, Math.ceil(h)));
+      };
+
+      const sourceWidget = next[sourceIndex];
+      const rows = getRows(sourceWidget);
+
+      // Validate target bounds
+      const targetRow = Math.floor(targetIndex / cols);
+      if (targetRow + rows > 3) {
+        // Cannot fit vertically
+        return prev;
+      }
+
+      // Perform Block Swap
+      // We swap the entire column-slice that the widget occupies
+      // If widget is 1x2, we swap [source, source+cols] with [target, target+cols]
+      // This preserves the content of the target area by moving it to the source area
+      
+      // We iterate from bottom to top to handle overlaps correctly? 
+      // Actually, standard swap order doesn't matter for non-overlapping, but for overlapping (moving down),
+      // we traced it works.
+      
+      for (let i = 0; i < rows; i++) {
+        const sIdx = sourceIndex + (i * cols);
+        const tIdx = targetIndex + (i * cols);
+
+        if (sIdx < next.length && tIdx < next.length) {
+          const tmp = next[sIdx];
+          next[sIdx] = next[tIdx];
+          next[tIdx] = tmp;
+        }
+      }
+
       return padToCapacity(next);
     });
   }, [setWidgets]);
@@ -318,6 +355,6 @@ export function useWidgets() {
     lastPresetId,
     widgetsLoaded,
     reorderWidgets,
-    swapWidgets,
+    moveWidgetToGrid, // Export new function
   };
 }

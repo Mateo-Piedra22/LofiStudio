@@ -109,7 +109,7 @@ function WidgetContent({ item, size, multi, onRemove }: { item: WidgetConfig, si
 }
 
 export default function WidgetManager() {
-  const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets, swapWidgets } = useWidgets();
+  const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets, moveWidgetToGrid } = useWidgets();
   const isDesktop = useIsDesktop();
   const isLandscape = useIsLandscape();
   const [rowHeight] = useLocalStorage('minigridRowHeight', 52);
@@ -202,55 +202,8 @@ export default function WidgetManager() {
       const oldIndex = widgets.findIndex(w => w.id === active.id);
       const newIndex = widgets.findIndex(w => w.id === over.id);
 
-      if (cols === 3) {
-        // Simulate the new state to check if ANY widget violates the bounds
-        const simulatedWidgets = [...widgets];
-        const [moved] = simulatedWidgets.splice(oldIndex, 1);
-        simulatedWidgets.splice(newIndex, 0, moved);
-
-        let isValid = true;
-        
-        // Re-calculate the grid layout for validation
-        // We need to check if any widget protrudes beyond Row 2 (index < 9 check is vague with multi-row)
-        // Correct logic: Assign positions in 3x3 grid.
-        
-        const gridMap: (boolean | string)[] = new Array(9).fill(false);
-        let currentCell = 0;
-        
-        // We simulate placing them one by one
-        // If a widget cannot fit, it's invalid.
-        
-        // Note: This simulation is tricky because 'widgets' list contains Spacers.
-        // If we move a 1x2 to a spot, it might push things.
-        
-        // Simplified check: Just ensure the target row for the *moved* widget is valid.
-        // The user complained about "untouchable" spots, which is fixed by visibleWidgets.
-        // The user also wanted "anchored to top".
-        
-        const widget = widgets[oldIndex];
-        const size = getSize(widget);
-        const rowSpan = getRowSpan(size);
-        const targetRow = Math.floor(newIndex / 3);
-        
-        // Basic boundary check
-        if (targetRow + rowSpan > 3) {
-           return;
-        }
-        
-        // Deep check for the whole grid to prevent shifting others out of bounds?
-        // Let's rely on the basic check + visibleWidgets pruning for now.
-        // If the user drags a 1x1 to displace a 1x2, and that 1x2 gets pushed to row 3...
-        // The visibleWidgets will hide it next render, or it might be invalid.
-        
-        // Let's keep the basic row check for the ACTIVE widget as it's the most critical.
-      }
-
-      const target = widgets[newIndex];
-      if (target && target.type === 'SPACER') {
-        swapWidgets(oldIndex, newIndex);
-      } else {
-        reorderWidgets(oldIndex, newIndex);
-      }
+      // Use moveWidgetToGrid (Block Swap) for all moves to prevent shifting
+      moveWidgetToGrid(oldIndex, newIndex, cols);
     }
   };
 
@@ -283,6 +236,9 @@ export default function WidgetManager() {
     return 'col-span-1 row-span-1';
   };
   const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
+
+  // Strategy that disables sorting visualization (items stay put until dropped)
+  const noOpStrategy = () => null;
 
   return (
     <div className="space-y-6">
@@ -356,7 +312,7 @@ export default function WidgetManager() {
           onDragOver={handleDragOver} 
           onDragEnd={handleDragEndList}
         >
-          <SortableContext items={gridItems.map(w => w.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={gridItems.map(w => w.id)} strategy={noOpStrategy}>
             <div className="relative">
               <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
                 {Array.from({ length: 9 }).map((_, i) => (
@@ -407,18 +363,25 @@ export default function WidgetManager() {
                 if (!activeWidget) return null;
                 const size = getSize(activeWidget);
                 const multi = getRowSpan(size) > 1 || getColSpan(size) > 1;
+                
+                // Explicitly set width/height based on DOM element to prevent stretching/shrinking
+                const activeNode = typeof document !== 'undefined' ? document.getElementById(activeId) : null;
+                const style = activeNode ? { width: activeNode.offsetWidth, height: activeNode.offsetHeight } : {};
+
                 return (
-                  <SortableItem 
-                    id={activeWidget.id} 
-                    isOverlay 
-                    className={cn(spanClassForSize(size))}
-                  >
-                     {activeWidget.type === 'SPACER' ? (
-                       <div className="h-full w-full bg-primary/10 rounded-xl" /> 
-                     ) : (
-                       <WidgetContent item={activeWidget} size={String(size)} multi={multi} onRemove={removeWidget} />
-                     )}
-                  </SortableItem>
+                  <div style={style}>
+                    <SortableItem 
+                        id={activeWidget.id} 
+                        isOverlay 
+                        className={cn(spanClassForSize(size))}
+                    >
+                        {activeWidget.type === 'SPACER' ? (
+                        <div className="h-full w-full bg-primary/10 rounded-xl" /> 
+                        ) : (
+                        <WidgetContent item={activeWidget} size={String(size)} multi={multi} onRemove={removeWidget} />
+                        )}
+                    </SortableItem>
+                  </div>
                 )
               })() : null}
             </DragOverlay>,
