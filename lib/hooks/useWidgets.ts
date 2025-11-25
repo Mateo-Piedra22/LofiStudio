@@ -49,7 +49,15 @@ export function useWidgets() {
   }, []);
 
   useEffect(() => {
-    setCapacity(9);
+    setCapacity(baseCapacity);
+    const handler = (e: any) => {
+      try {
+        const cap = Number((e?.detail && (e.detail as any).capacity) || baseCapacity);
+        setCapacity(Math.max(1, Math.min(9, cap)));
+      } catch {}
+    };
+    window.addEventListener('responsive:capacity', handler as any);
+    return () => window.removeEventListener('responsive:capacity', handler as any);
   }, []);
 
   const DEFAULT_SIZE: Record<WidgetConfig['type'], { w: number; h: number }> = {
@@ -80,8 +88,10 @@ export function useWidgets() {
       const exists = prev.some((w) => w.type === type && w.enabled);
       if (exists) return prev;
       const spanForSize = (s?: WidgetConfig['size']) => {
-        if (s === '1x2' || s === '2x2') return 2;
-        return 1;
+        if (!s) return 1;
+        const parts = String(s).split('x');
+        const h = Number(parts[1]) || 1;
+        return Math.max(1, Math.min(3, Math.ceil(h)));
       };
       const defaultRows = (() => {
         const groupName = (sizeConfig.assignments as any)[type] || 'small';
@@ -93,6 +103,46 @@ export function useWidgets() {
       const usedBlocks = prev.filter(w => w.enabled).reduce((sum, w) => sum + spanForSize(w.size), 0);
       const newSpan = spanForSize(resolvedSize);
       if (usedBlocks + newSpan > capacity) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
+        }
+        return prev;
+      }
+      // Column fit constraints (3 columns desktop equivalent): ensure a 1x2 or 1x3 fits vertically
+      const maxPerCol = 3;
+      const totals = [0, 0, 0];
+      const getRows = (w: WidgetConfig) => {
+        if (w.size) {
+          const parts = String(w.size).split('x');
+          const h = Number(parts[1]) || 1;
+          return Math.max(1, Math.min(3, h));
+        }
+        const grp = (sizeConfig.assignments as any)[w.type] || 'small';
+        const r = (sizeConfig.groups as any)[grp]?.rows ?? 1;
+        return Math.max(1, Math.min(3, Math.ceil(r)));
+      };
+      const enabled = prev.filter(w => w.enabled);
+      enabled.forEach((w) => {
+        const desired = getRows(w);
+        const order = [0, 1, 2].sort((a, b) => totals[a] - totals[b]);
+        const requiresTop = desired === maxPerCol;
+        for (const c of order) {
+          if (totals[c] + desired <= maxPerCol && (!requiresTop || totals[c] === 0)) {
+            totals[c] += desired;
+            break;
+          }
+        }
+      });
+      const desiredNew = (() => {
+        const parts = String(resolvedSize).split('x');
+        const h = Number(parts[1]) || 1;
+        return Math.max(1, Math.min(3, h));
+      })();
+      const canPlace = [0, 1, 2].some((c) => {
+        const requiresTop = desiredNew === maxPerCol;
+        return totals[c] + desiredNew <= maxPerCol && (!requiresTop || totals[c] === 0);
+      });
+      if (!canPlace) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
         }

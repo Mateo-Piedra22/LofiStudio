@@ -251,10 +251,13 @@ export default function Home() {
 
   useEffect(() => {
     const compute = () => {
-      const viewport = typeof window !== 'undefined' ? window.innerHeight : 900;
+      const container = typeof document !== 'undefined' ? (document.querySelector('[data-ui="main-grid"]') as HTMLElement) : null;
+      const viewport = container ? container.clientHeight : (typeof window !== 'undefined' ? window.innerHeight : 900);
       const dockEl = typeof window !== 'undefined' ? (document.querySelector('[data-ui="edit-dock"]') as HTMLElement) : null;
       const dockH = isEditingLayout ? (dockEl?.offsetHeight ?? 0) : 0;
-      const containerPaddingY = 16 * 2;
+      const paddingTop = container ? parseFloat(getComputedStyle(container).paddingTop || '0') : 0;
+      const paddingBottom = container ? parseFloat(getComputedStyle(container).paddingBottom || '0') : 0;
+      const containerPaddingY = paddingTop + paddingBottom;
       const marginY = 12;
       const gaps = marginY * (maxRows - 1);
       const reserved = dockH + containerPaddingY + gaps;
@@ -723,7 +726,7 @@ export default function Home() {
         )}
 
         {/* Main Grid Area */}
-        <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100dvh' }}>
+        <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100vh', minHeight: '100vh' }} data-ui="main-grid">
           {(() => {
             const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
             const cap = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 9 : (isLandscape ? 4 : 3);
@@ -814,8 +817,8 @@ export default function Home() {
         )}
 
         {!isZenMode && showWidgetManager && (
-          <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-[620px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
-            <div className={`${isEditingLayout ? 'w-[620px] lg:w-[720px] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
+          <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-[640px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
+            <div className={`${isEditingLayout ? 'w-[640px] lg:w-[740px] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className={`font-bold text-foreground ${isEditingLayout ? 'text-sm' : 'text-2xl'}`}>
                   {isEditingLayout ? 'Add Widgets' : 'Customize Layout'}
