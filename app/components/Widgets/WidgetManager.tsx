@@ -423,7 +423,7 @@ export default function WidgetManager() {
           <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const baseCell = grid[rowIdx][colIdx];
+                const baseCell = grid[rowIdx]?.[colIdx] || { id: null, rowSpan: 1, colSpan: 1, start: false };
                 const occupiedNonStart = !!baseCell.id && !baseCell.start;
                 const occupiedStart = !!baseCell.id && baseCell.start;
                 const extraCls = occupiedNonStart ? 'bg-primary/10 border-primary/30' : occupiedStart ? 'bg-primary/15 border-primary' : '';
@@ -434,8 +434,8 @@ export default function WidgetManager() {
             ))}
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const cell = grid[rowIdx][colIdx];
-                if (!cell.id || !cell.start) return null;
+                const cell = grid[rowIdx]?.[colIdx];
+                if (!cell || !cell.id || !cell.start) return null;
                 const item = widgets.find(w => w.id === cell.id)!;
                 const size = getSize(item);
                 const rowSpan = getRowSpan(size);
