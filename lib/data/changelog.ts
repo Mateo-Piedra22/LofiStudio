@@ -9,6 +9,21 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.5',
+    date: '2025-11-25',
+    title: 'Visual Polish & Asset Refresh',
+    features: [
+      'Complete replacement of all Scenes and Variants with new high-quality assets',
+      'Restored strict placement restrictions: 1x2 (rows 0-1) and 1x3 (row 0) only'
+    ],
+    fixes: [
+      'Adjusted minigrid row height for a more compact view',
+      'Fixed layout synchronization and visual alignment',
+      'Implemented deep validation to prevent any widget overflow during reordering'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.4',
     date: '2025-11-25',
     title: 'Grid Index Ordering & Mini Manager Grid',

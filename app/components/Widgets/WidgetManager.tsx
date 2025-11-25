@@ -72,7 +72,7 @@ export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets, swapWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const isLandscape = useIsLandscape();
-  const [rowHeight] = useLocalStorage('rowHeight', 64);
+  const [rowHeight] = useLocalStorage('minigridRowHeight', 52);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -111,6 +111,25 @@ export default function WidgetManager() {
     if (active.id !== over.id) {
       const oldIndex = widgets.findIndex(w => w.id === active.id);
       const newIndex = widgets.findIndex(w => w.id === over.id);
+
+      if (cols === 3) {
+        // Simulate the new state to check if ANY widget violates the bounds
+        const simulatedWidgets = [...widgets];
+        const [moved] = simulatedWidgets.splice(oldIndex, 1);
+        simulatedWidgets.splice(newIndex, 0, moved);
+
+        let isValid = true;
+        simulatedWidgets.slice(0, 9).forEach((w, idx) => {
+           if (w.type === 'SPACER') return;
+           const s = getSize(w);
+           const rSpan = getRowSpan(s);
+           const r = Math.floor(idx / 3);
+           if (r + rSpan > 3) isValid = false;
+        });
+
+        if (!isValid) return;
+      }
+
       const target = widgets[newIndex];
       if (target && target.type === 'SPACER') {
         swapWidgets(oldIndex, newIndex);
