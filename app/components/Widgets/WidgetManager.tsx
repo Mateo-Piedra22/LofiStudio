@@ -7,6 +7,7 @@ import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2, GripVertical } from 'lucide-react'
 import React from 'react'
 import { WidgetConfig } from '@/lib/types';
+import sizeConfig from '@/lib/config/widget-sizes.json';
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable, useDraggable, closestCenter } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { DragOverEvent } from '@dnd-kit/core';
@@ -108,7 +109,11 @@ export default function WidgetManager() {
 
   const getSize = (w: WidgetConfig): WidgetConfig['size'] => {
     if (w.size) return w.size;
-    return '1x1';
+    const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+    const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
+    const capped = Math.max(1, Math.min(3, rawRows));
+    const rowsInt = Math.ceil(capped);
+    return (`1x${rowsInt}`) as WidgetConfig['size'];
   };
   const getRowSpan = (s: WidgetConfig['size'] | undefined) => {
     if (!s) return 1;
@@ -144,7 +149,7 @@ export default function WidgetManager() {
       for (let rr = r; rr < r + rs; rr++) { if (grid[rr][c].id || grid[rr][c + 1].id) return false; }
       return true;
     };
-    enabled.forEach((w) => {
+    visible.forEach((w) => {
       const size = getSize(w);
       const rowSpan = getRowSpan(size);
       const colSpan = getColSpan(size);
