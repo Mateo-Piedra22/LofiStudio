@@ -211,13 +211,7 @@ export default function WidgetManager() {
     const draggedId = String(active.id);
     const w = enabled.find(x => x.id === draggedId);
     if (!w) return;
-    const occupantStart = initialGrid[c][r];
-    if (occupantStart && occupantStart.id && occupantStart.start && occupantStart.id !== draggedId) {
-      const oldIndex = widgets.findIndex(x => x.id === draggedId);
-      const newIndex = widgets.findIndex(x => x.id === occupantStart.id);
-      if (oldIndex > -1 && newIndex > -1) reorderWidgets(oldIndex, newIndex);
-      return;
-    }
+    // occupant swap will be evaluated after computing final target region
     const size = getSize(w);
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
@@ -268,6 +262,13 @@ export default function WidgetManager() {
       if (!near) return;
       targetC = near.cc;
       targetR = near.rr;
+    }
+    const occupantAtTarget = grid[targetC][targetR];
+    if (occupantAtTarget && occupantAtTarget.id && occupantAtTarget.start && occupantAtTarget.id !== draggedId) {
+      const oldIndex = widgets.findIndex(x => x.id === draggedId);
+      const newIndex = widgets.findIndex(x => x.id === occupantAtTarget.id);
+      if (oldIndex > -1 && newIndex > -1) reorderWidgets(oldIndex, newIndex);
+      return;
     }
     if (colSpan === 2) {
       grid[targetC][targetR] = { id: draggedId, rowSpan, colSpan, start: true };
@@ -424,8 +425,8 @@ export default function WidgetManager() {
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragOver={handleDragOverGrid} onDragEnd={handleDragEndGrid} onDragCancel={() => setHighlightCell(null)}>
           <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
-            {Array.from({ length: cols }).map((_, colIdx) => (
-              Array.from({ length: rows }).map((_, rowIdx) => {
+            {Array.from({ length: rows }).map((_, rowIdx) => (
+              Array.from({ length: cols }).map((_, colIdx) => {
                 const baseCell = initialGrid[colIdx][rowIdx];
                 const occupiedNonStart = !!baseCell.id && !baseCell.start;
                 const occupiedStart = !!baseCell.id && baseCell.start;
@@ -435,8 +436,8 @@ export default function WidgetManager() {
                 );
               })
             ))}
-            {Array.from({ length: cols }).map((_, colIdx) => (
-              Array.from({ length: rows }).map((_, rowIdx) => {
+            {Array.from({ length: rows }).map((_, rowIdx) => (
+              Array.from({ length: cols }).map((_, colIdx) => {
                 const cell = initialGrid[colIdx][rowIdx];
                 if (!cell.id || !cell.start) return null;
                 const item = widgets.find(w => w.id === cell.id)!;
