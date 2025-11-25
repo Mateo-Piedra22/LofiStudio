@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
 import sizeConfig from '@/lib/config/widget-sizes.json';
 import { useLocalStorage } from './useLocalStorage';
 import type { WidgetConfig, WidgetPreset } from '../types';
@@ -249,6 +250,10 @@ export function useWidgets() {
     }
   }, [presets, setWidgets, setBackgroundConfig, capacity, tileW, tileH]);
 
+  const reorderWidgets = useCallback((oldIndex: number, newIndex: number) => {
+    setWidgets((prev) => arrayMove(prev, oldIndex, newIndex));
+  }, [setWidgets]);
+
   return {
     widgets,
     presets,
@@ -261,5 +266,6 @@ export function useWidgets() {
     capacity,
     lastPresetId,
     widgetsLoaded,
+    reorderWidgets,
   };
 }

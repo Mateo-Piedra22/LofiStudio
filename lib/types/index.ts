@@ -71,6 +71,7 @@ export interface WidgetConfig {
   };
   enabled: boolean;
   settings?: any;
+  size?: '1x1' | '2x1' | '1x2' | '1x3' | '3x1';
 }
 
 export interface WidgetPreset {

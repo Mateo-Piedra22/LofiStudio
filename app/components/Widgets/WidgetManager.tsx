@@ -1,7 +1,6 @@
 'use client';
 
 import { useWidgets } from '@/lib/hooks/useWidgets';
-import layoutConfig from '@/lib/config/layout.json';
 import sizeConfig from '@/lib/config/widget-sizes.json';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +10,7 @@ import React from 'react'
 import { WidgetConfig } from '@/lib/types';
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 
@@ -48,7 +47,7 @@ function SortableItem({ id, children, className }: { id: string; children: React
 }
 
 export default function WidgetManager() {
-  const { widgets, addWidget, removeWidget, updateWidget, updateWidgetLayout, presets, applyPreset, capacity, lastPresetId } = useWidgets();
+  const { widgets, addWidget, removeWidget, updateWidget, updateWidgetLayout, presets, applyPreset, capacity, lastPresetId, reorderWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
@@ -79,10 +78,15 @@ export default function WidgetManager() {
     const rowsInt = Math.ceil(capped);
     return rowsInt;
   };
-  const tileH = (layoutConfig as any).tileH ?? 1;
   const enabled = widgets.filter(w => w.enabled);
   const visible = enabled.slice(0, capacity);
-  const usedBlocksVisible = visible.reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout?.h || tileH) / tileH))), 0);
+  const blocksForSize = (s: WidgetConfig['size'] | undefined, t: WidgetConfig['type']) => {
+    const size = s ?? (`1x${rowsFor(t)}` as WidgetConfig['size']);
+    if (size === '1x2') return 2;
+    if (size === '1x3') return 3;
+    return 1;
+  };
+  const usedBlocksVisible = visible.reduce((sum, w) => sum + blocksForSize(w.size, w.type), 0);
   const percent = Math.min(100, Math.round((usedBlocksVisible / capacity) * 100));
   const danger = usedBlocksVisible >= capacity;
   const hiddenCount = Math.max(0, enabled.length - visible.length);
@@ -90,30 +94,25 @@ export default function WidgetManager() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!active?.id || !over?.id || active.id === over.id) return;
-    const byId = new Map(widgets.map(w => [w.id, w] as const));
-    const a = byId.get(String(active.id));
-    const b = byId.get(String(over.id));
-    if (!a || !b || !a.layout || !b.layout) return;
-    const aLayout = a.layout;
-    const bLayout = b.layout;
-    updateWidgetLayout(a.id, { x: bLayout.x, y: bLayout.y, w: aLayout.w, h: aLayout.h });
-    updateWidgetLayout(b.id, { x: aLayout.x, y: aLayout.y, w: bLayout.w, h: bLayout.h });
+    const oldIndex = widgets.findIndex(w => w.id === String(active.id));
+    const newIndex = widgets.findIndex(w => w.id === String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    reorderWidgets(oldIndex, newIndex);
   };
 
-  const idsToRenderDesktop = [...enabledWidgets]
-    .sort((a, b) => (a.layout?.y || 0) - (b.layout?.y || 0) || (a.layout?.x || 0) - (b.layout?.x || 0))
-    .map(w => w.id);
-  const idsToRenderMobile = [...enabledWidgets]
-    .sort((a, b) => (a.layout?.x || 0) - (b.layout?.x || 0) || (a.layout?.y || 0) - (b.layout?.y || 0))
-    .map(w => w.id);
+  const idsToRender = enabledWidgets.map(w => w.id);
 
-  const spanClassFor = (t: WidgetConfig['type']) => {
-    const groupName = (sizeConfig.assignments as any)[t] || 'small';
-    const rows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-    const span = Math.max(1, Math.min(3, Math.round(rows)));
-    if (span === 3) return 'col-span-1 lg:col-span-3';
-    if (span === 2) return 'col-span-1 lg:col-span-2';
-    return 'col-span-1';
+  const getSize = (w: WidgetConfig): WidgetConfig['size'] => {
+    if (w.size) return w.size;
+    const rows = rowsFor(w.type);
+    return (`1x${rows}`) as WidgetConfig['size'];
+  };
+  const spanClassForSize = (s: WidgetConfig['size'] | undefined) => {
+    if (s === '2x1') return 'col-span-1 lg:col-span-2';
+    if (s === '1x2') return 'col-span-1 row-span-2';
+    if (s === '1x3') return 'col-span-1 row-span-3';
+    if (s === '3x1') return 'col-span-1 lg:col-span-3';
+    return 'col-span-1 row-span-1';
   };
 
   return (
@@ -133,7 +132,7 @@ export default function WidgetManager() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
-          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout?.h || tileH) / tileH))), 0);
+          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(w.size, w.type), 0);
           const span = rowsFor(widget.type);
           const atCapacity = usedBlocks + span > capacity;
           return (
@@ -183,17 +182,18 @@ export default function WidgetManager() {
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         {isDesktop ? (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext items={idsToRenderDesktop} strategy={rectSortingStrategy}>
-              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={'desktop-grid'}>
-                {idsToRenderDesktop.map((id) => {
+            <SortableContext items={idsToRender} strategy={rectSortingStrategy}>
+              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
+                {idsToRender.map((id) => {
                   const widget = widgets.find(w => w.id === id);
                   if (!widget) return null;
-                  const spanCls = spanClassFor(widget.type);
+                  const size = getSize(widget);
+                  const spanCls = spanClassForSize(size);
                   return (
                     <SortableItem key={id} id={id} className={cn(spanCls)}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
-                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${rowsFor(widget.type)}`}</span>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
                       </div>
                       <div className="flex items-center gap-2 ml-auto">
                         <Button
@@ -212,16 +212,17 @@ export default function WidgetManager() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={'mobile-grid'}>
-            {idsToRenderMobile.map((id) => {
+          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
+            {idsToRender.map((id) => {
               const widget = widgets.find(w => w.id === id);
               if (!widget) return null;
-              const spanCls = spanClassFor(widget.type);
+              const size = getSize(widget);
+              const spanCls = spanClassForSize(size);
               return (
                 <div key={id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3')}> 
                   <div className="flex items-center gap-3">
                     <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
-                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${rowsFor(widget.type)}`}</span>
+                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
                   </div>
                   <div className="flex items-center gap-2 ml-auto">
                     <Button
