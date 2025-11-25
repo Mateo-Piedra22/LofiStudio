@@ -825,8 +825,8 @@ export default function Home() {
         )}
 
         {!isZenMode && showWidgetManager && (
-          <div className={`fixed ${isEditingLayout ? 'top-24 right-0 w-[640px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
-            <div className={`${isEditingLayout ? 'w-[640px] lg:w-[740px] max-w-[calc(100vw-16px)] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
+          <div className={`fixed ${isEditingLayout ? 'inset-0 flex items-start justify-end pt-24' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
+            <div className={`${isEditingLayout ? 'w-[680px] lg:w-[760px] max-w-[calc(100vw-8px)] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className={`font-bold text-foreground ${isEditingLayout ? 'text-sm' : 'text-2xl'}`}>
                   {isEditingLayout ? 'Add Widgets' : 'Customize Layout'}

@@ -316,7 +316,7 @@ export default function WidgetManager() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         <DndContext sensors={sensors} onDragEnd={handleDragEndGrid}>
-          <div className={cn('grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+          <div className={cn('grid grid-flow-row-dense gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: cols }).map((_, colIdx) => (
               Array.from({ length: rows }).map((_, rowIdx) => {
                 const cell = initialGrid[colIdx][rowIdx];
