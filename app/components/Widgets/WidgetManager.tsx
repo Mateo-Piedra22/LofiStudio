@@ -71,7 +71,7 @@ export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets, swapWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const isLandscape = useIsLandscape();
-  const rowHeight = 64;
+  const [rowHeight] = useLocalStorage('rowHeight', 64);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -140,11 +140,11 @@ export default function WidgetManager() {
     return 1;
   };
   const spanClassForSize = (s: WidgetConfig['size'] | undefined) => {
-    if (s === '2x1') return 'col-span-1 lg:col-span-2';
-    if (s === '1x2') return 'col-span-1 row-span-2';
+    if (s === '3x1') return 'col-span-1 lg:col-span-3 row-span-1';
     if (s === '2x2') return 'col-span-1 lg:col-span-2 row-span-2';
+    if (s === '2x1') return 'col-span-1 lg:col-span-2 row-span-1';
     if (s === '1x3') return 'col-span-1 row-span-3';
-    if (s === '3x1') return 'col-span-1 lg:col-span-3';
+    if (s === '1x2') return 'col-span-1 row-span-2';
     return 'col-span-1 row-span-1';
   };
   const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
@@ -217,12 +217,12 @@ export default function WidgetManager() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndList}>
           <SortableContext items={gridItems.map(w => w.id)} strategy={rectSortingStrategy}>
             <div className="relative">
-              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
+              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
                 {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={`base-${i}`} className="rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
+                  <div key={`base-${i}`} className="h-full w-full rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
                 ))}
               </div>
-              <div className={cn('relative z-10 grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
+              <div className={cn('relative z-10 grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
               {gridItems.map((item) => {
                 const size = getSize(item);
                 const cls = spanClassForSize(size);
