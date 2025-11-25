@@ -207,6 +207,14 @@ export default function Home() {
     return () => window.removeEventListener('open-widget-manager', openWidgetManagerHandler);
   }, []);
 
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  useEffect(() => {
+    const check = () => setIsDesktop(typeof window !== 'undefined' && window.innerWidth === 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   useEffect(() => {
     const openSettings = () => setShowSettings(true)
     const openStats = () => setShowStats(true)
@@ -453,6 +461,7 @@ export default function Home() {
   }, [widgets.length, tileW, tileH, maxRows]);
 
   const onLayoutChange = (currentLayout: any[], allLayouts?: any) => {
+    if (!isDesktop) return;
     if (allLayouts) {
       const next = Object.fromEntries(Object.entries(allLayouts).map(([bp, items]: any) => [
         bp,
@@ -471,7 +480,7 @@ export default function Home() {
       setGridLayouts(next);
     }
     if (currentBreakpoint !== 'lg') return;
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
+    if (!isDesktop) return;
     currentLayout.forEach((l: any) => {
       const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
       const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
@@ -484,6 +493,7 @@ export default function Home() {
   };
 
   const onItemChanged = (_layout: any[], _oldItem: any, newItem: any) => {
+    if (!isDesktop) return;
     const c = getConstraints();
     const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
     const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
@@ -555,12 +565,12 @@ export default function Home() {
         it.i === draggedId ? { ...it, x: targetX, y: targetY } : it
       )),
     }));
-    if (currentBreakpoint === 'lg' && !(typeof window !== 'undefined' && window.innerWidth < 1024)) {
-      updateWidgetLayout(draggedId, { x: targetX, y: targetY, w: tileW, h: newItem.h });
-    }
+    if (currentBreakpoint !== 'lg') return;
+    updateWidgetLayout(draggedId, { x: targetX, y: targetY, w: tileW, h: newItem.h });
   };
 
   const onDragging = (_layout: any[], _oldItem: any, newItem: any) => {
+    if (!isDesktop) return;
     const c = getConstraints();
     const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
     const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
@@ -764,29 +774,29 @@ export default function Home() {
 
         {/* Main Grid Area */}
         <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100dvh' }}>
-          <ResponsiveGridLayout
-            className="layout"
-            layouts={gridLayouts}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 3, md: 3, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
-            rowHeight={rowHeight}
-            maxRows={maxRows}
-            isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
-            isResizable={false}
-            isBounded
-            draggableHandle=".widget-drag-handle"
-            draggableCancel=".no-drag"
-            onLayoutChange={onLayoutChange}
-            onBreakpointChange={(bp: any) => setCurrentBreakpoint(bp)}
-            onDragStart={(layout: any[]) => setBeforeDrag(layout)}
-            onDrag={onDragging}
-            onDragStop={onItemChanged}
-            onResizeStop={onItemChanged}
-            margin={[16, 12]}
-            containerPadding={[16, 16]}
-            preventCollision
-            compactType={null as any}
-          >
+        <ResponsiveGridLayout
+          className="layout"
+          layouts={gridLayouts}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 3, md: 3, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
+          rowHeight={rowHeight}
+          maxRows={maxRows}
+          isDraggable={currentBreakpoint === 'lg' && isDesktop ? isEditingLayout : false}
+          isResizable={false}
+          isBounded
+          draggableHandle=".widget-drag-handle"
+          draggableCancel=".no-drag"
+          onLayoutChange={onLayoutChange}
+          onBreakpointChange={(bp: any) => setCurrentBreakpoint(bp)}
+          onDragStart={(layout: any[]) => { if (!isDesktop) return; setBeforeDrag(layout); }}
+          onDrag={onDragging}
+          onDragStop={onItemChanged}
+          onResizeStop={onItemChanged}
+          margin={[16, 12]}
+          containerPadding={[16, 16]}
+          preventCollision
+          compactType={null as any}
+        >
             {widgets.filter(w => w.enabled).slice(0, (currentBreakpoint === 'lg' ? 9 : currentBreakpoint === 'md' ? 9 : currentBreakpoint === 'sm' ? (isLandscape ? 4 : 3) : 3)).map(widget => (
               <DraggableWidget
                 key={widget.id}

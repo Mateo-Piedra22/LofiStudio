@@ -59,13 +59,6 @@ export default function WidgetManager() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
-          const rowsFor = (t: WidgetConfig['type']) => {
-            const groupName = (sizeConfig.assignments as any)[t] || 'small';
-            const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-            const capped = Math.max(1, Math.min(3, rawRows));
-            const rowsInt = Math.ceil(capped);
-            return rowsInt;
-          };
           const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + Math.max(1, Math.ceil(((w.layout?.h || tileH) / tileH))), 0);
           const span = rowsFor(widget.type);
           const atCapacity = usedBlocks + span > capacity;

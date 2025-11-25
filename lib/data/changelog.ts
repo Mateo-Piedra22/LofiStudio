@@ -9,6 +9,20 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.3',
+    date: '2025-11-25',
+    title: 'Drag & Drop Hard Lock (Desktop 1024px)',
+    features: [],
+    fixes: [
+      'Implement hard lock of grid drag when viewport != 1024px',
+      'Disable grid interactions outside strict desktop to prevent order corruption',
+      'Add guard in updateWidgetLayout to avoid writes when not desktop',
+      'Short-circuit onLayoutChange/onDrag/onDragStop in non-desktop mode',
+      'Refactor WidgetManager rowsFor duplication to ensure consistent sizing',
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.2',
     date: '2025-11-25',
     title: 'YouTube Scenes Refactor',
