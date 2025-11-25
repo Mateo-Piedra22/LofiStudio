@@ -71,7 +71,7 @@ export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets, swapWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const isLandscape = useIsLandscape();
-  const [rowHeight] = useLocalStorage('rowHeight', 64);
+  const rowHeight = 64;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -232,9 +232,10 @@ export default function WidgetManager() {
                     <SortableItem key={item.id} id={item.id} className={cn('col-span-1 hidden lg:block', cls)} variant="bare" />
                   );
                 }
+                const multi = getRowSpan(size) > 1 || getColSpan(size) > 1;
                 return (
                   <SortableItem key={item.id} id={item.id} className={cn('col-span-1', cls)}>
-                    <div className="rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between">
+                    <div className={cn("rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between", multi ? 'ring-2 ring-primary/40 border-primary/40' : '')}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>

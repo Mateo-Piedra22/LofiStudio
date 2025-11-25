@@ -23,40 +23,53 @@ export function useWidgets() {
   };
 
   useEffect(() => {
-    const needsLayoutInit = widgets.some((w: any) => !w.layout);
-    if (needsLayoutInit) {
-      const migratedWidgets = widgets.map((w: any) => {
-        if (!w.layout) {
-          return {
-            ...w,
-            layout: { x: 0, y: 0, w: tileW, h: tileH },
-          };
+    if (!widgetsLoaded) return;
+    try {
+      const raw = window.localStorage.getItem('widgets');
+      const saved = raw ? JSON.parse(raw) : null;
+      const hasSaved = Array.isArray(saved) && saved.length > 0;
+      const migratedFlagKey = 'widgets_migrated_v2';
+      const shouldMigrate = !window.localStorage.getItem(migratedFlagKey);
+
+      if (shouldMigrate && hasSaved) {
+        const items = saved as any[];
+        const needsLayoutInit = items.some((w: any) => !w.layout);
+        if (needsLayoutInit) {
+          const migratedWidgets = items.map((w: any) => {
+            if (!w.layout) {
+              return { ...w, layout: { x: 0, y: 0, w: tileW, h: tileH } };
+            }
+            return w;
+          });
+          setWidgets(padToCapacity(migratedWidgets as any));
+          window.localStorage.setItem(migratedFlagKey, '1');
+          return;
         }
-        return w;
-      });
-      setWidgets(padToCapacity(migratedWidgets));
-    }
-    // Migración de unidades: soporta layouts previos con tileH=4 o tileH=1
-    const needsUnitMigration = widgets.some((w: any) => w.layout);
-    if (needsUnitMigration) {
-      const migrated = widgets.map((w: any) => {
-        if (!w.layout) return w;
-        const oldH = w.layout.h ?? tileH;
-        const oldY = w.layout.y ?? 0;
-        let blocks = oldH;
-        let rowIndex = oldY;
-        if (oldH > 3) blocks = Math.max(1, Math.min(3, Math.round(oldH / 4))); // de 4-unidades por bloque
-        else blocks = Math.max(1, Math.min(3, Math.round(oldH))); // de 1-unidades por bloque
-        if (oldY > 2) rowIndex = Math.max(0, Math.min(2, Math.round(oldY / 4))); // de 4-unidades por bloque
-        else rowIndex = Math.max(0, Math.min(2, Math.round(oldY))); // de 1-unidades por bloque
-        return { ...w, layout: { x: w.layout.x ?? 0, y: rowIndex * tileH, w: tileW, h: blocks * tileH } };
-      });
-      setWidgets(padToCapacity(migrated));
-    }
-    if (widgets.length < baseCapacity) {
-      setWidgets(padToCapacity(widgets));
-    }
-  }, []);
+        const needsUnitMigration = items.some((w: any) => w.layout);
+        if (needsUnitMigration) {
+          const migrated = items.map((w: any) => {
+            if (!w.layout) return w;
+            const oldH = w.layout.h ?? tileH;
+            const oldY = w.layout.y ?? 0;
+            let blocks = oldH;
+            let rowIndex = oldY;
+            if (oldH > 3) blocks = Math.max(1, Math.min(3, Math.round(oldH / 4)));
+            else blocks = Math.max(1, Math.min(3, Math.round(oldH)));
+            if (oldY > 2) rowIndex = Math.max(0, Math.min(2, Math.round(oldY / 4)));
+            else rowIndex = Math.max(0, Math.min(2, Math.round(oldY)));
+            return { ...w, layout: { x: w.layout.x ?? 0, y: rowIndex * tileH, w: tileW, h: blocks * tileH } };
+          });
+          setWidgets(padToCapacity(migrated as any));
+          window.localStorage.setItem(migratedFlagKey, '1');
+          return;
+        }
+      }
+
+      if (!hasSaved && widgets.length < baseCapacity) {
+        setWidgets(padToCapacity(widgets));
+      }
+    } catch {}
+  }, [widgetsLoaded, widgets]);
 
   useEffect(() => {
     setCapacity(baseCapacity);
