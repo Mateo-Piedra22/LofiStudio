@@ -12,6 +12,7 @@ import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, closestC
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { cn } from '@/lib/utils';
 
 function useIsDesktop() {
@@ -40,10 +41,10 @@ function useIsLandscape() {
 }
 
 function SortableItem({ id, children, className, variant = 'default' }: { id: string; children?: React.ReactNode; className?: string; variant?: 'default' | 'bare' }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: isDragging ? CSS.Transform.toString(transform) : undefined,
+    transition: isDragging ? transition : undefined,
   } as React.CSSProperties;
   if (variant === 'bare') {
     return (
@@ -70,14 +71,13 @@ export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
   const isLandscape = useIsLandscape();
+  const [rowHeight] = useLocalStorage('rowHeight', 64);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
   const gridItems = widgets.slice(0, 9);
   const realWidgets = gridItems.filter(w => w.type !== 'SPACER' && w.enabled);
-  const [activeIds, setActiveIds] = React.useState<string[]>(gridItems.map(w => w.id));
-  React.useEffect(() => { setActiveIds(gridItems.map(w => w.id)); }, [widgets]);
 
   const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string; size: WidgetConfig['size'] }[] = [
     { type: 'clock', label: 'Clock', iconName: 'Clock', size: '1x1' },
@@ -206,14 +206,14 @@ export default function WidgetManager() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndList}>
-          <SortableContext items={activeIds} strategy={rectSortingStrategy}>
+          <SortableContext items={gridItems.map(w => w.id)} strategy={rectSortingStrategy}>
             <div className="relative">
-              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}>
+              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-4', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div key={`base-${i}`} className="rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
                 ))}
               </div>
-              <div className={cn('relative z-10 grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+              <div className={cn('relative z-10 grid gap-4', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
               {gridItems.map((item) => {
                 const size = getSize(item);
                 const cls = spanClassForSize(size);

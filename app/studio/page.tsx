@@ -74,6 +74,7 @@ export default function Home() {
   const capacity = 9;
   const maxRows = 3;
   const [rowHeight, setRowHeight] = useState<number>(60);
+  const [rowHeightLS, setRowHeightLS] = useLocalStorage('rowHeight', 60);
   const [isLandscape, setIsLandscape] = useState<boolean>(true);
   const touchStartYRef = useRef<number | null>(null);
   const touchDeltaYRef = useRef<number>(0);
@@ -264,6 +265,7 @@ export default function Home() {
       const units = tileH * maxRows;
       const rh = Math.max(48, Math.floor((viewport - reserved) / units));
       setRowHeight(rh);
+      setRowHeightLS(rh);
     };
     const id = setTimeout(compute, 0);
     window.addEventListener('resize', compute);
