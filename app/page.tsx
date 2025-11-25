@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -52,6 +52,7 @@ function ReviewCard({ r }: { r: PublicReview }) {
 }
 
 export default function HomePage() {
+  const { data: session } = useSession()
   const [reviews, setReviews] = useState<PublicReview[]>([])
   const [allReviews, setAllReviews] = useState<PublicReview[]>([])
   const [ratingFilter, setRatingFilter] = useState<string>('all')
@@ -133,10 +134,16 @@ export default function HomePage() {
               <span className="text-white text-xl font-bold uppercase tracking-wider">LofiStudio</span>
             </Link>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" className="bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
-              <Button asChild className="bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-400/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
-                <Link href="/studio" className="flex items-center gap-2">Go to Studio<ArrowRight className="w-4 h-4" /></Link>
-              </Button>
+              {session?.user ? (
+                <span className="text-white text-sm md:text-base font-semibold">Welcome {session.user.name || ''}</span>
+              ) : (
+                <>
+                  <Button variant="ghost" className="bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
+                  <Button asChild className="bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-400/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
+                    <Link href="/studio" className="flex items-center gap-2">Go to Studio<ArrowRight className="w-4 h-4" /></Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
