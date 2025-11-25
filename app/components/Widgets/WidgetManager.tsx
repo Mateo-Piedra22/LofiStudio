@@ -40,11 +40,12 @@ function useIsLandscape() {
   return isLandscape;
 }
 
-function SortableItem({ id, children, className, variant = 'default' }: { id: string; children?: React.ReactNode; className?: string; variant?: 'default' | 'bare' }) {
+function SortableItem({ id, children, className, variant = 'default', extraStyle }: { id: string; children?: React.ReactNode; className?: string; variant?: 'default' | 'bare'; extraStyle?: React.CSSProperties }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
     transform: isDragging ? CSS.Transform.toString(transform) : undefined,
     transition: isDragging ? transition : undefined,
+    ...extraStyle,
   } as React.CSSProperties;
   if (variant === 'bare') {
     return (
@@ -229,12 +230,23 @@ export default function WidgetManager() {
                 const isSpacer = item.type === 'SPACER';
                 if (isSpacer) {
                   return (
-                    <SortableItem key={item.id} id={item.id} className={cn('col-span-1 hidden lg:block', cls)} variant="bare" />
+                    <SortableItem
+                      key={item.id}
+                      id={item.id}
+                      className={cn('col-span-1 hidden lg:block', cls)}
+                      variant="bare"
+                      extraStyle={{ gridRowEnd: `span ${getRowSpan(size)}`, gridColumnEnd: `span ${getColSpan(size)}` }}
+                    />
                   );
                 }
                 const multi = getRowSpan(size) > 1 || getColSpan(size) > 1;
                 return (
-                  <SortableItem key={item.id} id={item.id} className={cn('col-span-1', cls)}>
+                  <SortableItem
+                    key={item.id}
+                    id={item.id}
+                    className={cn('col-span-1', cls)}
+                    extraStyle={{ gridRowEnd: `span ${getRowSpan(size)}`, gridColumnEnd: `span ${getColSpan(size)}` }}
+                  >
                     <div className={cn("rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between", multi ? 'ring-2 ring-primary/40 border-primary/40' : '')}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
