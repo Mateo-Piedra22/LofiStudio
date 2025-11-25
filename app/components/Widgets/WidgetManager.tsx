@@ -294,6 +294,26 @@ export default function WidgetManager() {
       for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) work[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
     }
     setGrid(work);
+    const placedIds: string[] = [];
+    for (let rr = 0; rr < rows; rr++) {
+      for (let cc = 0; cc < cols; cc++) {
+        const cell = work[rr][cc];
+        if (cell.id && cell.start) placedIds.push(cell.id);
+      }
+    }
+    const currentIds = enabled.map(x => x.id);
+    const targetIds = placedIds.concat(currentIds.filter(id => !placedIds.includes(id)));
+    const workingOrder = [...currentIds];
+    for (let i = 0; i < targetIds.length; i++) {
+      const id = targetIds[i];
+      const curIdx = workingOrder.indexOf(id);
+      if (curIdx !== i) {
+        const oldIndex = widgets.findIndex(w => w.id === id);
+        reorderWidgets(oldIndex, i);
+        const [moved] = workingOrder.splice(curIdx, 1);
+        workingOrder.splice(i, 0, moved);
+      }
+    }
     setHighlightCell(null);
   };
 
