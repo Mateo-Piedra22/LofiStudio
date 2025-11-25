@@ -471,6 +471,7 @@ export default function Home() {
       setGridLayouts(next);
     }
     if (currentBreakpoint !== 'lg') return;
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     currentLayout.forEach((l: any) => {
       const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
       const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
@@ -554,7 +555,7 @@ export default function Home() {
         it.i === draggedId ? { ...it, x: targetX, y: targetY } : it
       )),
     }));
-    if (currentBreakpoint === 'lg') {
+    if (currentBreakpoint === 'lg' && !(typeof window !== 'undefined' && window.innerWidth < 1024)) {
       updateWidgetLayout(draggedId, { x: targetX, y: targetY, w: tileW, h: newItem.h });
     }
   };
@@ -770,7 +771,7 @@ export default function Home() {
             cols={{ lg: 3, md: 3, sm: (isLandscape ? 2 : 1), xs: 1, xxs: 1 }}
             rowHeight={rowHeight}
             maxRows={maxRows}
-            isDraggable={(currentBreakpoint === 'lg' || currentBreakpoint === 'md') ? isEditingLayout : false}
+            isDraggable={currentBreakpoint === 'lg' ? isEditingLayout : false}
             isResizable={false}
             isBounded
             draggableHandle=".widget-drag-handle"

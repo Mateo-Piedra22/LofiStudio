@@ -156,6 +156,7 @@ export function useWidgets() {
   }, [widgetsLoaded]);
 
   const updateWidgetLayout = useCallback((id: string, layout: { x: number; y: number; w: number; h: number }) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     setWidgets((prev) => prev.map((w) => (w.id === id ? { ...w, layout } : w)));
   }, [setWidgets]);
 
