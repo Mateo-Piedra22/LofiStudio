@@ -53,6 +53,7 @@ function ReviewCard({ r }: { r: PublicReview }) {
 
 export default function HomePage() {
   const [reviews, setReviews] = useState<PublicReview[]>([])
+  const [allReviews, setAllReviews] = useState<PublicReview[]>([])
   const [ratingFilter, setRatingFilter] = useState<string>('all')
   const [openReviews, setOpenReviews] = useState(false)
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null)
@@ -71,13 +72,25 @@ export default function HomePage() {
   useEffect(() => {
     ;(async () => {
       try {
-        const res = await fetch('/api/reviews')
+        const res = await fetch('/api/reviews?sort=rating&limit=25')
         if (!res.ok) return
         const data = await res.json()
         setReviews(Array.isArray(data?.reviews) ? data.reviews : [])
       } catch {}
     })()
   }, [])
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        if (!openReviews || allReviews.length) return
+        const res = await fetch('/api/reviews?sort=date')
+        if (!res.ok) return
+        const data = await res.json()
+        setAllReviews(Array.isArray(data?.reviews) ? data.reviews : [])
+      } catch {}
+    })()
+  }, [openReviews, allReviews.length])
 
   useEffect(() => {
     if (!carouselApi || hovered) return
@@ -90,11 +103,12 @@ export default function HomePage() {
   }, [carouselApi, hovered])
 
   const filteredReviews = useMemo(() => {
-    if (ratingFilter === 'all') return reviews
+    const base = allReviews.length ? allReviews : reviews
+    if (ratingFilter === 'all') return base
     const r = Number(ratingFilter)
-    if (!Number.isFinite(r)) return reviews
-    return reviews.filter(x => Number(x.rating) === r)
-  }, [reviews, ratingFilter])
+    if (!Number.isFinite(r)) return base
+    return base.filter(x => Number(x.rating) === r)
+  }, [reviews, allReviews, ratingFilter])
 
   const container = {
     hidden: { opacity: 0 },

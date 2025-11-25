@@ -21,29 +21,29 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video,playlist&order=viewCount&videoCategoryId=10&maxResults=25&key=${apiKey}`,
-      { next: { revalidate: 3600 } }
-    );
+    const q = encodeURIComponent(query);
+    const base = 'https://www.googleapis.com/youtube/v3/search';
+    const videoUrl = `${base}?part=snippet&q=${q}&type=video&order=viewCount&videoCategoryId=10&maxResults=25&key=${apiKey}`;
+    const playlistUrl = `${base}?part=snippet&q=${q}&type=playlist&order=viewCount&maxResults=25&key=${apiKey}`;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    const [videoResp, playlistResp] = await Promise.all([
+      fetch(videoUrl, { next: { revalidate: 3600 } }),
+      fetch(playlistUrl, { next: { revalidate: 3600 } })
+    ]);
+
+    if (!videoResp.ok && !playlistResp.ok) {
+      const errorData = await (videoResp.ok ? videoResp : playlistResp).json().catch(() => ({}));
       console.error('[v0] YouTube API error:', errorData);
-      
       return NextResponse.json(
         { error: errorData.error?.message || 'Failed to search YouTube' },
-        { status: response.status }
+        { status: (videoResp.ok ? playlistResp : videoResp).status }
       );
     }
 
-    const data = await response.json();
-
-    if (data.error) {
-      return NextResponse.json(
-        { error: data.error.message },
-        { status: 400 }
-      );
-    }
+    const [videoData, playlistData] = await Promise.all([
+      videoResp.ok ? videoResp.json() : Promise.resolve({ items: [] }),
+      playlistResp.ok ? playlistResp.json() : Promise.resolve({ items: [] })
+    ]);
 
     type SearchItem = {
       id: string;
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       itemCount?: number;
       isOfficial?: boolean;
     };
-    const baseItems: SearchItem[] = (data.items || [])
+    const baseItems: SearchItem[] = [...(videoData.items || []), ...(playlistData.items || [])]
       .filter((it: any) => !!(it?.id?.videoId || it?.id?.playlistId))
       .map((item: any): SearchItem => {
         const isVideo = !!item.id?.videoId;

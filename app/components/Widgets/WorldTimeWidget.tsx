@@ -174,9 +174,9 @@ export default function WorldTimeWidget() {
           </div>
         </div>
       ) : null}
-      <div data-slot="content" className={`flex-1 min-h-0 w-full flex p-4 ${showWidgetHeaders ? 'items-center justify-start' : 'items-center justify-start'} overflow-hidden`}>
+      <div data-slot="content" className={`flex-1 min-h-0 w-full flex p-4 ${showWidgetHeaders ? 'items-center justify-center' : 'items-center justify-center'} overflow-hidden`}>
         {timeISO ? (
-          <div className={`w-full flex ${showWidgetHeaders ? 'items-center justify-start' : 'items-center justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
+          <div className={`w-full flex ${showWidgetHeaders ? 'items-center justify-center' : 'items-center justify-center'} animate-in fade-in slide-in-from-bottom-2`}>
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <p className={`text-5xl md:text-6xl font-bold text-foreground leading-none tracking-tighter`}>{formatted}</p>
