@@ -11,8 +11,9 @@ import React from 'react'
 import { WidgetConfig } from '@/lib/types';
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, useSortable, arrayMove, rectSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@/lib/utils';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(false);
@@ -26,15 +27,15 @@ function useIsMobile() {
   return isMobile;
 }
 
-function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
+function SortableItem({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   } as React.CSSProperties;
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border border-border">
+    <div ref={setNodeRef} style={style} className={className} {...attributes}>
+      <div className="flex items-center justify-between p-3 rounded-xl glass border text-card-foreground">
         <div className="flex items-center gap-2">
           <button className="h-6 w-6 flex items-center justify-center rounded-sm text-muted-foreground" {...listeners}>
             <GripVertical className="w-4 h-4" />
@@ -49,13 +50,14 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
 export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, updateWidgetLayout, presets, applyPreset, capacity, lastPresetId } = useWidgets();
   const isMobile = useIsMobile();
+  const isDesktop = !isMobile;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
   const enabledWidgets = widgets.filter(w => w.enabled);
   const [activeIds, setActiveIds] = React.useState<string[]>(enabledWidgets.map(w => w.id));
-  React.useEffect(() => { setActiveIds(enabledWidgets.map(w => w.id)); }, [widgets.length]);
+  React.useEffect(() => { setActiveIds(enabledWidgets.map(w => w.id)); }, [widgets]);
 
   const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string }[] = [
     { type: 'clock', label: 'Clock', iconName: 'Clock' },
@@ -101,6 +103,15 @@ export default function WidgetManager() {
     const bLayout = b.layout;
     updateWidgetLayout(a.id, { x: bLayout.x, y: bLayout.y, w: aLayout.w, h: aLayout.h });
     updateWidgetLayout(b.id, { x: aLayout.x, y: aLayout.y, w: bLayout.w, h: bLayout.h });
+  };
+
+  const spanClassFor = (t: WidgetConfig['type']) => {
+    const groupName = (sizeConfig.assignments as any)[t] || 'small';
+    const rows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
+    const span = Math.max(1, Math.min(3, Math.round(rows)));
+    if (span === 3) return 'col-span-1 lg:col-span-3';
+    if (span === 2) return 'col-span-1 lg:col-span-2';
+    return 'col-span-1';
   };
 
   return (
@@ -168,37 +179,66 @@ export default function WidgetManager() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        {isDesktop ? (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext items={activeIds} strategy={isMobile ? verticalListSortingStrategy : rectSortingStrategy}>
-              {activeIds.map((id) => {
-                const widget = widgets.find(w => w.id === id);
-                if (!widget) return null;
-                return (
-                  <SortableItem key={id} id={id}>
-                    <div className="flex items-center gap-3">
-                      <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
-                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${rowsFor(widget.type)}`}</span>
-                    </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <Button
-                        onClick={() => removeWidget(widget.id)}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </SortableItem>
-                );
-              })}
+            <SortableContext items={activeIds} strategy={rectSortingStrategy} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
+              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')}>
+                {activeIds.map((id) => {
+                  const widget = widgets.find(w => w.id === id);
+                  if (!widget) return null;
+                  const spanCls = spanClassFor(widget.type);
+                  return (
+                    <SortableItem key={id} id={id} className={cn(spanCls)}>
+                      <div className="flex items-center gap-3">
+                        <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${rowsFor(widget.type)}`}</span>
+                      </div>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <Button
+                          onClick={() => removeWidget(widget.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        >
+                          <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </SortableItem>
+                  );
+                })}
+              </div>
             </SortableContext>
           </DndContext>
-          {widgets.filter(w => w.enabled).length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">No active widgets</p>
-          )}
-        </div>
+        ) : (
+          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
+            {activeIds.map((id) => {
+              const widget = widgets.find(w => w.id === id);
+              if (!widget) return null;
+              const spanCls = spanClassFor(widget.type);
+              return (
+                <div key={id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3')}> 
+                  <div className="flex items-center gap-3">
+                    <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
+                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{`1x${rowsFor(widget.type)}`}</span>
+                  </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <Button
+                      onClick={() => removeWidget(widget.id)}
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    >
+                      <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+            {widgets.filter(w => w.enabled).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">No active widgets</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
