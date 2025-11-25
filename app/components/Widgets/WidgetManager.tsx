@@ -55,12 +55,12 @@ function SortableItem({ id, children, className, variant = 'default', extraStyle
     );
   }
   return (
-    <div ref={setNodeRef} style={style} className={className} {...attributes}>
-      <div className="flex items-center justify-between p-3 rounded-xl glass border text-card-foreground">
-        <div className="flex items-center gap-2">
-          <button className="h-6 w-6 flex items-center justify-center rounded-sm text-muted-foreground" {...listeners}>
-            <GripVertical className="w-4 h-4" />
-          </button>
+    <div ref={setNodeRef} style={style} className={cn("relative", className)} {...attributes}>
+      <div className="h-full w-full relative group">
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-muted/50" {...listeners}>
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
+        <div className="h-full w-full">
           {children}
         </div>
       </div>
@@ -247,7 +247,7 @@ export default function WidgetManager() {
                     className={cn('col-span-1', cls)}
                     extraStyle={{ gridRowEnd: `span ${getRowSpan(size)}`, gridColumnEnd: `span ${getColSpan(size)}` }}
                   >
-                    <div className={cn("rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between", multi ? 'ring-2 ring-primary/40 border-primary/40' : '')}>
+                    <div className={cn("rounded-xl glass border text-card-foreground p-3 pl-9 h-full w-full flex items-center justify-between", multi ? 'ring-2 ring-primary/40 border-primary/40' : '')}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>

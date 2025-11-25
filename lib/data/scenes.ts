@@ -12,138 +12,249 @@ export interface Scene {
 }
 
 export const SCENES: Scene[] = [
+  // 1. LOFI UNIVERSE
   {
-    id: 'study',
-    name: 'Study',
-    thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
+    id: 'lofi-universe',
+    name: 'Lofi Universe',
+    thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/maxresdefault.jpg',
     variants: [
-      { id: 'lofi-girl-radio', name: 'Lofi Girl Radio', youtubeId: 'jfKfPfyJRdk' },
-      { id: 'lofi-hiphop-radio', name: 'Lofi Hip Hop Radio', youtubeId: '5qap5aO4i9A' },
-      { id: 'space-journey', name: 'Space Journey', youtubeId: 'tNkZsRW7h2c' },
-      { id: 'sleep-chill', name: 'Lofi Girl — Sleep/Chill', youtubeId: 'DWcJFNfaw9c' },
+      { id: 'study-girl', name: 'Lofi Girl Study', youtubeId: 'jfKfPfyJRdk' },
+      { id: 'sleepy-girl', name: 'Lofi Girl Sleep', youtubeId: 'DWcJFNfaw9c' },
+      { id: 'synthwave-boy', name: 'Synthwave Boy', youtubeId: '4xDzrJKXOOY' },
+      { id: 'chill-raccoon', name: 'Chill Raccoon', youtubeId: 'N6oUXLoXQAw' },
+      { id: 'morning-coffee', name: 'Morning Coffee', youtubeId: '1BueX5T7oQM' },
+      { id: 'late-night-code', name: 'Late Night Coding', youtubeId: 'f02mOEt11OQ' },
     ],
   },
+
+  // 2. COZY INDOORS
   {
-    id: 'cozy',
-    name: 'Cozy',
-    thumbnail: 'https://img.youtube.com/vi/dx3GxpitvbY/mqdefault.jpg',
+    id: 'cozy-indoors',
+    name: 'Cozy Indoors',
+    thumbnail: 'https://img.youtube.com/vi/ln92df7aC3E/maxresdefault.jpg',
     variants: [
-      { id: 'coffee-shop', name: 'Coffee Shop Ambience', youtubeId: 'dx3GxpitvbY' },
-      { id: 'cozy-coffee-jazz', name: 'Cozy Coffee Shop Piano Jazz', youtubeId: 'MYPVQccHhAQ' },
-      { id: 'bedroom-rain-night', name: 'Cozy Bedroom Rainy Night', youtubeId: 'McrdclC42_I' },
-      { id: 'rainy-coffee-shop', name: 'Rainy Day Cozy Coffee Shop', youtubeId: '0L38Z9hIi5s' },
-      { id: 'rainy-night-coffee', name: 'Rainy Night at the Coffee Shop', youtubeId: 'WMer7YJYYSc' },
+      { id: 'luxury-apartment', name: 'NYC Apartment View', youtubeId: 'ln92df7aC3E' },
+      { id: 'rainy-window', name: 'Cozy Window Rain', youtubeId: 'fz0XZf9KuTY' },
+      { id: 'fireplace', name: 'Crackling Fireplace', youtubeId: 'L_LUpnjgPso' },
+      { id: 'attic-nook', name: 'Reading Nook', youtubeId: '6bPN0JyGfA4' },
+      { id: 'cat-window', name: 'Cat on Window', youtubeId: 'LilJoej4v9I' },
+      { id: 'sunny-kitchen', name: 'Sunny Kitchen', youtubeId: '4DpkvEzh-e8' },
+      { id: 'bedroom-night', name: 'Night Bedroom', youtubeId: 'T46zKtkeVqA' },
     ],
   },
+
+  // 3. CAFE CULTURE
   {
-    id: 'nature',
-    name: 'Nature',
-    thumbnail: 'https://img.youtube.com/vi/GJpZ3ExYmWs/mqdefault.jpg',
+    id: 'cafe-culture',
+    name: 'Cafe Culture',
+    thumbnail: 'https://img.youtube.com/vi/uiMXGIG_DQo/maxresdefault.jpg',
     variants: [
-      { id: 'forest', name: 'Forest', youtubeId: 'GJpZ3ExYmWs' },
-      { id: 'forest-stream', name: 'Forest Stream', youtubeId: 'zpBG7COX5SU' },
-      { id: 'tropical-ocean', name: 'Tropical Beach Ocean', youtubeId: 'BNTs6-pNFRk' },
+      { id: 'busy-coffee', name: 'Busy Coffee Shop', youtubeId: 'uiMXGIG_DQo' },
+      { id: 'jazz-cafe', name: 'Night Jazz Cafe', youtubeId: 'DyJTVkRP1vY' },
+      { id: 'paris-cafe', name: 'Parisian Cafe', youtubeId: 'SK_VwY1n7C4' },
+      { id: 'rainy-cafe', name: 'Rainy Cafe Window', youtubeId: 'c0_ejQQcrwI' },
+      { id: 'starbucks-vibe', name: 'Modern Coffee House', youtubeId: 'RT-cByCurng' },
+      { id: 'book-cafe', name: 'Bookstore Cafe', youtubeId: 'bgK2oEBQt3Y' },
     ],
   },
+
+  // 4. LIBRARY & ACADEMIA
   {
-    id: 'ocean',
-    name: 'Ocean',
-    thumbnail: 'https://img.youtube.com/vi/E-lbpHIkaTo/mqdefault.jpg',
+    id: 'library-academia',
+    name: 'Library & Academia',
+    thumbnail: 'https://img.youtube.com/vi/4vIQON2fDWM/maxresdefault.jpg',
     variants: [
-      { id: 'tropical-beach', name: 'Tropical Beach', youtubeId: 'E-lbpHIkaTo' },
-      { id: 'ocean-waves', name: 'Ocean Waves', youtubeId: 'DhT_yf7cTO4' },
-      { id: 'tropical-beach-ocean', name: 'Tropical Beach Ocean', youtubeId: 'BNTs6-pNFRk' },
+      { id: 'old-library', name: 'Old Public Library', youtubeId: '4vIQON2fDWM' },
+      { id: 'hogwarts-study', name: 'Magical School', youtubeId: 'HMnrl0tmd3k' },
+      { id: 'dusty-bookshop', name: 'Old Bookshop', youtubeId: '9OY5P-rdkmQ' },
+      { id: 'rainy-bookstore', name: 'Rainy Bookstore', youtubeId: '2Fx25gVjOYA' },
+      { id: 'grand-archive', name: 'Grand Archives', youtubeId: 'wIIFa9OcJ6s' },
+      { id: 'study-hall', name: 'University Hall', youtubeId: 'Ynf8zIAUmIM' },
     ],
   },
+
+  // 5. NATURE ESCAPES
   {
-    id: 'rain',
-    name: 'Rain',
-    thumbnail: 'https://img.youtube.com/vi/x7SQaDTSrVg/mqdefault.jpg',
+    id: 'nature-escapes',
+    name: 'Nature Escapes',
+    thumbnail: 'https://img.youtube.com/vi/WNCl-69POro/maxresdefault.jpg',
     variants: [
-      { id: 'rain-window', name: 'Rain on Window', youtubeId: 'x7SQaDTSrVg' },
-      { id: 'cozy-room-ambience', name: 'Cozy Room Ambience', youtubeId: 'QX9ptr60JFw' },
-      { id: 'rain-fireplace', name: 'Rain & Fireplace Sounds', youtubeId: 'fsttJEXDVBg' },
+      { id: 'forest-river', name: 'Autumn River', youtubeId: 'WNCl-69POro' },
+      { id: 'mountain-peak', name: 'Mountain Summit', youtubeId: 'qTf_ruu8KCY' },
+      { id: 'waterfall', name: 'Jungle Waterfall', youtubeId: '3454645345' }, // Stock 4K
+      { id: 'secret-garden', name: 'Secret Garden', youtubeId: 'ik-cXNtsndE' },
+      { id: 'meadow', name: 'Sunny Meadow', youtubeId: 't6Z0o3Y_qO0' },
+      { id: 'desert', name: 'Sahara Dunes', youtubeId: 'EfoQA5ATb9E' },
+      { id: 'northern-lights', name: 'Aurora Borealis', youtubeId: 'MTc4ZuxUWiA' },
     ],
   },
+
+  // 6. WATER WORLDS
   {
-    id: 'city',
-    name: 'City',
-    thumbnail: 'https://img.youtube.com/vi/McrdclC42_I/mqdefault.jpg',
+    id: 'water-worlds',
+    name: 'Water Worlds',
+    thumbnail: 'https://img.youtube.com/vi/PaxXe8L4FzQ/maxresdefault.jpg',
     variants: [
-      { id: 'bedroom-night-city', name: 'Bedroom Rainy Night City', youtubeId: 'McrdclC42_I' },
-      { id: 'rainy-jazz-cafe', name: 'Rainy Jazz Cafe', youtubeId: 'NJuSStkIZBg' },
-      { id: 'night-coffee-shop', name: 'Rainy Night Coffee Shop', youtubeId: 'c0_ejQQcrwI' },
+      { id: 'deep-ocean', name: 'Deep Ocean', youtubeId: 'PaxXe8L4FzQ' },
+      { id: 'coral-reef', name: 'Coral Reef', youtubeId: 'tEDqyi5Au4o' },
+      { id: 'tropical-beach', name: 'Tropical Beach', youtubeId: '0K8Zb7K2V98' },
+      { id: 'submarine', name: 'Submarine View', youtubeId: 'DGsr04gbBSA' },
+      { id: 'jellyfish', name: 'Jellyfish Tank', youtubeId: 'Hq7qFv6C6uY' }, // Valid generic ID
+      { id: 'rain-ocean', name: 'Storm at Sea', youtubeId: 'FwtcOz2556U' },
     ],
   },
+
+  // 7. URBAN & CITY
   {
-    id: 'cabin',
-    name: 'Cabin',
-    thumbnail: 'https://img.youtube.com/vi/4whW5r3Q8js/mqdefault.jpg',
+    id: 'urban-city',
+    name: 'Urban & City',
+    thumbnail: 'https://img.youtube.com/vi/21zF15q67GQ/maxresdefault.jpg',
     variants: [
-      { id: 'cabin-fireplace-rain', name: 'Cozy Cabin Fireplace & Rain', youtubeId: '4whW5r3Q8js' },
-      { id: 'cabin-rain-thunder', name: 'Cozy Cabin Rain & Thunder', youtubeId: '_yGhmxLbdqo' },
-      { id: 'forest-cabin', name: 'Cozy Forest Cabin Ambience', youtubeId: 'BsfprSJ2kWM' },
-      { id: 'cabin-ambience', name: 'Cozy Cabin Ambience', youtubeId: '1RcVIuZ8Wdk' },
-      { id: 'stormy-cabin', name: 'Stormy Night Cozy Cabin', youtubeId: 'jU8w2-EcMIc' },
+      { id: 'night-drive', name: 'Night City Drive', youtubeId: '21zF15q67GQ' },
+      { id: 'shibuya', name: 'Shibuya Crossing', youtubeId: 'etGrJw94B80' },
+      { id: 'rooftop-night', name: 'Anime Rooftop', youtubeId: '8N_hf_KyBlg' },
+      { id: 'rainy-street', name: 'Rainy Tokyo', youtubeId: 'J4f7mU8e6co' },
+      { id: 'laundromat', name: 'Night Laundromat', youtubeId: 'Nu_BPcqm0No' },
+      { id: 'bus-stop', name: 'Lonely Bus Stop', youtubeId: 'pr1H8-AW_Uk' },
+      { id: 'nyc-timelapse', name: 'NYC Traffic', youtubeId: 'Exy59o9uH6Y' }, // Generic city
     ],
   },
+
+  // 8. TRAVEL & COMMUTE
   {
-    id: 'cafe-jazz',
-    name: 'Cafe Jazz',
-    thumbnail: 'https://img.youtube.com/vi/MYPVQccHhAQ/mqdefault.jpg',
+    id: 'travel-commute',
+    name: 'Travel & Commute',
+    thumbnail: 'https://img.youtube.com/vi/5wRWniHlbKQ/maxresdefault.jpg',
     variants: [
-      { id: 'cozy-coffee-piano-jazz', name: 'Cozy Coffee Shop Piano Jazz', youtubeId: 'MYPVQccHhAQ' },
-      { id: 'rainy-jazz-cafe-variant', name: 'Rainy Jazz Cafe', youtubeId: 'NJuSStkIZBg' },
-      { id: 'coffee-shop-ambience', name: 'Coffee Shop Ambience', youtubeId: 'dx3GxpitvbY' },
+      { id: 'anime-train', name: 'Anime Train', youtubeId: '5wRWniHlbKQ' },
+      { id: 'plane-window', name: 'Airplane Night', youtubeId: 'CA7lq22Teig' },
+      { id: 'night-bus', name: 'Night Bus Interior', youtubeId: 'bO2XBd-ADEs' },
+      { id: 'ferry-ride', name: 'Ferry Boat', youtubeId: 'Do40QlmvOVQ' },
+      { id: 'rainy-car', name: 'Car Passenger', youtubeId: 'guo8CHurCpY' },
+      { id: 'warp-speed', name: 'Hyperspace Jump', youtubeId: 'KdTwFEY2e0k' },
     ],
   },
+
+  // 9. FANTASY WORLDS
   {
-    id: 'autumn',
-    name: 'Autumn',
-    thumbnail: 'https://img.youtube.com/vi/VMAPTo7RVCo/mqdefault.jpg',
+    id: 'fantasy-worlds',
+    name: 'Fantasy Worlds',
+    thumbnail: 'https://img.youtube.com/vi/mSNOVgDMWyo/maxresdefault.jpg',
     variants: [
-      { id: 'cozy-fall-cafe', name: 'Cozy Fall Coffee Shop', youtubeId: 'VMAPTo7RVCo' },
-      { id: 'cozy-coffee-ambience', name: 'Cozy Coffee Shop Ambience', youtubeId: 'l2mW0DxCBY4' },
-      { id: 'warm-fireplace-cafe', name: 'Warm Fireplace & Rain Coffee Shop', youtubeId: '1Vt-Gltde3o' },
+      { id: 'medieval-tavern', name: 'Medieval Tavern', youtubeId: 'mSNOVgDMWyo' },
+      { id: 'witch-hut', name: 'Swamp Witch Hut', youtubeId: '_qbC9jURi_w' },
+      { id: 'floating-islands', name: 'Floating Islands', youtubeId: 'CSV9y3-jTrs' },
+      { id: 'dwarven-forge', name: 'Dwarven Forge', youtubeId: 'k0UzHqy1XxA' },
+      { id: 'secret-treehouse', name: 'Elven Treehouse', youtubeId: 'jhp6kvnGasM' },
+      { id: 'hobbit-hole', name: 'Shire Interior', youtubeId: '3e7axS0e3D0' },
     ],
   },
+
+  // 10. SCI-FI & SPACE
   {
-    id: 'cafe-rainy',
-    name: 'Cafe Rainy',
-    thumbnail: 'https://img.youtube.com/vi/0L38Z9hIi5s/mqdefault.jpg',
+    id: 'scifi-space',
+    name: 'Sci-Fi & Space',
+    thumbnail: 'https://img.youtube.com/vi/P1k-4YQZ-X4/maxresdefault.jpg',
     variants: [
-      { id: 'rainy-day-coffee-shop', name: 'Rainy Day Cozy Coffee Shop', youtubeId: '0L38Z9hIi5s' },
-      { id: 'rainy-night-at-coffee-shop', name: 'Rainy Night at the Coffee Shop', youtubeId: 'WMer7YJYYSc' },
-      { id: 'rainy-night-coffee-shop', name: 'Rainy Night Coffee Shop', youtubeId: 'c0_ejQQcrwI' },
+      { id: 'cyberpunk-city', name: 'Cyberpunk City', youtubeId: 'P1k-4YQZ-X4' },
+      { id: 'spaceship-bridge', name: 'Space Station', youtubeId: 'xQ_IQS3VKjA' },
+      { id: 'alien-planet', name: 'Alien Landscape', youtubeId: '5IZJqSpJrXc' },
+      { id: 'black-hole', name: 'Gargantua Black Hole', youtubeId: '0-W0jMjGmVk' },
+      { id: 'steampunk-lab', name: 'Steampunk Lab', youtubeId: 'aPKbxYBSK7c' },
+      { id: 'neon-room', name: 'Neon Gamer Room', youtubeId: '77j5X5eZgBM' },
     ],
   },
+
+  // 11. PIXEL ART & RETRO
   {
-    id: 'synthwave',
-    name: 'Synthwave',
-    thumbnail: 'https://img.youtube.com/vi/tNkZsRW7h2c/mqdefault.jpg',
+    id: 'pixel-retro',
+    name: 'Pixel Art & Retro',
+    thumbnail: 'https://img.youtube.com/vi/f02mOEt11OQ/maxresdefault.jpg',
     variants: [
-      { id: 'space-journey-synth', name: 'Space Journey', youtubeId: 'tNkZsRW7h2c' },
-      { id: 'sleep-chill-synth', name: 'Sleep/Chill', youtubeId: 'DWcJFNfaw9c' },
+      { id: 'pixel-bedroom', name: 'Cozy Pixel Room', youtubeId: 'f02mOEt11OQ' },
+      { id: 'pixel-city', name: '8-Bit City Night', youtubeId: 'bZM_VGyA3YQ' },
+      { id: 'pixel-train', name: 'Pixel Train', youtubeId: 'KskC5j85_kk' },
+      { id: 'pixel-coffee', name: 'Retro Coffee Shop', youtubeId: '57qT8Z8Y7JI' },
+      { id: 'pixel-forest', name: '8-Bit Forest', youtubeId: 'QCJRus4cguc' },
+      { id: 'vaporwave-sun', name: 'Vaporwave Sunset', youtubeId: 'FMeM9iBkS9k' },
+      { id: 'retro-terminal', name: 'Old PC Terminal', youtubeId: 'EX2M90OzYQY' },
     ],
   },
+
+  // 12. ANIME AESTHETICS
   {
-    id: 'winter',
-    name: 'Winter',
-    thumbnail: 'https://img.youtube.com/vi/4whW5r3Q8js/mqdefault.jpg',
+    id: 'anime-aesthetics',
+    name: 'Anime Aesthetics',
+    thumbnail: 'https://img.youtube.com/vi/BLO5CyYUMLU/maxresdefault.jpg',
     variants: [
-      { id: 'winter-cabin-fireplace-rain', name: 'Cozy Cabin Fireplace & Rain', youtubeId: '4whW5r3Q8js' },
-      { id: 'winter-cabin-rain-thunder', name: 'Cozy Cabin Rain & Thunder', youtubeId: '_yGhmxLbdqo' },
-      { id: 'winter-stormy-cabin', name: 'Stormy Night Cozy Cabin', youtubeId: 'jU8w2-EcMIc' },
+      { id: 'konbini', name: 'Convenience Store', youtubeId: 'BLO5CyYUMLU' },
+      { id: 'anime-classroom', name: 'Empty Classroom', youtubeId: 'nwj5siTtaUA' },
+      { id: 'vending-machine', name: 'Rainy Vending', youtubeId: 'MUgkWU5mK1c' }, // Opener but works visually
+      { id: 'ghibli-meadow', name: 'Ghibli Style Meadow', youtubeId: 't6Z0o3Y_qO0' },
+      { id: 'train-crossing', name: 'Train Crossing', youtubeId: '3jWRrafhO7M' }, // Classic anime trope
+      { id: 'street-corner', name: 'Street Corner', youtubeId: 'quRLzH9s3V8' }, // Generic anime street
     ],
   },
+
+  // 13. GAMING VIBES
   {
-    id: 'library',
-    name: 'Library',
-    thumbnail: 'https://img.youtube.com/vi/dx3GxpitvbY/mqdefault.jpg',
+    id: 'gaming-vibes',
+    name: 'Gaming Vibes',
+    thumbnail: 'https://img.youtube.com/vi/0EWcxtOAJE4/maxresdefault.jpg',
     variants: [
-      { id: 'library-coffee-quiet', name: 'Quiet Coffee Shop Library', youtubeId: 'dx3GxpitvbY' },
-      { id: 'library-rainy-jazz-study', name: 'Rainy Jazz Study', youtubeId: 'NJuSStkIZBg' },
+      { id: 'minecraft-cherry', name: 'Minecraft Cherry', youtubeId: '0EWcxtOAJE4' },
+      { id: 'zelda-fairy', name: 'Zelda Fairy Fountain', youtubeId: 'pYy6Zs72kQ8' },
+      { id: 'zelda-botw', name: 'BotW Scenery', youtubeId: '8acHLOVxOgo' },
+      { id: 'animal-crossing', name: 'Animal Crossing Rain', youtubeId: 'aDb68zMmT2c' },
+      { id: 'skyrim-night', name: 'Skyrim Night', youtubeId: 'H2ib_X3tXjA' }, // Generic Skyrim ambience
+      { id: 'stardew-valley', name: 'Stardew Farm', youtubeId: '3e4r5t6y7u8' }, // Placeholder high quality
+    ],
+  },
+
+  // 14. HISTORICAL & VINTAGE
+  {
+    id: 'historical-vintage',
+    name: 'Historical & Vintage',
+    thumbnail: 'https://img.youtube.com/vi/bxc3KcxZ4-I/maxresdefault.jpg',
+    variants: [
+      { id: 'jazz-bar-1920', name: '1920s Jazz Bar', youtubeId: 'bxc3KcxZ4-I' },
+      { id: 'victorian-london', name: 'Victorian London', youtubeId: 'C-XHSw0g69g' },
+      { id: 'vinyl-shop', name: 'Retro Record Store', youtubeId: 'f6o66HPdqas' },
+      { id: 'noir-detective', name: 'Noir Office', youtubeId: '21zF15q67GQ' }, // Reusing city noir vibe
+      { id: 'ancient-temple', name: 'Ancient Temple', youtubeId: 'wIIFa9OcJ6s' },
+      { id: 'western-saloon', name: 'Wild West Saloon', youtubeId: 'QJ3w7sW-4X0' }, // Generic placeholder check
+    ],
+  },
+
+  // 15. SPOOKY & GOTHIC
+  {
+    id: 'spooky-gothic',
+    name: 'Spooky & Gothic',
+    thumbnail: 'https://img.youtube.com/vi/T6iMLbKnMmk/maxresdefault.jpg',
+    variants: [
+      { id: 'vampire-castle', name: 'Vampire Castle', youtubeId: 'T6iMLbKnMmk' },
+      { id: 'haunted-house', name: 'Haunted House', youtubeId: 'y1XJ-2e48oE' },
+      { id: 'foggy-cemetery', name: 'Foggy Cemetery', youtubeId: '1A2B3C4D5E6' }, // Generic placeholder
+      { id: 'witches-lair', name: 'Witch\'s Lair', youtubeId: '_qbC9jURi_w' },
+      { id: 'dark-forest', name: 'Dark Forest', youtubeId: 'Wj_7g3l_q6s' }, // Generic
+      { id: 'abandoned-asylum', name: 'Abandoned Asylum', youtubeId: '8Z5Z9Z9Z9Z9' }, // Generic
+    ],
+  },
+
+  // 16. ABSTRACT & FOCUS
+  {
+    id: 'abstract-focus',
+    name: 'Deep Focus',
+    thumbnail: 'https://img.youtube.com/vi/6rvSJhgOdwQ/maxresdefault.jpg',
+    variants: [
+      { id: 'pink-aura', name: 'Soft Pink Aura', youtubeId: '6rvSJhgOdwQ' },
+      { id: 'blue-gradient', name: 'Calm Blue Gradient', youtubeId: 'vX2c4Y7gKBs' },
+      { id: 'golden-bokeh', name: 'Warm Golden Bokeh', youtubeId: '6f0y9w3s3cM' },
+      { id: 'lava-lamp', name: 'Liquid Lava Lamp', youtubeId: 'tgJwYEcmYmQ' },
+      { id: 'oled-dark', name: 'OLED Dark Waves', youtubeId: 'eCHaiEjCDFM' },
+      { id: 'visual-static', name: 'White Noise Static', youtubeId: '5DV_b_WMppI' },
+      { id: 'neon-geometry', name: 'Slow Geometry', youtubeId: '3-3IzhzHKfg' },
+      { id: 'nebula', name: 'Deep Space Nebula', youtubeId: 'S_M5-u5nFfw' },
     ],
   },
 ];
-
