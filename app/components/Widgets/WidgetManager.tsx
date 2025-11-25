@@ -132,16 +132,16 @@ export default function WidgetManager() {
   const rows = 3;
   const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
   const initialGrid = React.useMemo(() => {
-    const grid: { id: string | null; rowSpan: number; colSpan: number; start: boolean }[][] = Array.from({ length: cols }, () => Array.from({ length: rows }, () => ({ id: null, rowSpan: 1, colSpan: 1, start: false })));
-    const fitsSingle = (c: number, r: number, rs: number) => {
+    const grid: { id: string | null; rowSpan: number; colSpan: number; start: boolean }[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ id: null, rowSpan: 1, colSpan: 1, start: false })));
+    const fitsSingle = (r: number, c: number, rs: number) => {
       if (r + rs > rows) return false;
-      for (let rr = r; rr < r + rs; rr++) { if (grid[c][rr].id) return false; }
+      for (let rr = r; rr < r + rs; rr++) { if (grid[rr][c].id) return false; }
       return true;
     };
-    const fitsDouble = (c: number, r: number, rs: number) => {
+    const fitsDouble = (r: number, c: number, rs: number) => {
       if (c >= cols - 1) return false;
       if (r + rs > rows) return false;
-      for (let rr = r; rr < r + rs; rr++) { if (grid[c][rr].id || grid[c + 1][rr].id) return false; }
+      for (let rr = r; rr < r + rs; rr++) { if (grid[rr][c].id || grid[rr][c + 1].id) return false; }
       return true;
     };
     enabled.forEach((w) => {
@@ -150,25 +150,26 @@ export default function WidgetManager() {
       const colSpan = getColSpan(size);
       if (colSpan === 1) {
         let placed = false;
-        for (let c = 0; c < cols && !placed; c++) {
-          const startR = rowSpan === rows ? 0 : 0;
-          for (let r = startR; r <= rows - rowSpan && !placed; r++) {
-            if (fitsSingle(c, r, rowSpan)) {
-              grid[c][r] = { id: w.id, rowSpan, colSpan: 1, start: true };
-              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: w.id, rowSpan, colSpan: 1, start: false };
+        for (let r = 0; r <= rows - rowSpan && !placed; r++) {
+          for (let c = 0; c < cols && !placed; c++) {
+            if (rowSpan === rows && r !== 0) break;
+            if (fitsSingle(r, c, rowSpan)) {
+              grid[r][c] = { id: w.id, rowSpan, colSpan: 1, start: true };
+              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[rr][c] = { id: w.id, rowSpan, colSpan: 1, start: false };
               placed = true;
             }
           }
         }
       } else {
+        if (cols < 2) return;
         let placed = false;
-        for (let c = 0; c < cols - 1 && !placed; c++) {
-          const startR = rowSpan === rows ? 0 : 0;
-          for (let r = startR; r <= rows - rowSpan && !placed; r++) {
-            if (fitsDouble(c, r, rowSpan)) {
-              grid[c][r] = { id: w.id, rowSpan, colSpan: 2, start: true };
-              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: w.id, rowSpan, colSpan: 2, start: false };
-              for (let rr = r; rr < r + rowSpan; rr++) grid[c + 1][rr] = { id: w.id, rowSpan, colSpan: 2, start: false };
+        for (let r = 0; r <= rows - rowSpan && !placed; r++) {
+          for (let c = 0; c < cols - 1 && !placed; c++) {
+            if (rowSpan === rows && r !== 0) break;
+            if (fitsDouble(r, c, rowSpan)) {
+              grid[r][c] = { id: w.id, rowSpan, colSpan: 2, start: true };
+              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[rr][c] = { id: w.id, rowSpan, colSpan: 2, start: false };
+              for (let rr = r; rr < r + rowSpan; rr++) grid[rr][c + 1] = { id: w.id, rowSpan, colSpan: 2, start: false };
               placed = true;
             }
           }
@@ -206,64 +207,63 @@ export default function WidgetManager() {
     const overId = String(over.id);
     if (!overId.startsWith('cell-')) return;
     const parts = overId.split('-');
-    const c = Number(parts[1]);
-    const r = Number(parts[2]);
+    const r = Number(parts[1]);
+    const c = Number(parts[2]);
     const draggedId = String(active.id);
     const w = enabled.find(x => x.id === draggedId);
     if (!w) return;
-    // occupant swap will be evaluated after computing final target region
     const size = getSize(w);
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
-    const withinBounds = (cc: number, rr: number) => rr >= 0 && rr + rowSpan <= rows && cc >= 0 && (colSpan === 1 ? cc < cols : cc + 1 < cols);
-    const grid = initialGrid.map(col => col.map(cell => ({ ...cell })));
-    const regionFree = (cc: number, rr: number) => {
-      if (!withinBounds(cc, rr)) return false;
+    const withinBounds = (row: number, col: number) => row >= 0 && row + rowSpan <= rows && col >= 0 && (colSpan === 1 ? col < cols : col + 1 < cols);
+    const grid = initialGrid.map(row => row.map(cell => ({ ...cell })));
+    const regionFree = (row: number, col: number) => {
+      if (!withinBounds(row, col)) return false;
       if (colSpan === 2) {
-        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
-          if (grid[cc][r2].id || grid[cc + 1][r2].id) return false;
+        for (let rr = row; rr < row + rowSpan; rr++) {
+          if (grid[rr][col].id || grid[rr][col + 1].id) return false;
         }
         return true;
       } else {
-        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
-          if (grid[cc][r2].id) return false;
+        for (let rr = row; rr < row + rowSpan; rr++) {
+          if (grid[rr][col].id) return false;
         }
         return true;
       }
     };
-    const nearestValidStart = (cc: number, rr: number) => {
-      const candidates: { cc: number; rr: number; d: number }[] = [];
+    const nearestValidStart = (row: number, col: number) => {
+      const candidates: { row: number; col: number; d: number }[] = [];
       if (colSpan === 2) {
         const pairs: number[] = [];
-        if (cc < cols - 1) pairs.push(cc);
-        if (cc > 0) pairs.push(cc - 1);
+        if (col < cols - 1) pairs.push(col);
+        if (col > 0) pairs.push(col - 1);
         for (const c0 of pairs) {
           for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
-            if (regionFree(c0, r0)) candidates.push({ cc: c0, rr: r0, d: Math.abs(cc - c0) + Math.abs(rr - r0) });
+            if (regionFree(r0, c0)) candidates.push({ row: r0, col: c0, d: Math.abs(row - r0) + Math.abs(col - c0) });
           }
         }
       } else {
         for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
-          if (regionFree(cc, r0)) candidates.push({ cc, rr: r0, d: Math.abs(rr - r0) });
+          if (regionFree(r0, col)) candidates.push({ row: r0, col, d: Math.abs(row - r0) });
         }
       }
       candidates.sort((a, b) => a.d - b.d);
       return candidates[0] || null;
     };
-    for (let cc = 0; cc < cols; cc++) {
-      for (let rr = 0; rr < rows; rr++) {
-        if (grid[cc][rr].id === draggedId) grid[cc][rr] = { id: null, rowSpan: 1, colSpan: 1, start: false };
+    for (let rr = 0; rr < rows; rr++) {
+      for (let cc = 0; cc < cols; cc++) {
+        if (grid[rr][cc].id === draggedId) grid[rr][cc] = { id: null, rowSpan: 1, colSpan: 1, start: false };
       }
     }
-    let targetC = c;
-    let targetR = r;
-    if (!regionFree(targetC, targetR)) {
-      const near = nearestValidStart(c, r);
+    let targetRow = r;
+    let targetCol = c;
+    if (!regionFree(targetRow, targetCol)) {
+      const near = nearestValidStart(r, c);
       if (!near) return;
-      targetC = near.cc;
-      targetR = near.rr;
+      targetRow = near.row;
+      targetCol = near.col;
     }
-    const occupantAtTarget = grid[targetC][targetR];
+    const occupantAtTarget = grid[targetRow][targetCol];
     if (occupantAtTarget && occupantAtTarget.id && occupantAtTarget.start && occupantAtTarget.id !== draggedId) {
       const oldIndex = widgets.findIndex(x => x.id === draggedId);
       const newIndex = widgets.findIndex(x => x.id === occupantAtTarget.id);
@@ -271,17 +271,17 @@ export default function WidgetManager() {
       return;
     }
     if (colSpan === 2) {
-      grid[targetC][targetR] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr2 = targetR + 1; rr2 < targetR + rowSpan; rr2++) grid[targetC][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
-      for (let rr2 = targetR; rr2 < targetR + rowSpan; rr2++) grid[targetC + 1][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
+      grid[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
+      for (let rr2 = targetRow; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol + 1] = { id: draggedId, rowSpan, colSpan, start: false };
     } else {
-      grid[targetC][targetR] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr2 = targetR + 1; rr2 < targetR + rowSpan; rr2++) grid[targetC][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
+      grid[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
     }
     const placedIds: string[] = [];
-    for (let cc = 0; cc < cols; cc++) {
-      for (let rr = 0; rr < rows; rr++) {
-        const cell = grid[cc][rr];
+    for (let rr = 0; rr < rows; rr++) {
+      for (let cc = 0; cc < cols; cc++) {
+        const cell = grid[rr][cc];
         if (cell.id && cell.start) placedIds.push(cell.id);
       }
     }
@@ -307,55 +307,55 @@ export default function WidgetManager() {
     const overId = String(over.id);
     if (!overId.startsWith('cell-')) { setHighlightCell(null); return; }
     const parts = overId.split('-');
-    const c = Number(parts[1]);
-    const r = Number(parts[2]);
+    const r = Number(parts[1]);
+    const c = Number(parts[2]);
     const draggedId = String(active.id);
     const w = enabled.find(x => x.id === draggedId);
     if (!w) { setHighlightCell(null); return; }
     const size = getSize(w);
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
-    const withinBounds = (cc: number, rr: number) => rr >= 0 && rr + rowSpan <= rows && cc >= 0 && (colSpan === 1 ? cc < cols : cc + 1 < cols);
-    const grid = initialGrid.map(col => col.map(cell => ({ ...cell })));
-    const regionFree = (cc: number, rr: number) => {
-      if (!withinBounds(cc, rr)) return false;
+    const withinBounds = (row: number, col: number) => row >= 0 && row + rowSpan <= rows && col >= 0 && (colSpan === 1 ? col < cols : col + 1 < cols);
+    const grid = initialGrid.map(row => row.map(cell => ({ ...cell })));
+    const regionFree = (row: number, col: number) => {
+      if (!withinBounds(row, col)) return false;
       if (colSpan === 2) {
-        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
-          if (grid[cc][r2].id || grid[cc + 1][r2].id) return false;
+        for (let rr = row; rr < row + rowSpan; rr++) {
+          if (grid[rr][col].id || grid[rr][col + 1].id) return false;
         }
         return true;
       } else {
-        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
-          if (grid[cc][r2].id) return false;
+        for (let rr = row; rr < row + rowSpan; rr++) {
+          if (grid[rr][col].id) return false;
         }
         return true;
       }
     };
-    let targetC = c;
-    let targetR = r;
-    if (!regionFree(targetC, targetR)) {
-      const candidates: { cc: number; rr: number; d: number }[] = [];
+    let targetRow = r;
+    let targetCol = c;
+    if (!regionFree(targetRow, targetCol)) {
+      const candidates: { row: number; col: number; d: number }[] = [];
       if (colSpan === 2) {
         const pairs: number[] = [];
-        if (targetC < cols - 1) pairs.push(targetC);
-        if (targetC > 0) pairs.push(targetC - 1);
+        if (targetCol < cols - 1) pairs.push(targetCol);
+        if (targetCol > 0) pairs.push(targetCol - 1);
         for (const c0 of pairs) {
           for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
-            if (regionFree(c0, r0)) candidates.push({ cc: c0, rr: r0, d: Math.abs(targetC - c0) + Math.abs(targetR - r0) });
+            if (regionFree(r0, c0)) candidates.push({ row: r0, col: c0, d: Math.abs(targetRow - r0) + Math.abs(targetCol - c0) });
           }
         }
       } else {
         for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
-          if (regionFree(targetC, r0)) candidates.push({ cc: targetC, rr: r0, d: Math.abs(targetR - r0) });
+          if (regionFree(r0, targetCol)) candidates.push({ row: r0, col: targetCol, d: Math.abs(targetRow - r0) });
         }
       }
       candidates.sort((a, b) => a.d - b.d);
       const near = candidates[0];
       if (!near) { setHighlightCell(null); return; }
-      targetC = near.cc;
-      targetR = near.rr;
+      targetRow = near.row;
+      targetCol = near.col;
     }
-    setHighlightCell(`cell-${targetC}-${targetR}`);
+    setHighlightCell(`cell-${targetRow}-${targetCol}`);
   };
 
   return (
@@ -427,25 +427,25 @@ export default function WidgetManager() {
           <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const baseCell = initialGrid[colIdx][rowIdx];
+                const baseCell = initialGrid[rowIdx][colIdx];
                 const occupiedNonStart = !!baseCell.id && !baseCell.start;
                 const occupiedStart = !!baseCell.id && baseCell.start;
                 const extraCls = occupiedNonStart ? 'bg-primary/10 border-primary/30' : occupiedStart ? 'bg-primary/15 border-primary' : '';
                 return (
-                  <GridCell key={`base-${colIdx}-${rowIdx}`} id={`cell-${colIdx}-${rowIdx}`} className={cn('min-h-[64px] z-0', extraCls)} style={{ gridColumn: `${colIdx + 1}`, gridRow: `${rowIdx + 1}` }} />
+                  <GridCell key={`base-${rowIdx}-${colIdx}`} id={`cell-${rowIdx}-${colIdx}`} className={cn('min-h-[64px] z-0', extraCls)} style={{ gridColumn: `${colIdx + 1}`, gridRow: `${rowIdx + 1}` }} />
                 );
               })
             ))}
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const cell = initialGrid[colIdx][rowIdx];
+                const cell = initialGrid[rowIdx][colIdx];
                 if (!cell.id || !cell.start) return null;
                 const item = widgets.find(w => w.id === cell.id)!;
                 const size = getSize(item);
                 const rowSpan = getRowSpan(size);
                 const colSpan = getColSpan(size);
                 return (
-                  <div key={`item-${colIdx}-${rowIdx}`} style={{ gridColumn: `${colIdx + 1} / span ${colSpan}`, gridRow: `${rowIdx + 1} / span ${rowSpan}`, zIndex: 1 }}>
+                  <div key={`item-${rowIdx}-${colIdx}`} style={{ gridColumn: `${colIdx + 1} / span ${colSpan}`, gridRow: `${rowIdx + 1} / span ${rowSpan}`, zIndex: 1 }}>
                     <DraggableItem id={String(cell.id)}>
                       <div className="rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between">
                         <div className="flex items-center gap-3">
