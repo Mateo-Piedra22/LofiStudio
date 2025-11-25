@@ -282,6 +282,17 @@ export function useWidgets() {
     setWidgets((prev) => padToCapacity(arrayMove(prev, oldIndex, newIndex)));
   }, [setWidgets]);
 
+  const swapWidgets = useCallback((a: number, b: number) => {
+    setWidgets((prev) => {
+      const next = [...prev];
+      if (a < 0 || b < 0 || a >= next.length || b >= next.length) return padToCapacity(next);
+      const tmp = next[a];
+      next[a] = next[b];
+      next[b] = tmp;
+      return padToCapacity(next);
+    });
+  }, [setWidgets]);
+
   return {
     widgets,
     presets,
@@ -294,5 +305,6 @@ export function useWidgets() {
     lastPresetId,
     widgetsLoaded,
     reorderWidgets,
+    swapWidgets,
   };
 }
