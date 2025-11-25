@@ -730,7 +730,7 @@ export default function Home() {
           {(() => {
             const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
             const cap = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 9 : (isLandscape ? 4 : 3);
-            const items = widgets.filter(w => w.enabled).slice(0, cap);
+            const board = widgets.slice(0, cap);
             const rowsFor = (t: string) => {
               const groupName = (sizeConfig.assignments as any)[t] || 'small';
               const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
@@ -751,10 +751,18 @@ export default function Home() {
                 key={currentBreakpoint}
                 style={{ gridAutoRows: `${rowHeight}px` }}
               >
-                {items.map(widget => {
+                {board.map(widget => {
+                  const isSpacer = widget.type === 'SPACER' || !widget.enabled;
                   const rows = rowsFor(widget.type);
                   const fallbackSize = `1x${rows}`;
-                  const spanCls = sizeToClasses(widget.size || fallbackSize);
+                  const spanCls = isSpacer ? 'col-span-1 row-span-1' : sizeToClasses(widget.size || fallbackSize);
+                  if (isSpacer) {
+                    return (
+                      <div key={widget.id} className={cn('col-span-1 hidden lg:block', spanCls)}>
+                        <div className="opacity-0 h-full w-full" />
+                      </div>
+                    );
+                  }
                   return (
                     <div key={widget.id} className={cn('col-span-1', spanCls)}>
                       <DraggableWidget
