@@ -9,6 +9,26 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.4',
+    date: '2025-11-25',
+    title: 'Grid Index Ordering & Mini Manager Grid',
+    features: [
+      'Index-based widget ordering with persistent reorder',
+      'Explicit widget size mapping to CSS grid spans',
+      'Active Widgets mini grid (3x3 desktop, 2x3 landscape, 1x3 mobile)',
+      'Drop to empty slots with vertical and horizontal constraints',
+      'Dynamic capacity per breakpoint via responsive events'
+    ],
+    fixes: [
+      'Aligned grid overlay gaps and columns to real grid',
+      'Add Widgets panel anchored right and expanded for full visibility',
+      'Main grid height corrected to 100vh and minHeight to avoid bottom cutoff',
+      'Improved drag comfort with increased spacing in Active Widgets',
+      'dnd-kit type errors fixed (transition removal, id normalization)'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.3',
     date: '2025-11-25',
     title: 'Drag & Drop Hard Lock (Desktop 1024px)',

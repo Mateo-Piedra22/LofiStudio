@@ -7,7 +7,7 @@ import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2, GripVertical } from 'lucide-react'
 import React from 'react'
 import { WidgetConfig } from '@/lib/types';
-import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable, useDraggable } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -23,6 +23,19 @@ function useIsDesktop() {
     return () => mq?.removeEventListener?.('change', evalMatch);
   }, []);
   return isDesktop;
+}
+
+function useIsLandscape() {
+  const [isLandscape, setIsLandscape] = React.useState(true);
+  React.useEffect(() => {
+    const mql = typeof window !== 'undefined' ? window.matchMedia('(orientation: landscape)') : null as any;
+    const init = () => { if (mql) setIsLandscape(!!mql.matches); };
+    const handler = (e: any) => setIsLandscape(!!e.matches);
+    init();
+    mql?.addEventListener?.('change', handler);
+    return () => { mql?.removeEventListener?.('change', handler); };
+  }, []);
+  return isLandscape;
 }
 
 function SortableItem({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
@@ -48,6 +61,7 @@ function SortableItem({ id, children, className }: { id: string; children: React
 export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, presets, applyPreset, capacity, lastPresetId, reorderWidgets } = useWidgets();
   const isDesktop = useIsDesktop();
+  const isLandscape = useIsLandscape();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -81,7 +95,7 @@ export default function WidgetManager() {
   const danger = usedBlocksVisible >= capacity;
   const hiddenCount = Math.max(0, enabled.length - visible.length);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEndList = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!active?.id || !over?.id) return;
     if (active.id !== over.id) {
@@ -95,11 +109,145 @@ export default function WidgetManager() {
     if (w.size) return w.size;
     return '1x1';
   };
+  const getRowSpan = (s: WidgetConfig['size'] | undefined) => {
+    if (!s) return 1;
+    const parts = String(s).split('x');
+    const h = Number(parts[1]) || 1;
+    return Math.max(1, Math.min(3, Math.ceil(h)));
+  };
+  const getColSpan = (s: WidgetConfig['size'] | undefined) => {
+    if (!s) return 1;
+    const v = String(s);
+    if (v === '2x1' || v === '2x2') return 2;
+    return 1;
+  };
   const spanClassForSize = (s: WidgetConfig['size'] | undefined) => {
     if (s === '2x1') return 'col-span-1 lg:col-span-2';
     if (s === '1x2') return 'col-span-1 row-span-2';
     if (s === '2x2') return 'col-span-1 lg:col-span-2 row-span-2';
     return 'col-span-1 row-span-1';
+  };
+
+  const rows = 3;
+  const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
+  const initialGrid = React.useMemo(() => {
+    const grid: { id: string | null; rowSpan: number; colSpan: number; start: boolean }[][] = Array.from({ length: cols }, () => Array.from({ length: rows }, () => ({ id: null, rowSpan: 1, colSpan: 1, start: false })));
+    const totals = Array.from({ length: cols }, () => 0);
+    enabled.forEach((w) => {
+      const size = getSize(w);
+      const rowSpan = getRowSpan(size);
+      const colSpan = getColSpan(size);
+      if (colSpan === 1) {
+        const order = Array.from({ length: cols }, (_, i) => i).sort((a, b) => totals[a] - totals[b]);
+        const requiresTop = rowSpan === rows;
+        for (const c of order) {
+          if (totals[c] + rowSpan <= rows && (!requiresTop || totals[c] === 0)) {
+            const startRow = totals[c];
+            grid[c][startRow] = { id: w.id, rowSpan, colSpan: 1, start: true };
+            for (let r = startRow + 1; r < startRow + rowSpan; r++) grid[c][r] = { id: w.id, rowSpan, colSpan: 1, start: false };
+            totals[c] = startRow + rowSpan;
+            break;
+          }
+        }
+      } else {
+        if (cols < 2) return;
+        const pairs: [number, number][] = Array.from({ length: cols - 1 }, (_, i) => [i, i + 1]);
+        const orderedPairs = pairs.sort((pA, pB) => Math.max(totals[pA[0]], totals[pA[1]]) - Math.max(totals[pB[0]], totals[pB[1]]));
+        const requiresTop = rowSpan === rows;
+        for (const [c1, c2] of orderedPairs) {
+          const startRow = Math.max(totals[c1], totals[c2]);
+          if (startRow + rowSpan <= rows && (!requiresTop || startRow === 0)) {
+            grid[c1][startRow] = { id: w.id, rowSpan, colSpan: 2, start: true };
+            for (let r = startRow + 1; r < startRow + rowSpan; r++) grid[c1][r] = { id: w.id, rowSpan, colSpan: 2, start: false };
+            for (let r = startRow; r < startRow + rowSpan; r++) grid[c2][r] = { id: w.id, rowSpan, colSpan: 2, start: false };
+            totals[c1] = startRow + rowSpan;
+            totals[c2] = startRow + rowSpan;
+            break;
+          }
+        }
+      }
+    });
+    return grid;
+  }, [enabled, isDesktop, isLandscape]);
+
+  function GridCell({ id, className, children }: { id: string; className?: string; children?: React.ReactNode }) {
+    const { setNodeRef, isOver } = useDroppable({ id });
+    return (
+      <div ref={setNodeRef} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', className)}>
+        {children}
+      </div>
+    );
+  }
+
+  function DraggableItem({ id, children }: { id: string; children: React.ReactNode }) {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
+    const style = { transform: CSS.Transform.toString(transform) } as React.CSSProperties;
+    return (
+      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        {children}
+      </div>
+    );
+  }
+
+  const handleDragEndGrid = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!active?.id || !over?.id) return;
+    const overId = String(over.id);
+    if (!overId.startsWith('cell-')) return;
+    const parts = overId.split('-');
+    const c = Number(parts[1]);
+    const r = Number(parts[2]);
+    const draggedId = String(active.id);
+    const w = enabled.find(x => x.id === draggedId);
+    if (!w) return;
+    const size = getSize(w);
+    const rowSpan = getRowSpan(size);
+    const colSpan = getColSpan(size);
+    if (rowSpan === 3 && r !== 0) return;
+    if (r + rowSpan > rows) return;
+    if (colSpan === 2) {
+      if (cols < 2 || c >= cols - 1) return;
+    }
+    const grid = initialGrid.map(col => col.map(cell => ({ ...cell })));
+    for (let cc = 0; cc < cols; cc++) {
+      for (let rr = 0; rr < rows; rr++) {
+        if (grid[cc][rr].id === draggedId) grid[cc][rr] = { id: null, rowSpan: 1, colSpan: 1, start: false };
+      }
+    }
+    if (colSpan === 2) {
+      for (let rr = r; rr < r + rowSpan; rr++) {
+        if (grid[c][rr].id || grid[c + 1][rr].id) return;
+      }
+      grid[c][r] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: draggedId, rowSpan, colSpan, start: false };
+      for (let rr = r; rr < r + rowSpan; rr++) grid[c + 1][rr] = { id: draggedId, rowSpan, colSpan, start: false };
+    } else {
+      for (let rr = r; rr < r + rowSpan; rr++) {
+        if (grid[c][rr].id) return;
+      }
+      grid[c][r] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: draggedId, rowSpan, colSpan, start: false };
+    }
+    const placedIds: string[] = [];
+    for (let cc = 0; cc < cols; cc++) {
+      for (let rr = 0; rr < rows; rr++) {
+        const cell = grid[cc][rr];
+        if (cell.id && cell.start) placedIds.push(cell.id);
+      }
+    }
+    const currentIds = enabled.map(x => x.id);
+    const targetIds = placedIds.concat(currentIds.filter(id => !placedIds.includes(id)));
+    const working = [...currentIds];
+    for (let i = 0; i < targetIds.length; i++) {
+      const id = targetIds[i];
+      const curIdx = working.indexOf(id);
+      if (curIdx !== i) {
+        const oldIndex = widgets.findIndex(w => w.id === id);
+        reorderWidgets(oldIndex, i);
+        const [moved] = working.splice(curIdx, 1);
+        working.splice(i, 0, moved);
+      }
+    }
   };
 
   return (
@@ -167,68 +315,50 @@ export default function WidgetManager() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
-        {isDesktop ? (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext items={enabled.map(w => w.id)} strategy={rectSortingStrategy}>
-              <div className={cn('grid gap-x-6 gap-y-4 auto-rows-[72px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
-                {enabled.map((w) => {
-                  const widget = w;
-                  if (!widget) return null;
-                  const size = getSize(widget);
-                  const spanCls = spanClassForSize(size);
+        <DndContext sensors={sensors} onDragEnd={handleDragEndGrid}>
+          <div className={cn('grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+            {Array.from({ length: cols }).map((_, colIdx) => (
+              Array.from({ length: rows }).map((_, rowIdx) => {
+                const cell = initialGrid[colIdx][rowIdx];
+                const droppableId = `cell-${colIdx}-${rowIdx}`;
+                if (cell.id) {
+                  if (!cell.start) return null;
+                  const item = widgets.find(w => w.id === cell.id)!;
+                  const size = getSize(item);
+                  const rowSpan = getRowSpan(size);
+                  const colSpan = getColSpan(size);
                   return (
-                    <SortableItem key={widget.id} id={widget.id} className={cn(spanCls, 'min-h-[60px]')}>
-                      <div className="flex items-center gap-3">
-                        <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
-                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 ml-auto">
-                        <Button
-                          onClick={() => removeWidget(widget.id)}
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        >
-                          <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </SortableItem>
+                    <div key={`item-${colIdx}-${rowIdx}`} style={{ gridColumn: `${colIdx + 1} / span ${colSpan}`, gridRow: `span ${rowSpan}` }}>
+                      <DraggableItem id={cell.id!}>
+                        <div className="rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
+                            <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 ml-auto">
+                            <Button
+                              onClick={() => removeWidget(cell.id!)}
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            >
+                              <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </DraggableItem>
+                    </div>
                   );
-                })}
-              </div>
-            </SortableContext>
-          </DndContext>
-        ) : (
-          <div className={cn('grid gap-x-6 gap-y-4 auto-rows-[72px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
-            {enabled.map((w) => {
-              const widget = w;
-              if (!widget) return null;
-              const size = getSize(widget);
-              const spanCls = spanClassForSize(size);
-              return (
-                <div key={widget.id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3 min-h-[60px]')}> 
-                  <div className="flex items-center gap-3">
-                    <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
-                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
+                }
+                return (
+                  <div key={droppableId} style={{ gridColumn: `${colIdx + 1}`, gridRow: `span 1` }}>
+                    <GridCell id={droppableId} className="min-h-[64px]" />
                   </div>
-                  <div className="flex items-center gap-2 ml-auto">
-                    <Button
-                      onClick={() => removeWidget(widget.id)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    >
-                      <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-            {widgets.filter(w => w.enabled).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No active widgets</p>
-            )}
+                );
+              })
+            ))}
           </div>
-        )}
+        </DndContext>
       </div>
 
       <div className="space-y-4">

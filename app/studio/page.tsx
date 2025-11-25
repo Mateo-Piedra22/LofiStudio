@@ -737,7 +737,14 @@ export default function Home() {
               const capped = Math.max(1, Math.min(3, rawRows));
               return Math.ceil(capped);
             };
-            const spanClassForRows = (rows: number) => rows === 3 ? 'row-span-3' : rows === 2 ? 'row-span-2' : 'row-span-1';
+            const sizeToClasses = (s?: string) => {
+              if (s === '2x1') return cols === 3 ? 'col-span-1 lg:col-span-2 row-span-1' : cols === 2 ? 'col-span-2 row-span-1' : 'col-span-1 row-span-1';
+              if (s === '1x2') return 'col-span-1 row-span-2';
+              if (s === '2x2') return cols === 3 ? 'col-span-1 lg:col-span-2 row-span-2' : cols === 2 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-2';
+              if (s === '1x3') return 'col-span-1 row-span-3';
+              if (s === '3x1') return cols === 3 ? 'col-span-1 lg:col-span-3 row-span-1' : 'col-span-1 row-span-1';
+              return 'col-span-1 row-span-1';
+            };
             return (
               <div
                 className={cn('grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
@@ -746,7 +753,8 @@ export default function Home() {
               >
                 {items.map(widget => {
                   const rows = rowsFor(widget.type);
-                  const spanCls = spanClassForRows(rows);
+                  const fallbackSize = `1x${rows}`;
+                  const spanCls = sizeToClasses(widget.size || fallbackSize);
                   return (
                     <div key={widget.id} className={cn('col-span-1', spanCls)}>
                       <DraggableWidget
@@ -817,8 +825,8 @@ export default function Home() {
         )}
 
         {!isZenMode && showWidgetManager && (
-          <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-[640px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
-            <div className={`${isEditingLayout ? 'w-[640px] lg:w-[740px] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
+          <div className={`fixed ${isEditingLayout ? 'top-24 right-0 w-[640px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
+            <div className={`${isEditingLayout ? 'w-[640px] lg:w-[740px] max-w-[calc(100vw-16px)] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className={`font-bold text-foreground ${isEditingLayout ? 'text-sm' : 'text-2xl'}`}>
                   {isEditingLayout ? 'Add Widgets' : 'Customize Layout'}
