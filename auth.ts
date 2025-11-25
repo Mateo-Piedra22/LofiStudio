@@ -37,8 +37,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         authorized: async ({ auth }) => {
             return !!auth
         },
-        async redirect() {
-            return '/studio'
+        async redirect({ url, baseUrl }) {
+            if (url.startsWith(baseUrl)) return url
+            if (url.startsWith('/')) return new URL(url, baseUrl).toString()
+            return new URL('/studio', baseUrl).toString()
         },
         async jwt({ token, account }) {
             if (account) {

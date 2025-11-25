@@ -85,12 +85,19 @@ export async function POST(req: Request) {
       createdAt: new Date(),
     }
     if (process.env.DATABASE_URL) {
-      const existing = await db.query.reviews.findFirst({ where: eq(reviews.userId, uid) })
-      if (existing) {
-        await db.update(reviews).set(payload).where(eq(reviews.userId, uid))
-      } else {
-        await db.insert(reviews).values(payload)
-      }
+      await db
+        .insert(reviews)
+        .values(payload)
+        .onConflictDoUpdate({
+          target: reviews.userId,
+          set: {
+            userName: payload.userName,
+            userImage: payload.userImage,
+            rating: payload.rating,
+            comment: payload.comment,
+            createdAt: payload.createdAt,
+          },
+        })
       return NextResponse.json({ success: true })
     } else {
       const mem = getMem()
