@@ -40,13 +40,13 @@ export default function ReviewExperience() {
       })
       if (res.ok) {
         setSent(true)
-        toast.success('Reseña guardada', 3000)
+        toast.success('Review saved', 3000)
         setTimeout(() => setSent(false), 3000)
       } else {
-        toast.error('Error al guardar reseña', 4000)
+        toast.error('Failed to save review', 4000)
       }
     } catch {
-      toast.error('Error de red', 4000)
+      toast.error('Network error', 4000)
     } finally {
       setLoading(false)
     }
@@ -56,8 +56,8 @@ export default function ReviewExperience() {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-green-500/10 border border-green-500/20 rounded-lg">
         <CheckCircle2 className="w-12 h-12 text-green-400 mb-2" />
-        <p className="text-foreground font-medium">¡Gracias por tu reseña!</p>
-        <p className="text-muted-foreground text-sm">Tu opinión ayuda a mejorar LofiStudio.</p>
+        <p className="text-foreground font-medium">Thanks for your review!</p>
+        <p className="text-muted-foreground text-sm">Your feedback helps improve LofiStudio.</p>
       </div>
     )
   }
@@ -65,7 +65,7 @@ export default function ReviewExperience() {
   return (
     <div className="space-y-4 p-4 rounded-lg glass border">
       <div>
-        <p className="text-sm text-muted-foreground mb-2">¿Cómo fue tu experiencia?</p>
+        <p className="text-sm text-muted-foreground mb-2">How was your experience?</p>
         <div className="flex items-center gap-2">
           {Array.from({ length: 5 }).map((_, i) => {
             const idx = i + 1
@@ -86,21 +86,20 @@ export default function ReviewExperience() {
       </div>
 
       <div>
-        <p className="text-sm text-muted-foreground mb-2">Cuéntanos más</p>
+        <p className="text-sm text-muted-foreground mb-2">Tell us more</p>
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="¿Qué te gustó? ¿Qué mejorarías?"
+          placeholder="What did you like? What would you improve?"
           className="bg-background/50 border-border text-foreground min-h-[100px]"
         />
       </div>
 
       <div className="flex justify-end">
         <Button onClick={submit} disabled={!rating || loading} className="w-full sm:w-auto">
-          {loading ? 'Guardando…' : 'Guardar reseña'}
+          {loading ? 'Saving…' : 'Save review'}
         </Button>
       </div>
     </div>
   )
 }
-

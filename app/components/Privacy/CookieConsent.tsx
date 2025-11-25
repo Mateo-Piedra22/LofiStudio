@@ -43,7 +43,7 @@ export default function CookieConsent() {
             <span className="text-muted-foreground">{(cookiesConfig as any).texts.analytics}</span>
             <span className={`px-2 py-0.5 rounded ${analytics ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{analytics ? 'On' : 'Off'}</span>
           </button>
-          <button className={`flex items-center justify-between rounded-lg border px-3 py-2 ${preferences ? 'bg-primary/10' : ''}`} onClick={() => setPreferences(!preferences)} aria-label="Preferencias">
+          <button className={`flex items-center justify-between rounded-lg border px-3 py-2 ${preferences ? 'bg-primary/10' : ''}`} onClick={() => setPreferences(!preferences)} aria-label="Preferences">
             <span className="text-muted-foreground">{(cookiesConfig as any).texts.preferences}</span>
             <span className={`px-2 py-0.5 rounded ${preferences ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{preferences ? 'On' : 'Off'}</span>
           </button>

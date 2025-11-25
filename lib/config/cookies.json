@@ -1,14 +1,14 @@
 {
-  "__info": "Textos y valores por defecto del aviso de cookies. Sirve para controlar los textos visibles y el estado inicial de analíticas y preferencias. Para modificar el texto, edita 'texts'. Para cambiar los valores por defecto, ajusta 'defaults'.",
+  "__info": "Texts and defaults for the cookie notice. Controls visible texts and initial state for analytics and preferences.",
   "texts": {
     "title": "Cookies",
-    "description": "Usamos cookies necesarias para autenticación y funcionamiento. Puedes permitir analíticas y preferencias.",
-    "necessaryLabel": "Necesarias",
-    "always": "Siempre",
-    "analytics": "Analíticas",
-    "preferences": "Preferencias",
-    "close": "Cerrar",
-    "accept": "Aceptar"
+    "description": "We use necessary cookies for authentication and functionality. You can allow analytics and preferences.",
+    "necessaryLabel": "Necessary",
+    "always": "Always",
+    "analytics": "Analytics",
+    "preferences": "Preferences",
+    "close": "Close",
+    "accept": "Accept"
   },
   "defaults": {
     "analytics": false,

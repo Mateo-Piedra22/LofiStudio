@@ -19,8 +19,8 @@ interface QuoteWidgetProps {
 
 export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProps) {
   const [currentCategory, setCurrentCategory] = useLocalStorage('quoteCategory', category);
-  const [language, setLanguage] = useLocalStorage<Language>('quoteLanguage', 'en');
-  const [quote, setQuote] = useState(QUOTES_BY_CATEGORY[language][currentCategory]?.[0] || QUOTES_BY_CATEGORY['en']['motivation'][0]);
+  const language: Language = 'en';
+  const [quote, setQuote] = useState(QUOTES_BY_CATEGORY['en'][currentCategory]?.[0] || QUOTES_BY_CATEGORY['en']['motivation'][0]);
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<'api' | 'local'>('local');
   const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
@@ -28,7 +28,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
   const tagMap: Record<string, string> = (tagMapJson as any).tags;
 
   const getLocalFallback = (lang: Language, cat: string) => {
-    const list = QUOTES_BY_CATEGORY[lang]?.[cat] || QUOTES_BY_CATEGORY['en']?.['motivation'] || []
+    const list = QUOTES_BY_CATEGORY['en']?.[cat] || QUOTES_BY_CATEGORY['en']?.['motivation'] || []
     if (list.length === 0) return { text: 'Keep going.', author: 'Unknown' }
     return list[Math.floor(Math.random() * list.length)]
   }
@@ -36,17 +36,17 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
   const fetchQuote = async (cat: string) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/quote?category=${encodeURIComponent(cat)}&lang=${encodeURIComponent(language)}`);
+      const res = await fetch(`/api/quote?category=${encodeURIComponent(cat)}&lang=en`);
       const data = await res.json();
       if (data && data.text && data.author) {
         setQuote({ text: data.text, author: data.author });
         setSource(data.source === 'api' ? 'api' : 'local');
       } else {
-        setQuote(getLocalFallback(language, cat));
+        setQuote(getLocalFallback('en', cat));
         setSource('local');
       }
     } catch (e) {
-      setQuote(getLocalFallback(language, cat));
+      setQuote(getLocalFallback('en', cat));
       setSource('local');
     } finally {
       setLoading(false);
@@ -55,11 +55,9 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
 
   useEffect(() => {
     fetchQuote(currentCategory);
-  }, [currentCategory, language]);
+  }, [currentCategory]);
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'es' : 'en');
-  };
+  const toggleLanguage = () => {};
 
   return (
     <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
@@ -67,11 +65,11 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
         <div data-slot="header" className="flex items-center justify-between px-2 py-1">
           <div className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
             <AnimatedIcon animationSrc="/lottie/Quote.json" fallbackIcon={QuoteIcon} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">{language === 'en' ? 'Daily Quote' : 'Cita Diaria'}</span>
+            <span className="text-lg font-semibold text-foreground">Daily Quote</span>
           </div>
           <div className="flex items-center space-x-2 flex-wrap justify-end">
             <span className={`px-2 py-1 rounded-full text-[10px] ${source === 'api' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}`}>
-              {source === 'api' ? (language === 'en' ? 'Online' : 'En línea') : (language === 'en' ? 'Local' : 'Local')}
+              {source === 'api' ? 'Online' : 'Local'}
             </span>
             {(Object.keys(QUOTES_BY_CATEGORY['en'])).map((cat) => (
               <button
@@ -86,16 +84,7 @@ export default function QuoteWidget({ category = 'motivation' }: QuoteWidgetProp
                 {cat}
               </button>
             ))}
-            <Button
-              onClick={toggleLanguage}
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 hover:bg-accent/10 text-xs font-bold"
-              title={language === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés'}
-              aria-label={language === 'en' ? 'Switch to Spanish' : 'Cambiar a Inglés'}
-            >
-              {language.toUpperCase()}
-            </Button>
+            
             <Button
               onClick={() => fetchQuote(currentCategory)}
               size="icon"

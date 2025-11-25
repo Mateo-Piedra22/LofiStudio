@@ -9,6 +9,19 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.1',
+    date: '2025-11-24',
+    title: 'Fixed EN-ES Mixtures ',
+    features: [
+      'Add 30+ new ambient sound assets for enhanced user experience',
+    ],
+    fixes: [
+      'Update all UI text from Spanish to English for consistency',
+      'Fix EN-ES mixtures in sound playback functionality',
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.0',
     date: '2025-11-24',
     title: 'Responsive Mobile',

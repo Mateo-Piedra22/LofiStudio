@@ -12,23 +12,23 @@ export default function TermsPage() {
         <div className="glass-panel rounded-3xl border px-8 py-10 max-w-3xl w-full">
           <div className="flex items-center gap-3 mb-6">
             <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-14 md:h-16 w-auto rounded-lg shadow-xl ring-0 ring-white/10 dark:ring-black/20" />
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Términos y Condiciones</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Terms & Conditions</h1>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground">
-            <p>Estos términos regulan tu uso de LofiStudio, propiedad de MotionA. Al usar el servicio, aceptas estas condiciones.</p>
-            <p>Uso: LofiStudio se ofrece tal cual. No se permite uso ilícito, extracción de datos maliciosa ni reventa sin autorización.</p>
-            <p>Cuenta: Si te autenticas con Google, eres responsable de mantener tu sesión segura. Puedes cerrar sesión en cualquier momento.</p>
-            <p>Contenido: El contenido de terceros (YouTube, Giphy, APIs) se rige por sus licencias y políticas.</p>
-            <p>Responsabilidad: MotionA no será responsable por daños indirectos derivados del uso del servicio.</p>
-            <p>Terminación: Podemos suspender o terminar el acceso ante abuso o incumplimiento.</p>
-            <p>Cambios: Los términos pueden actualizarse. Publicaremos cambios y la fecha de vigencia.</p>
-            <p>Contacto: <a href="mailto:legal@motiona.co" className="text-foreground underline">legal@motiona.co</a></p>
+            <p>These terms govern your use of LofiStudio, owned by MotionA. By using the service, you agree to these conditions.</p>
+            <p>Use: LofiStudio is provided as-is. Illegal use, malicious data extraction, or resale without authorization is not permitted.</p>
+            <p>Account: If you authenticate with Google, you’re responsible for keeping your session secure. You can sign out at any time.</p>
+            <p>Content: Third-party content (YouTube, Giphy, APIs) is governed by their licenses and policies.</p>
+            <p>Liability: MotionA is not liable for indirect damages arising from the use of the service.</p>
+            <p>Termination: We may suspend or terminate access in case of abuse or breach.</p>
+            <p>Changes: Terms may be updated. We will publish changes and the effective date.</p>
+            <p>Contact: <a href="mailto:legal@motiona.co" className="text-foreground underline">legal@motiona.co</a></p>
           </div>
           <div className="mt-6 flex items-center justify-between">
             <Button asChild variant="secondary">
               <Link href="/">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver al inicio
+                Back to Home
               </Link>
             </Button>
             <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} MotionA</div>

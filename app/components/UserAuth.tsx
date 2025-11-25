@@ -64,13 +64,13 @@ export default function UserAuth() {
                             <a href="/about">About</a>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/legal">Legales</a>
+                            <a href="/legal">Legal</a>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/terms">Términos y Condiciones</a>
+                            <a href="/terms">Terms & Conditions</a>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/cookies">Política de Cookies</a>
+                            <a href="/cookies">Cookies Policy</a>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border" />
                         <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
@@ -143,8 +143,8 @@ export default function UserAuth() {
             <DropdownMenuContent className="w-56 glass border-border text-foreground" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">Invitado</p>
-                        <p className="text-xs leading-none text-muted-foreground">Explora LofiStudio</p>
+                        <p className="text-sm font-medium leading-none">Guest</p>
+                        <p className="text-xs leading-none text-muted-foreground">Explore LofiStudio</p>
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
@@ -157,10 +157,10 @@ export default function UserAuth() {
                     <a href="/about">About</a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/legal">Legales</a>
+                    <a href="/legal">Legal</a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/terms">Términos y Condiciones</a>
+                    <a href="/terms">Terms & Conditions</a>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

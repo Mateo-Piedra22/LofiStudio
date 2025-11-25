@@ -58,7 +58,7 @@ export default function Settings({
   const handleToggleCalendar = (v: boolean) => {
     if (v) {
       if (status !== 'authenticated') {
-        toast({ title: 'Inicia sesión para sincronizar con Google' });
+        toast({ title: 'Sign in to sync with Google' });
         signIn('google', { callbackUrl: '/studio' });
         return;
       }
@@ -70,7 +70,7 @@ export default function Settings({
   const handleToggleTasks = (v: boolean) => {
     if (v) {
       if (status !== 'authenticated') {
-        toast({ title: 'Inicia sesión para sincronizar con Google' });
+        toast({ title: 'Sign in to sync with Google' });
         signIn('google', { callbackUrl: '/studio' });
         return;
       }
@@ -591,7 +591,7 @@ export default function Settings({
           
 
           <div>
-            <h3 className="text-foreground font-semibold mb-3">Tu experiencia</h3>
+            <h3 className="text-foreground font-semibold mb-3">Your Experience</h3>
             <ReviewExperience />
           </div>
 

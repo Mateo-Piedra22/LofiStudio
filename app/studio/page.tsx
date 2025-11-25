@@ -720,7 +720,7 @@ export default function Home() {
                   if (currentBreakpoint === 'sm') return isLandscape ? '2x2' : '1x3';
                   return '1x3';
                 })()}</Button>
-                <Button disabled variant="ghost" size="sm" className="h-8 cursor-not-allowed opacity-60" title="Modo libre (Premium)">Modo libre</Button>
+                <Button disabled variant="ghost" size="sm" className="h-8 cursor-not-allowed opacity-60" title="Free mode (Premium)">Free mode</Button>
               </div>
               <div className="h-4 w-px bg-border" />
             <Button
@@ -909,7 +909,7 @@ export default function Home() {
             </Button>
             {needsReauth && (
               <Button onClick={handleReauth} variant="secondary" size="sm" className="mt-2 glass border h-8">
-                Completar permisos
+                Complete permissions
               </Button>
             )}
           </div>
@@ -920,11 +920,11 @@ export default function Home() {
             <div className="glass-button rounded-full border px-3 py-1.5 text-xs text-muted-foreground flex items-center gap-3">
               <a href="/about" className="hover:text-foreground">About</a>
               <span className="opacity-50">•</span>
-              <a href="/legal" className="hover:text-foreground">Legales</a>
+              <a href="/legal" className="hover:text-foreground">Legal</a>
               <span className="opacity-50">•</span>
-              <a href="/terms" className="hover:text-foreground">Términos</a>
+              <a href="/terms" className="hover:text-foreground">Terms</a>
               <span className="opacity-50">•</span>
-              <a href="/cookies" className="hover:text-foreground">Cookies</a>
+              <a href="/cookies" className="hover:text-foreground">Cookies Policy</a>
             </div>
             <div className="md:hidden mt-3 flex items-center justify-center gap-3">
               <Button onClick={() => setShowWidgetManager(true)} variant="default" size="icon" className="h-10 w-10 rounded-full">
@@ -945,11 +945,11 @@ export default function Home() {
         {!!session?.user && !isZenMode && !localStorage.getItem('privacyNoticeAccepted') && (
           <div className="fixed top-20 right-4 z-[50]">
             <div className="glass-panel rounded-2xl border px-4 py-3 w-[340px]">
-              <p className="text-sm font-medium text-foreground">Privacidad</p>
-              <p className="text-xs text-muted-foreground mt-1">Guardamos lo mínimo necesario: sesión y preferencias. Puedes revisar Legales y Cookies en el footer.</p>
+              <p className="text-sm font-medium text-foreground">Privacy</p>
+              <p className="text-xs text-muted-foreground mt-1">We store the minimum necessary: session and preferences. You can review Legal and Cookies in the footer.</p>
               <div className="mt-3 flex items-center justify-end gap-2">
-                <Button variant="ghost" size="sm" onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}>Cerrar</Button>
-                <Button size="sm" onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}>Aceptar</Button>
+                <Button variant="ghost" size="sm" onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}>Close</Button>
+                <Button size="sm" onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}>Accept</Button>
               </div>
             </div>
           </div>

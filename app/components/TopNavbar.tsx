@@ -196,7 +196,7 @@ export default function TopNavbar() {
                     </Link>
                     <button onClick={reauth} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
-                      <span>Completar permisos</span>
+                      <span>Complete permissions</span>
                     </button>
                   </div>
                 </div>

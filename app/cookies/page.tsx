@@ -14,24 +14,24 @@ export default function CookiesPage() {
             <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
               <Cookie className="w-6 h-6 text-muted-foreground" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Política de Cookies</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Cookies Policy</h1>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground">
-            <p>Usamos cookies necesarias para el funcionamiento del sitio y autenticación. Opcionalmente, puedes permitir cookies de analíticas y preferencias.</p>
-            <p>Tipos de cookies:</p>
+            <p>We use necessary cookies for site functionality and authentication. Optionally, you can allow analytics and preferences cookies.</p>
+            <p>Types of cookies:</p>
             <ul className="list-disc ml-5 space-y-1">
-              <li>Necesarias: sesión, seguridad, funcionamiento básico del sitio.</li>
-              <li>Preferencias: guardar tema y configuraciones locales.</li>
-              <li>Analíticas: métricas de uso para mejorar el producto.</li>
+              <li>Necessary: session, security, core site functionality.</li>
+              <li>Preferences: save theme and local configurations.</li>
+              <li>Analytics: usage metrics to improve the product.</li>
             </ul>
-            <p>Proveedores externos como YouTube y Giphy pueden establecer sus propias cookies según sus políticas.</p>
-            <p>Gestión: Puedes gestionar tu consentimiento desde el banner inicial o borrando la cookie `ls_cookie_consent`.</p>
+            <p>Third-party providers like YouTube and Giphy may set their own cookies according to their policies.</p>
+            <p>Management: You can manage your consent from the initial banner or by deleting the `ls_cookie_consent` cookie.</p>
           </div>
           <div className="mt-6 flex items-center justify-between">
             <Button asChild variant="secondary">
               <Link href="/">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver al inicio
+                Back to Home
               </Link>
             </Button>
             <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} MotionA</div>
