@@ -155,15 +155,13 @@ export default function HomePage() {
             <motion.h1 variants={item} className="font-extrabold text-white drop-shadow-lg text-5xl md:text-7xl leading-tight">Your Focus Sanctuary</motion.h1>
             <motion.p variants={item} className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">Personalized widgets, lofi music, and a polished glassmorphism interface to help you get into flow and stay there.</motion.p>
             <motion.div variants={item} className="mt-10 flex items-center justify-center gap-4">
+              <Button asChild className="px-8 py-6 text-lg font-semibold bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-500/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
+                <Link href="/studio" className="flex items-center gap-2">Enter the Studio<ArrowRight className="w-5 h-5" /></Link>
+              </Button>
               {session?.user ? (
                 <span className="text-white text-lg font-semibold">Welcome, {session.user.name || ''}</span>
               ) : (
-                <>
-                  <Button asChild className="px-8 py-6 text-lg font-semibold bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-500/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
-                    <Link href="/studio" className="flex items-center gap-2">Enter the Studio<ArrowRight className="w-5 h-5" /></Link>
-                  </Button>
-                  <Button variant="outline" className="px-8 py-6 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
-                </>
+                <Button variant="outline" className="px-8 py-6 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
               )}
             </motion.div>
           </motion.div>
