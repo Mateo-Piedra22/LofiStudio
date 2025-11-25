@@ -131,7 +131,7 @@ export default function WidgetManager() {
 
   const rows = 3;
   const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
-  const initialGrid = React.useMemo(() => {
+  const buildGrid = React.useCallback(() => {
     const grid: { id: string | null; rowSpan: number; colSpan: number; start: boolean }[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ id: null, rowSpan: 1, colSpan: 1, start: false })));
     const fitsSingle = (r: number, c: number, rs: number) => {
       if (r + rs > rows) return false;
@@ -177,7 +177,22 @@ export default function WidgetManager() {
       }
     });
     return grid;
-  }, [enabled, isDesktop, isLandscape]);
+  }, [enabled, rows, cols]);
+
+  const [grid, setGrid] = React.useState(buildGrid());
+  React.useEffect(() => {
+    const prevIds: string[] = [];
+    for (let r = 0; r < grid.length; r++) {
+      for (let c = 0; c < (grid[r]?.length || 0); c++) {
+        const cell = grid[r][c];
+        if (cell.id && cell.start) prevIds.push(cell.id);
+      }
+    }
+    const nextIds = enabled.map(x => x.id);
+    const setDiff = prevIds.length !== nextIds.length || prevIds.some(id => !nextIds.includes(id)) || nextIds.some(id => !prevIds.includes(id));
+    const dimsDiff = grid.length !== rows || ((grid[0]?.length || 0) !== cols);
+    if (setDiff || dimsDiff) setGrid(buildGrid());
+  }, [enabled, rows, cols, buildGrid]);
 
   const [highlightCell, setHighlightCell] = React.useState<string | null>(null);
 
@@ -216,17 +231,17 @@ export default function WidgetManager() {
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
     const withinBounds = (row: number, col: number) => row >= 0 && row + rowSpan <= rows && col >= 0 && (colSpan === 1 ? col < cols : col + 1 < cols);
-    const grid = initialGrid.map(row => row.map(cell => ({ ...cell })));
+    const work = grid.map(row => row.map(cell => ({ ...cell })));
     const regionFree = (row: number, col: number) => {
       if (!withinBounds(row, col)) return false;
       if (colSpan === 2) {
         for (let rr = row; rr < row + rowSpan; rr++) {
-          if (grid[rr][col].id || grid[rr][col + 1].id) return false;
+          if (work[rr][col].id || work[rr][col + 1].id) return false;
         }
         return true;
       } else {
         for (let rr = row; rr < row + rowSpan; rr++) {
-          if (grid[rr][col].id) return false;
+          if (work[rr][col].id) return false;
         }
         return true;
       }
@@ -252,7 +267,7 @@ export default function WidgetManager() {
     };
     for (let rr = 0; rr < rows; rr++) {
       for (let cc = 0; cc < cols; cc++) {
-        if (grid[rr][cc].id === draggedId) grid[rr][cc] = { id: null, rowSpan: 1, colSpan: 1, start: false };
+        if (work[rr][cc].id === draggedId) work[rr][cc] = { id: null, rowSpan: 1, colSpan: 1, start: false };
       }
     }
     let targetRow = r;
@@ -263,7 +278,7 @@ export default function WidgetManager() {
       targetRow = near.row;
       targetCol = near.col;
     }
-    const occupantAtTarget = grid[targetRow][targetCol];
+    const occupantAtTarget = work[targetRow][targetCol];
     if (occupantAtTarget && occupantAtTarget.id && occupantAtTarget.start && occupantAtTarget.id !== draggedId) {
       const oldIndex = widgets.findIndex(x => x.id === draggedId);
       const newIndex = widgets.findIndex(x => x.id === occupantAtTarget.id);
@@ -271,33 +286,14 @@ export default function WidgetManager() {
       return;
     }
     if (colSpan === 2) {
-      grid[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
-      for (let rr2 = targetRow; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol + 1] = { id: draggedId, rowSpan, colSpan, start: false };
+      work[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) work[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
+      for (let rr2 = targetRow; rr2 < targetRow + rowSpan; rr2++) work[rr2][targetCol + 1] = { id: draggedId, rowSpan, colSpan, start: false };
     } else {
-      grid[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) grid[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
+      work[targetRow][targetCol] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetRow + 1; rr2 < targetRow + rowSpan; rr2++) work[rr2][targetCol] = { id: draggedId, rowSpan, colSpan, start: false };
     }
-    const placedIds: string[] = [];
-    for (let rr = 0; rr < rows; rr++) {
-      for (let cc = 0; cc < cols; cc++) {
-        const cell = grid[rr][cc];
-        if (cell.id && cell.start) placedIds.push(cell.id);
-      }
-    }
-    const currentIds = enabled.map(x => x.id);
-    const targetIds = placedIds.concat(currentIds.filter(id => !placedIds.includes(id)));
-    const working = [...currentIds];
-    for (let i = 0; i < targetIds.length; i++) {
-      const id = targetIds[i];
-      const curIdx = working.indexOf(id);
-      if (curIdx !== i) {
-        const oldIndex = widgets.findIndex(w => w.id === id);
-        reorderWidgets(oldIndex, i);
-        const [moved] = working.splice(curIdx, 1);
-        working.splice(i, 0, moved);
-      }
-    }
+    setGrid(work);
     setHighlightCell(null);
   };
 
@@ -316,17 +312,17 @@ export default function WidgetManager() {
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
     const withinBounds = (row: number, col: number) => row >= 0 && row + rowSpan <= rows && col >= 0 && (colSpan === 1 ? col < cols : col + 1 < cols);
-    const grid = initialGrid.map(row => row.map(cell => ({ ...cell })));
+    const work = grid.map(row => row.map(cell => ({ ...cell })));
     const regionFree = (row: number, col: number) => {
       if (!withinBounds(row, col)) return false;
       if (colSpan === 2) {
         for (let rr = row; rr < row + rowSpan; rr++) {
-          if (grid[rr][col].id || grid[rr][col + 1].id) return false;
+          if (work[rr][col].id || work[rr][col + 1].id) return false;
         }
         return true;
       } else {
         for (let rr = row; rr < row + rowSpan; rr++) {
-          if (grid[rr][col].id) return false;
+          if (work[rr][col].id) return false;
         }
         return true;
       }
@@ -427,7 +423,7 @@ export default function WidgetManager() {
           <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const baseCell = initialGrid[rowIdx][colIdx];
+                const baseCell = grid[rowIdx][colIdx];
                 const occupiedNonStart = !!baseCell.id && !baseCell.start;
                 const occupiedStart = !!baseCell.id && baseCell.start;
                 const extraCls = occupiedNonStart ? 'bg-primary/10 border-primary/30' : occupiedStart ? 'bg-primary/15 border-primary' : '';
@@ -438,7 +434,7 @@ export default function WidgetManager() {
             ))}
             {Array.from({ length: rows }).map((_, rowIdx) => (
               Array.from({ length: cols }).map((_, colIdx) => {
-                const cell = initialGrid[rowIdx][colIdx];
+                const cell = grid[rowIdx][colIdx];
                 if (!cell.id || !cell.start) return null;
                 const item = widgets.find(w => w.id === cell.id)!;
                 const size = getSize(item);
