@@ -207,7 +207,13 @@ export default function WidgetManager() {
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndList}>
           <SortableContext items={activeIds} strategy={rectSortingStrategy}>
-            <div className={cn('grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+            <div className="relative">
+              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}>
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={`base-${i}`} className="rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
+                ))}
+              </div>
+              <div className={cn('relative z-10 grid gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
               {gridItems.map((item) => {
                 const size = getSize(item);
                 const cls = spanClassForSize(size);
@@ -238,6 +244,7 @@ export default function WidgetManager() {
                   </SortableItem>
                 );
               })}
+              </div>
             </div>
           </SortableContext>
         </DndContext>
