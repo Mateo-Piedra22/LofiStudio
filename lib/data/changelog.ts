@@ -9,6 +9,16 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.5.1',
+    date: '2025-11-25',
+    title: 'Asset Refresh',
+    features: [],
+    fixes: [
+      'Asset refresh complete, no more asset overflow',
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.5',
     date: '2025-11-25',
     title: 'Visual Polish & Asset Refresh',

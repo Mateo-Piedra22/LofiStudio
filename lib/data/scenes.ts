@@ -21,9 +21,10 @@ export const SCENES: Scene[] = [
       { id: 'study-girl', name: 'Lofi Girl Study', youtubeId: 'jfKfPfyJRdk' },
       { id: 'sleepy-girl', name: 'Lofi Girl Sleep', youtubeId: 'DWcJFNfaw9c' },
       { id: 'synthwave-boy', name: 'Synthwave Boy', youtubeId: '4xDzrJKXOOY' },
-      { id: 'chill-raccoon', name: 'Chill Raccoon', youtubeId: 'N6oUXLoXQAw' },
-      { id: 'morning-coffee', name: 'Morning Coffee', youtubeId: '1BueX5T7oQM' },
+      { id: 'chill-raccoon', name: 'Chill Raccoon', youtubeId: 'D_uLM5i0Z4c' }, //FIXED 1.2.5.1
+      { id: 'morning-coffee', name: 'Morning Coffee', youtubeId: '1fueZCTYkpA' }, //FIXED 1.2.5.1
       { id: 'late-night-code', name: 'Late Night Coding', youtubeId: 'f02mOEt11OQ' },
+      { id: 'street-corner', name: 'Street Corner', youtubeId: 'fWl0ozldt7o' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -31,15 +32,16 @@ export const SCENES: Scene[] = [
   {
     id: 'cozy-indoors',
     name: 'Cozy Indoors',
-    thumbnail: 'https://img.youtube.com/vi/ln92df7aC3E/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/EHNdBT08eVQ/maxresdefault.jpg',
     variants: [
-      { id: 'luxury-apartment', name: 'NYC Apartment View', youtubeId: 'ln92df7aC3E' },
-      { id: 'rainy-window', name: 'Cozy Window Rain', youtubeId: 'fz0XZf9KuTY' },
+      { id: 'luxury-apartment', name: 'Apartment View', youtubeId: 'EHNdBT08eVQ' }, //FIXED 1.2.5.1
+      { id: 'rainy-window', name: 'Window Rain', youtubeId: 'fz0XZf9KuTY' },
       { id: 'fireplace', name: 'Crackling Fireplace', youtubeId: 'L_LUpnjgPso' },
       { id: 'attic-nook', name: 'Reading Nook', youtubeId: '6bPN0JyGfA4' },
       { id: 'cat-window', name: 'Cat on Window', youtubeId: 'LilJoej4v9I' },
       { id: 'sunny-kitchen', name: 'Sunny Kitchen', youtubeId: '4DpkvEzh-e8' },
       { id: 'bedroom-night', name: 'Night Bedroom', youtubeId: 'T46zKtkeVqA' },
+      { id: 'gamer-room', name: 'Gamer Room', youtubeId: '1JN3FYRT7V0' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -65,9 +67,9 @@ export const SCENES: Scene[] = [
     thumbnail: 'https://img.youtube.com/vi/4vIQON2fDWM/maxresdefault.jpg',
     variants: [
       { id: 'old-library', name: 'Old Public Library', youtubeId: '4vIQON2fDWM' },
-      { id: 'hogwarts-study', name: 'Magical School', youtubeId: 'HMnrl0tmd3k' },
+      { id: 'magical-village', name: 'Enchanted Bookstore', youtubeId: '9P3r0PiK7Yg' }, //FIXED 1.2.5.1
       { id: 'dusty-bookshop', name: 'Old Bookshop', youtubeId: '9OY5P-rdkmQ' },
-      { id: 'rainy-bookstore', name: 'Rainy Bookstore', youtubeId: '2Fx25gVjOYA' },
+      { id: 'rainy-bookstore', name: 'Rainy Bookstore', youtubeId: 'sh9d5cKy0JA' }, //FIXED 1.2.5.1
       { id: 'grand-archive', name: 'Grand Archives', youtubeId: 'wIIFa9OcJ6s' },
       { id: 'study-hall', name: 'University Hall', youtubeId: 'Ynf8zIAUmIM' },
     ],
@@ -77,14 +79,14 @@ export const SCENES: Scene[] = [
   {
     id: 'nature-escapes',
     name: 'Nature Escapes',
-    thumbnail: 'https://img.youtube.com/vi/WNCl-69POro/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/UZ9uyQI3pF0/maxresdefault.jpg',
     variants: [
       { id: 'forest-river', name: 'Autumn River', youtubeId: 'WNCl-69POro' },
       { id: 'mountain-peak', name: 'Mountain Summit', youtubeId: 'qTf_ruu8KCY' },
-      { id: 'waterfall', name: 'Jungle Waterfall', youtubeId: '3454645345' }, // Stock 4K
+      { id: 'waterfall', name: 'Jungle Waterfall', youtubeId: 'kS2299GecDs' }, //FIXED 1.2.5.1
       { id: 'secret-garden', name: 'Secret Garden', youtubeId: 'ik-cXNtsndE' },
-      { id: 'meadow', name: 'Sunny Meadow', youtubeId: 't6Z0o3Y_qO0' },
-      { id: 'desert', name: 'Sahara Dunes', youtubeId: 'EfoQA5ATb9E' },
+      { id: 'meadow', name: 'Sunny Meadow', youtubeId: 'UZ9uyQI3pF0' }, //FIXED 1.2.5.1
+      { id: 'desert', name: 'Sahara Dunes', youtubeId: '_YO8rKMCeck' }, //FIXED 1.2.5.1
       { id: 'northern-lights', name: 'Aurora Borealis', youtubeId: 'MTc4ZuxUWiA' },
     ],
   },
@@ -93,13 +95,13 @@ export const SCENES: Scene[] = [
   {
     id: 'water-worlds',
     name: 'Water Worlds',
-    thumbnail: 'https://img.youtube.com/vi/PaxXe8L4FzQ/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/XDLQWASvK0s/maxresdefault.jpg',
     variants: [
-      { id: 'deep-ocean', name: 'Deep Ocean', youtubeId: 'PaxXe8L4FzQ' },
+      { id: 'deep-ocean', name: 'Deep Ocean', youtubeId: 'XDLQWASvK0s' }, //FIXED 1.2.5.1
       { id: 'coral-reef', name: 'Coral Reef', youtubeId: 'tEDqyi5Au4o' },
-      { id: 'tropical-beach', name: 'Tropical Beach', youtubeId: '0K8Zb7K2V98' },
+      { id: 'tropical-beach', name: 'Tropical Beach', youtubeId: 'DGIXT7ce3vQ' }, //FIXED 1.2.5.1
       { id: 'submarine', name: 'Submarine View', youtubeId: 'DGsr04gbBSA' },
-      { id: 'jellyfish', name: 'Jellyfish Tank', youtubeId: 'Hq7qFv6C6uY' }, // Valid generic ID
+      { id: 'jellyfish', name: 'Jellyfish Tank', youtubeId: 'qbg3C1Dn-Cg' }, //FIXED 1.2.5.1
       { id: 'rain-ocean', name: 'Storm at Sea', youtubeId: 'FwtcOz2556U' },
     ],
   },
@@ -108,15 +110,15 @@ export const SCENES: Scene[] = [
   {
     id: 'urban-city',
     name: 'Urban & City',
-    thumbnail: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    thumbnail: 'https://img.youtube.com/vi/sAkVnhthpMI/maxresdefault.jpg',
     variants: [
-      { id: 'night-drive', name: 'Night City Drive', youtubeId: '21zF15q67GQ' },
+      { id: 'night-drive', name: 'Night City Drive', youtubeId: 'eP_mC1Ci9as' }, //FIXED 1.2.5.1
       { id: 'shibuya', name: 'Shibuya Crossing', youtubeId: 'etGrJw94B80' },
       { id: 'rooftop-night', name: 'Anime Rooftop', youtubeId: '8N_hf_KyBlg' },
-      { id: 'rainy-street', name: 'Rainy Tokyo', youtubeId: 'J4f7mU8e6co' },
+      { id: 'rainy-street', name: 'Rainy Tokyo', youtubeId: 'sAkVnhthpMI' }, //FIXED 1.2.5.1
       { id: 'laundromat', name: 'Night Laundromat', youtubeId: 'Nu_BPcqm0No' },
       { id: 'bus-stop', name: 'Lonely Bus Stop', youtubeId: 'pr1H8-AW_Uk' },
-      { id: 'nyc-timelapse', name: 'NYC Traffic', youtubeId: 'Exy59o9uH6Y' }, // Generic city
+      { id: 'nyc-timelapse', name: 'NYC Traffic', youtubeId: 'PN6ikfDhjws' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -126,11 +128,12 @@ export const SCENES: Scene[] = [
     name: 'Travel & Commute',
     thumbnail: 'https://img.youtube.com/vi/5wRWniHlbKQ/maxresdefault.jpg',
     variants: [
-      { id: 'anime-train', name: 'Anime Train', youtubeId: '5wRWniHlbKQ' },
-      { id: 'plane-window', name: 'Airplane Night', youtubeId: 'CA7lq22Teig' },
-      { id: 'night-bus', name: 'Night Bus Interior', youtubeId: 'bO2XBd-ADEs' },
+      { id: 'train-journey', name: 'Train Journey', youtubeId: 'ADt_RisXY0U' }, //FIXED 1.2.5.1
+      { id: 'plane-window', name: 'Airplane Night', youtubeId: '_NL7Pk9EqDg' }, //FIXED 1.2.5.1
+      { id: 'night-bus', name: 'Night Bus Journey', youtubeId: 'ktprPL9EoyY' }, //FIXED 1.2.5.1
       { id: 'ferry-ride', name: 'Ferry Boat', youtubeId: 'Do40QlmvOVQ' },
-      { id: 'rainy-car', name: 'Car Passenger', youtubeId: 'guo8CHurCpY' },
+      { id: 'rainy-drive', name: 'Rainy Drive', youtubeId: 'XPuWuEV87SE' }, //FIXED 1.2.5.1
+      { id: 'heavy-rainy-car', name: 'Heavy Rainy Drive', youtubeId: 'cb3NnbT5y4s' }, //FIXED 1.2.5.1
       { id: 'warp-speed', name: 'Hyperspace Jump', youtubeId: 'KdTwFEY2e0k' },
     ],
   },
@@ -139,14 +142,14 @@ export const SCENES: Scene[] = [
   {
     id: 'fantasy-worlds',
     name: 'Fantasy Worlds',
-    thumbnail: 'https://img.youtube.com/vi/mSNOVgDMWyo/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/vyg5jJrZ42s/maxresdefault.jpg',
     variants: [
-      { id: 'medieval-tavern', name: 'Medieval Tavern', youtubeId: 'mSNOVgDMWyo' },
+      { id: 'medieval-tavern', name: 'Medieval Tavern', youtubeId: 'vyg5jJrZ42s' }, //FIXED 1.2.5.1
       { id: 'witch-hut', name: 'Swamp Witch Hut', youtubeId: '_qbC9jURi_w' },
       { id: 'floating-islands', name: 'Floating Islands', youtubeId: 'CSV9y3-jTrs' },
       { id: 'dwarven-forge', name: 'Dwarven Forge', youtubeId: 'k0UzHqy1XxA' },
       { id: 'secret-treehouse', name: 'Elven Treehouse', youtubeId: 'jhp6kvnGasM' },
-      { id: 'hobbit-hole', name: 'Shire Interior', youtubeId: '3e7axS0e3D0' },
+      { id: 'hobbit-hole', name: 'The Hobbit Hole', youtubeId: 'rJhSZQdLARE' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -154,14 +157,17 @@ export const SCENES: Scene[] = [
   {
     id: 'scifi-space',
     name: 'Sci-Fi & Space',
-    thumbnail: 'https://img.youtube.com/vi/P1k-4YQZ-X4/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/ibNrPjETR_k/maxresdefault.jpg',
     variants: [
-      { id: 'cyberpunk-city', name: 'Cyberpunk City', youtubeId: 'P1k-4YQZ-X4' },
+      { id: 'cyberpunk-city', name: 'Cyberpunk City', youtubeId: 'ibNrPjETR_k' }, //FIXED 1.2.5.1
+      { id: 'cybernetic-terrace', name: 'Cybernetic Terrace', youtubeId: 'A4kU-LiaXiE' }, //FIXED 1.2.5.1
+      { id: 'cyberpunk-nightcity', name: 'Cyberpunk Night City', youtubeId: 'SthlzIeMNW8' }, //FIXED 1.2.5.1
+      { id: 'cyberpunk-night-drive', name: 'Cyberpunk Night Drive', youtubeId: 'GsqsG3axUCs' }, //FIXED 1.2.5.1
       { id: 'spaceship-bridge', name: 'Space Station', youtubeId: 'xQ_IQS3VKjA' },
       { id: 'alien-planet', name: 'Alien Landscape', youtubeId: '5IZJqSpJrXc' },
       { id: 'black-hole', name: 'Gargantua Black Hole', youtubeId: '0-W0jMjGmVk' },
       { id: 'steampunk-lab', name: 'Steampunk Lab', youtubeId: 'aPKbxYBSK7c' },
-      { id: 'neon-room', name: 'Neon Gamer Room', youtubeId: '77j5X5eZgBM' },
+      { id: 'neon-setup', name: 'Neon Gaming setup', youtubeId: 'FkJAFJwXZ_8' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -169,30 +175,31 @@ export const SCENES: Scene[] = [
   {
     id: 'pixel-retro',
     name: 'Pixel Art & Retro',
-    thumbnail: 'https://img.youtube.com/vi/f02mOEt11OQ/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/gNPmSpvofoo/maxresdefault.jpg',
     variants: [
       { id: 'pixel-bedroom', name: 'Cozy Pixel Room', youtubeId: 'f02mOEt11OQ' },
-      { id: 'pixel-city', name: '8-Bit City Night', youtubeId: 'bZM_VGyA3YQ' },
-      { id: 'pixel-train', name: 'Pixel Train', youtubeId: 'KskC5j85_kk' },
-      { id: 'pixel-coffee', name: 'Retro Coffee Shop', youtubeId: '57qT8Z8Y7JI' },
+      { id: 'pixel-city', name: '8-Bit City Night', youtubeId: 'gNPmSpvofoo' }, //FIXED 1.2.5.1
+      { id: 'pixel-train', name: 'Pixel Train', youtubeId: 'IpATZR0f3ps' }, //FIXED 1.2.5.1
+      { id: 'pixel-coffee', name: 'Retro Coffee Shop', youtubeId: 'ak596Dhx1hM' }, //FIXED 1.2.5.1
       { id: 'pixel-forest', name: '8-Bit Forest', youtubeId: 'QCJRus4cguc' },
       { id: 'vaporwave-sun', name: 'Vaporwave Sunset', youtubeId: 'FMeM9iBkS9k' },
       { id: 'retro-terminal', name: 'Old PC Terminal', youtubeId: 'EX2M90OzYQY' },
     ],
   },
 
-  // 12. ANIME AESTHETICS
+  // 12. JAPAN AESHTHETICS
   {
-    id: 'anime-aesthetics',
-    name: 'Anime Aesthetics',
+    id: 'japan-aesthetics',
+    name: 'Japan Aesthetics',
     thumbnail: 'https://img.youtube.com/vi/BLO5CyYUMLU/maxresdefault.jpg',
     variants: [
-      { id: 'konbini', name: 'Convenience Store', youtubeId: 'BLO5CyYUMLU' },
-      { id: 'anime-classroom', name: 'Empty Classroom', youtubeId: 'nwj5siTtaUA' },
-      { id: 'vending-machine', name: 'Rainy Vending', youtubeId: 'MUgkWU5mK1c' }, // Opener but works visually
-      { id: 'ghibli-meadow', name: 'Ghibli Style Meadow', youtubeId: 't6Z0o3Y_qO0' },
-      { id: 'train-crossing', name: 'Train Crossing', youtubeId: '3jWRrafhO7M' }, // Classic anime trope
-      { id: 'street-corner', name: 'Street Corner', youtubeId: 'quRLzH9s3V8' }, // Generic anime street
+      { id: 'convenience-store', name: 'Convenience Store', youtubeId: '1KFmpyzRTcA' }, //FIXED 1.2.5.1
+      { id: 'afterschool-classroom', name: 'Empty Classroom', youtubeId: 'WvYmV2eFWe0' }, //FIXED 1.2.5.1
+      { id: 'vending-machine', name: 'Rainy Vending', youtubeId: 'phLk-mr4vUY' }, //FIXED 1.2.5.1
+      { id: 'yokohama-school', name: 'Yokohama School', youtubeId: 'BmAJ2DAb6zU' }, //FIXED 1.2.5.1
+      { id: 'ghibli-meadow', name: 'Ghibli Style Meadow', youtubeId: 'PtIKsk1Qabw' }, //FIXED 1.2.5.1
+      { id: 'train-crossing', name: 'Train Crossing', youtubeId: '8VHWJof6Ro8' }, //FIXED 1.2.5.1
+      { id: 'japan-street-corner', name: 'Street Corner', youtubeId: 'D8fp-baFdG0' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -200,14 +207,16 @@ export const SCENES: Scene[] = [
   {
     id: 'gaming-vibes',
     name: 'Gaming Vibes',
-    thumbnail: 'https://img.youtube.com/vi/0EWcxtOAJE4/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/ynlSAlsDP_A/maxresdefault.jpg',
     variants: [
       { id: 'minecraft-cherry', name: 'Minecraft Cherry', youtubeId: '0EWcxtOAJE4' },
       { id: 'zelda-fairy', name: 'Zelda Fairy Fountain', youtubeId: 'pYy6Zs72kQ8' },
       { id: 'zelda-botw', name: 'BotW Scenery', youtubeId: '8acHLOVxOgo' },
       { id: 'animal-crossing', name: 'Animal Crossing Rain', youtubeId: 'aDb68zMmT2c' },
-      { id: 'skyrim-night', name: 'Skyrim Night', youtubeId: 'H2ib_X3tXjA' }, // Generic Skyrim ambience
-      { id: 'stardew-valley', name: 'Stardew Farm', youtubeId: '3e4r5t6y7u8' }, // Placeholder high quality
+      { id: 'skyrim-night', name: 'Skyrim Night', youtubeId: '9ou1pl0XNRs' }, //FIXED 1.2.5.1
+      { id: 'autumn-stardew-valley', name: 'Autumn Stardew Farm', youtubeId: '_2rnKRoY1tw' }, //FIXED 1.2.5.1
+      { id: 'winter-stardew-valley', name: 'Winter Stardew Farm', youtubeId: 'j72SHSPd1rQ' }, //FIXED 1.2.5.1
+      { id: 'night-stardew-valley', name: 'Night Stardew Farm', youtubeId: 'jtW8OFrDvqM' }, //FIXED 1.2.5.1
     ],
   },
 
@@ -215,14 +224,14 @@ export const SCENES: Scene[] = [
   {
     id: 'historical-vintage',
     name: 'Historical & Vintage',
-    thumbnail: 'https://img.youtube.com/vi/bxc3KcxZ4-I/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/_WAi6b-Jeg4/maxresdefault.jpg',
     variants: [
       { id: 'jazz-bar-1920', name: '1920s Jazz Bar', youtubeId: 'bxc3KcxZ4-I' },
-      { id: 'victorian-london', name: 'Victorian London', youtubeId: 'C-XHSw0g69g' },
+      { id: 'victorian-london', name: 'Victorian London', youtubeId: '_WAi6b-Jeg4' }, //FIXED 1.2.5.1
       { id: 'vinyl-shop', name: 'Retro Record Store', youtubeId: 'f6o66HPdqas' },
-      { id: 'noir-detective', name: 'Noir Office', youtubeId: '21zF15q67GQ' }, // Reusing city noir vibe
+      { id: 'noir-detective', name: 'Noir Office', youtubeId: '6-_oEkN1W5s' }, // FIXED 1.2.5.1
       { id: 'ancient-temple', name: 'Ancient Temple', youtubeId: 'wIIFa9OcJ6s' },
-      { id: 'western-saloon', name: 'Wild West Saloon', youtubeId: 'QJ3w7sW-4X0' }, // Generic placeholder check
+      { id: 'rainy-wild-west', name: 'Rainy Wild West', youtubeId: 'D-EH6E-OCTc' }, // FIXED 1.2.5.1
     ],
   },
 
@@ -234,10 +243,10 @@ export const SCENES: Scene[] = [
     variants: [
       { id: 'vampire-castle', name: 'Vampire Castle', youtubeId: 'T6iMLbKnMmk' },
       { id: 'haunted-house', name: 'Haunted House', youtubeId: 'y1XJ-2e48oE' },
-      { id: 'foggy-cemetery', name: 'Foggy Cemetery', youtubeId: '1A2B3C4D5E6' }, // Generic placeholder
+      { id: 'foggy-cemetery', name: 'Foggy Cemetery', youtubeId: 'kaCLwbVN_cE' }, // FIXED 1.2.5.1
       { id: 'witches-lair', name: 'Witch\'s Lair', youtubeId: '_qbC9jURi_w' },
-      { id: 'dark-forest', name: 'Dark Forest', youtubeId: 'Wj_7g3l_q6s' }, // Generic
-      { id: 'abandoned-asylum', name: 'Abandoned Asylum', youtubeId: '8Z5Z9Z9Z9Z9' }, // Generic
+      { id: 'dark-forest', name: 'Dark Forest', youtubeId: 'LVanPoKh7Ew' }, // FIXED 1.2.5.1
+      { id: 'abandoned-cafe', name: 'Abandoned Cafe', youtubeId: 'EC1gpeFTZTY' }, // FIXED 1.2.5.1
     ],
   },
 
@@ -245,16 +254,16 @@ export const SCENES: Scene[] = [
   {
     id: 'abstract-focus',
     name: 'Deep Focus',
-    thumbnail: 'https://img.youtube.com/vi/6rvSJhgOdwQ/maxresdefault.jpg',
+    thumbnail: 'https://img.youtube.com/vi/5kQ-LFhBQlg/maxresdefault.jpg',
     variants: [
       { id: 'pink-aura', name: 'Soft Pink Aura', youtubeId: '6rvSJhgOdwQ' },
-      { id: 'blue-gradient', name: 'Calm Blue Gradient', youtubeId: 'vX2c4Y7gKBs' },
-      { id: 'golden-bokeh', name: 'Warm Golden Bokeh', youtubeId: '6f0y9w3s3cM' },
+      { id: 'blue-gradient', name: 'Calm Blue Gradient', youtubeId: 'FqLSjN0BQNk' }, // FIXED 1.2.5.1
+      { id: 'golden-bokeh', name: 'Warm Golden Bokeh', youtubeId: '2JT_GlQsWxU' }, // FIXED 1.2.5.1
       { id: 'lava-lamp', name: 'Liquid Lava Lamp', youtubeId: 'tgJwYEcmYmQ' },
       { id: 'oled-dark', name: 'OLED Dark Waves', youtubeId: 'eCHaiEjCDFM' },
       { id: 'visual-static', name: 'White Noise Static', youtubeId: '5DV_b_WMppI' },
       { id: 'neon-geometry', name: 'Slow Geometry', youtubeId: '3-3IzhzHKfg' },
-      { id: 'nebula', name: 'Deep Space Nebula', youtubeId: 'S_M5-u5nFfw' },
+      { id: 'deep-space', name: 'Deep Space', youtubeId: '5kQ-LFhBQlg' }, // FIXED 1.2.5.1
     ],
   },
 ];
