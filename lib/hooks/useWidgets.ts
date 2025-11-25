@@ -15,6 +15,13 @@ export function useWidgets() {
   const baseCapacity = 9;
   const [capacity, setCapacity] = useState<number>(baseCapacity);
 
+  const makeSpacer = () => ({ id: `spacer-${crypto.randomUUID()}`, type: 'SPACER' as const, layout: { x: 0, y: 0, w: tileW, h: tileH }, enabled: false, settings: {}, size: '1x1' as const });
+  const padToCapacity = (arr: WidgetConfig[]) => {
+    const next = [...arr];
+    while (next.length < baseCapacity) next.push(makeSpacer());
+    return next;
+  };
+
   useEffect(() => {
     const needsLayoutInit = widgets.some((w: any) => !w.layout);
     if (needsLayoutInit) {
@@ -27,7 +34,7 @@ export function useWidgets() {
         }
         return w;
       });
-      setWidgets(migratedWidgets);
+      setWidgets(padToCapacity(migratedWidgets));
     }
     // Migración de unidades: soporta layouts previos con tileH=4 o tileH=1
     const needsUnitMigration = widgets.some((w: any) => w.layout);
@@ -39,12 +46,15 @@ export function useWidgets() {
         let blocks = oldH;
         let rowIndex = oldY;
         if (oldH > 3) blocks = Math.max(1, Math.min(3, Math.round(oldH / 4))); // de 4-unidades por bloque
-        else blocks = Math.max(1, Math.min(3, Math.round(oldH))); // de 1-unidad por bloque
+        else blocks = Math.max(1, Math.min(3, Math.round(oldH))); // de 1-unidades por bloque
         if (oldY > 2) rowIndex = Math.max(0, Math.min(2, Math.round(oldY / 4))); // de 4-unidades por bloque
-        else rowIndex = Math.max(0, Math.min(2, Math.round(oldY))); // de 1-unidad por bloque
+        else rowIndex = Math.max(0, Math.min(2, Math.round(oldY))); // de 1-unidades por bloque
         return { ...w, layout: { x: w.layout.x ?? 0, y: rowIndex * tileH, w: tileW, h: blocks * tileH } };
       });
-      setWidgets(migrated);
+      setWidgets(padToCapacity(migrated));
+    }
+    if (widgets.length < baseCapacity) {
+      setWidgets(padToCapacity(widgets));
     }
   }, []);
 
@@ -72,6 +82,7 @@ export function useWidgets() {
     breathing: { w: tileW, h: tileH },
     dictionary: { w: tileW, h: tileH },
     timer: { w: tileW, h: tileH },
+    SPACER: { w: tileW, h: tileH },
   };
 
   const presets: WidgetPreset[] = (presetsJson as any).presets as any;
@@ -100,7 +111,7 @@ export function useWidgets() {
         return Math.ceil(capped);
       })();
       const resolvedSize: WidgetConfig['size'] = size || (`1x${defaultRows}` as WidgetConfig['size']);
-      const usedBlocks = prev.filter(w => w.enabled).reduce((sum, w) => sum + spanForSize(w.size), 0);
+      const usedBlocks = prev.filter(w => w.type !== 'SPACER' && w.enabled).reduce((sum, w) => sum + spanForSize(w.size), 0);
       const newSpan = spanForSize(resolvedSize);
       if (usedBlocks + newSpan > capacity) {
         if (typeof window !== 'undefined') {
@@ -156,7 +167,13 @@ export function useWidgets() {
         settings: type === 'weather' ? { city: '' } : {},
         size: resolvedSize,
       };
-      return [...prev, newWidget];
+      const idx = prev.findIndex(w => w.type === 'SPACER');
+      if (idx > -1) {
+        const next = [...prev];
+        next[idx] = newWidget;
+        return padToCapacity(next);
+      }
+      return padToCapacity([...prev, newWidget]);
     });
   }, [setWidgets, capacity, tileW, tileH]);
 
@@ -172,16 +189,19 @@ export function useWidgets() {
   
 
   const removeWidget = useCallback((id: string) => {
-    setWidgets(widgets.filter(w => w.id !== id));
-  }, [widgets, setWidgets]);
+    setWidgets((prev) => {
+      const next = prev.map(w => w.id === id ? makeSpacer() : w);
+      return padToCapacity(next);
+    });
+  }, [setWidgets]);
 
   const updateWidget = useCallback((id: string, updates: Partial<WidgetConfig>) => {
-    setWidgets(widgets.map(w => w.id === id ? { ...w, ...updates } : w));
-  }, [widgets, setWidgets]);
+    setWidgets((prev) => padToCapacity(prev.map(w => w.id === id ? { ...w, ...updates } : w)));
+  }, [setWidgets]);
 
   const toggleWidget = useCallback((id: string) => {
-    setWidgets(widgets.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w));
-  }, [widgets, setWidgets]);
+    setWidgets((prev) => padToCapacity(prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w)));
+  }, [setWidgets]);
 
   const applyPreset = useCallback((presetId: string) => {
     const preset = presets.find(p => p.id === presetId);
@@ -228,7 +248,7 @@ export function useWidgets() {
         });
         return result;
       };
-      const newWidgets: WidgetConfig[] = patternPlace(preset.widgets);
+      const newWidgets: WidgetConfig[] = padToCapacity(patternPlace(preset.widgets));
       setWidgets(newWidgets);
 
       if (preset.background) {
@@ -261,7 +281,7 @@ export function useWidgets() {
   }, [presets, setWidgets, setBackgroundConfig, capacity, tileW, tileH]);
 
   const reorderWidgets = useCallback((oldIndex: number, newIndex: number) => {
-    setWidgets((prev) => arrayMove(prev, oldIndex, newIndex));
+    setWidgets((prev) => padToCapacity(arrayMove(prev, oldIndex, newIndex)));
   }, [setWidgets]);
 
   return {
