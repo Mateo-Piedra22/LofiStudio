@@ -14,8 +14,7 @@ import { useWidgets } from '@/lib/hooks/useWidgets';
 import type { BackgroundConfig } from '@/app/components/Background';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import variants from '@/lib/config/background-variants.json';
-import loopsJson from '@/lib/config/background-loops.json';
+import { SCENES } from '@/lib/data/scenes';
 import { useSession, signIn } from 'next-auth/react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -46,13 +45,7 @@ export default function Settings({
   const [unsplashQuery, setUnsplashQuery] = useState('');
   const [unsplashSeed, setUnsplashSeed] = useState(0);
   const [backgroundBlur, setBackgroundBlur] = useLocalStorage('backgroundBlur', 0);
-  const ROOM_VARIANTS = (variants as any).room as Array<{ id: string; name: string }>;
-  const CAFE_VARIANTS = (variants as any).cafe as Array<{ id: string; name: string }>;
-  const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
-  const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0);
-  const LOOPS = (loopsJson as any).loops as Array<{ id: string; name: string }>;
-  const roomTotal = ROOM_VARIANTS.length;
-  const cafeTotal = CAFE_VARIANTS.length;
+  const [selectedSceneId, setSelectedSceneId] = useLocalStorage('selectedSceneId', SCENES[0]?.id || 'study');
   const { status } = useSession();
   const { toast } = useToast();
   const handleToggleCalendar = (v: boolean) => {
@@ -342,28 +335,30 @@ export default function Settings({
             <h3 className="text-foreground font-semibold mb-3">Background</h3>
             <div className="p-4 rounded-lg glass border space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Video className="w-4 h-4" /> Scenes & Animated Loops</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2"><Video className="w-4 h-4" /> Scenes</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {[{ key: 'room', id: ROOM_VARIANTS[roomIdx].id, name: ROOM_VARIANTS[roomIdx].name, index: roomIdx, total: roomTotal }, { key: 'cafe', id: CAFE_VARIANTS[cafeIdx].id, name: CAFE_VARIANTS[cafeIdx].name, index: cafeIdx, total: cafeTotal }].map((item) => (
+                  {SCENES.map((scene) => (
                     <button
-                      key={item.key}
-                      onClick={() => setBackgroundConfig({ type: 'video', videoId: item.id })}
-                      className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'video' && backgroundConfig.videoId === item.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
+                      key={scene.id}
+                      onClick={() => setSelectedSceneId(scene.id)}
+                      className={`relative overflow-hidden rounded-lg border text-left aspect-video ${selectedSceneId === scene.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
                     >
-                      <img src={`https://img.youtube.com/vi/${item.id}/mqdefault.jpg`} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                      <img src={scene.thumbnail} alt={scene.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
-                      <div className="absolute bottom-2 left-2 text-xs text-foreground">{`${item.key === 'room' ? 'Room' : 'Cafe'}: ${item.name} (${Number(item.index) + 1}/${item.total})`}</div>
-                      <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-background/70 border border-border text-muted-foreground">
-                        <Repeat className="w-3 h-3" /> Loop Mode
-                      </div>
+                      <div className="absolute bottom-2 left-2 text-xs text-foreground">{scene.name}</div>
                     </button>
                   ))}
-
-                  {LOOPS.map((loop) => (
-                    <button key={loop.id} onClick={() => setBackgroundConfig({ type: 'video', videoId: loop.id })} className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'video' && backgroundConfig.videoId === loop.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}>
-                      <img src={`https://img.youtube.com/vi/${loop.id}/mqdefault.jpg`} alt={loop.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                </div>
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {(SCENES.find((s) => s.id === selectedSceneId)?.variants || []).map((variant) => (
+                    <button
+                      key={variant.id}
+                      onClick={() => setBackgroundConfig({ type: 'video', videoId: variant.youtubeId })}
+                      className={`relative overflow-hidden rounded-lg border text-left aspect-video ${backgroundConfig.type === 'video' && backgroundConfig.videoId === variant.youtubeId ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
+                    >
+                      <img src={`https://img.youtube.com/vi/${variant.youtubeId}/mqdefault.jpg`} alt={variant.name} className="absolute inset-0 w-full h-full object-cover opacity-60" />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
-                      <div className="absolute bottom-2 left-2 text-xs text-foreground">{loop.name}</div>
+                      <div className="absolute bottom-2 left-2 text-xs text-foreground">{variant.name}</div>
                     </button>
                   ))}
                 </div>

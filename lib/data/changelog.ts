@@ -9,6 +9,23 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.2',
+    date: '2025-11-25',
+    title: 'YouTube Scenes Refactor',
+    features: [
+      'Unified Backgrounds into Scene → Variant model (YouTube)',
+      'New scenes: Ocean, Rain, City, Cabin, Cafe Jazz, Autumn',
+      'Additional scenes: Cafe Rainy, Synthwave, Winter, Library',
+      'Scene selector UI with nested variants',
+      'YouTube background embed: autoplay, loop, muted, no controls',
+    ],
+    fixes: [
+      'Removed legacy local video JSON configs',
+      'Kept overlay dim layer with glass opacity control',
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.2.1',
     date: '2025-11-24',
     title: 'Fixed EN-ES Mixtures ',

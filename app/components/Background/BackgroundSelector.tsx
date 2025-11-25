@@ -2,25 +2,21 @@ import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { X, Video, Box, Palette, Image, Repeat } from 'lucide-react'
+import { X, Video, Box, Palette, Image } from 'lucide-react'
 import type { BackgroundConfig } from './index';
-import variants from '@/lib/config/background-variants.json';
+import { SCENES } from '@/lib/data/scenes';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 
 interface BackgroundSelectorProps {
   current: BackgroundConfig;
   onChange: (config: BackgroundConfig) => void;
   onClose: () => void;
-  loops: { id: string; name: string }[];
 }
 
-export default function BackgroundSelector({ current, onChange, onClose, loops }: BackgroundSelectorProps) {
+export default function BackgroundSelector({ current, onChange, onClose }: BackgroundSelectorProps) {
   const [unsplashQuery, setUnsplashQuery] = useState('')
   const [unsplashSeed, setUnsplashSeed] = useState(0)
-  const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0)
-  const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0)
-  const ROOM = ((variants as any).room as Array<{ id: string; name: string }>)
-  const CAFE = ((variants as any).cafe as Array<{ id: string; name: string }>)
+  const [selectedSceneId, setSelectedSceneId] = useLocalStorage<string>('selectedSceneId', SCENES[0]?.id || 'study')
   if (typeof window === 'undefined') return null
   const buildUnsplashQuery = (q: string) => {
     const base = (q || 'lofi,study').trim()
@@ -44,51 +40,43 @@ export default function BackgroundSelector({ current, onChange, onClose, loops }
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h3 className="text-muted-foreground text-sm font-medium mb-3 flex items-center gap-2">
-              <Video className="w-4 h-4" /> Scenes & Animated Loops
-            </h3>
+          <h3 className="text-muted-foreground text-sm font-medium mb-3 flex items-center gap-2">
+            <Video className="w-4 h-4" /> Scenes & Animated Loops
+          </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {[{ label: 'Room', id: ROOM[Number(roomIdx)]?.id || ROOM[0]?.id, name: ROOM[Number(roomIdx)]?.name || ROOM[0]?.name, idx: Number(roomIdx), total: ROOM.length }, { label: 'Cafe', id: CAFE[Number(cafeIdx)]?.id || CAFE[0]?.id, name: CAFE[Number(cafeIdx)]?.name || CAFE[0]?.name, idx: Number(cafeIdx), total: CAFE.length }].map((v, idx) => (
+              {SCENES.map((scene) => (
                 <button
-                  key={idx}
-                  onClick={() => { onChange({ type: 'video', videoId: v.id }); if (v.label === 'Room') setRoomIdx(v.idx as any); else setCafeIdx(v.idx as any); }}
-                  className={`relative group overflow-hidden rounded-xl border transition-all text-left aspect-video ${current.type === 'video' && current.videoId === v.id
-                      ? 'border-primary ring-2 ring-primary/50'
-                      : 'glass-button'
-                    }`}
+                  key={scene.id}
+                  onClick={() => setSelectedSceneId(scene.id)}
+                  className={`relative group overflow-hidden rounded-xl border transition-all text-left aspect-video ${selectedSceneId === scene.id ? 'border-primary ring-2 ring-primary/50' : 'glass-button'}`}
                 >
                   <img
-                    src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
-                    alt={v.name}
+                    src={scene.thumbnail}
+                    alt={scene.name}
                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 font-medium text-foreground text-sm">
-                    {`${v.label}: ${v.name} (${v.idx + 1}/${v.total})`}
-                  </div>
-                  <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-background/70 border border-border text-muted-foreground">
-                    <Repeat className="w-3 h-3" /> Loop Mode
+                    {scene.name}
                   </div>
                 </button>
               ))}
-
-              {loops.map((loop) => (
+            </div>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+              {(SCENES.find((s) => s.id === selectedSceneId)?.variants || []).map((variant) => (
                 <button
-                  key={loop.id}
-                  onClick={() => onChange({ type: 'video', videoId: loop.id })}
-                  className={`relative group overflow-hidden rounded-xl border transition-all text-left aspect-video ${current.type === 'video' && current.videoId === loop.id
-                      ? 'border-primary ring-2 ring-primary/50'
-                      : 'glass-button'
-                    }`}
+                  key={variant.id}
+                  onClick={() => onChange({ type: 'video', videoId: variant.youtubeId })}
+                  className={`relative group overflow-hidden rounded-xl border transition-all text-left aspect-video ${current.type === 'video' && current.videoId === variant.youtubeId ? 'border-primary ring-2 ring-primary/50' : 'glass-button'}`}
                 >
                   <img
-                    src={`https://img.youtube.com/vi/${loop.id}/mqdefault.jpg`}
-                    alt={loop.name}
+                    src={`https://img.youtube.com/vi/${variant.youtubeId}/mqdefault.jpg`}
+                    alt={variant.name}
                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 font-medium text-foreground text-sm">
-                    {loop.name}
+                    {variant.name}
                   </div>
                 </button>
               ))}

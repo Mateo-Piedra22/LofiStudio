@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
-import variants from '@/lib/config/background-variants.json';
 import BackgroundSelector from './BackgroundSelector';
-import loopsJson from '@/lib/config/background-loops.json';
+import { SCENES } from '@/lib/data/scenes';
 
 export type BackgroundType = 'gradient' | 'video' | 'image';
 
@@ -19,40 +18,35 @@ export interface BackgroundConfig {
 }
 
 const DEFAULT_VIDEO_ID = 'jfKfPfyJRdk';
-const SCENIC_LOOPS = (loopsJson as any).loops as Array<{ id: string; name: string }>;
-const ROOM_VARIANTS = (variants as any).room as Array<{ id: string; name: string }>;
-const CAFE_VARIANTS = (variants as any).cafe as Array<{ id: string; name: string }>;
+const ALL_VARIANTS = SCENES.flatMap((s) => s.variants);
 
 export default function Background() {
   const [config, setConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' });
   const [showSelector, setShowSelector] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0);
-  const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0);
   const [playerSize, setPlayerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [imgErrorCount, setImgErrorCount] = useState(0);
   const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
-  const [cachedVideoUrl, setCachedVideoUrl] = useState<string | null>(null);
   const [backgroundBlur] = useLocalStorage('backgroundBlur', 0);
+  const [currentSceneId, setCurrentSceneId] = useLocalStorage<string | null>('currentSceneId', null);
+  const [currentVariantId, setCurrentVariantId] = useLocalStorage<string | null>('currentVariantId', null);
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    const t = (config as any)?.type as string | undefined;
-    if (t === 'room') {
-      const next = (Number(roomIdx) + 1) % (ROOM_VARIANTS?.length || 1);
-      setRoomIdx(next as any);
-      const id = ROOM_VARIANTS[next]?.id || ROOM_VARIANTS[0]?.id || DEFAULT_VIDEO_ID;
-      setConfig({ type: 'video', videoId: id });
-    } else if (t === 'cafe') {
-      const next = (Number(cafeIdx) + 1) % (CAFE_VARIANTS?.length || 1);
-      setCafeIdx(next as any);
-      const id = CAFE_VARIANTS[next]?.id || CAFE_VARIANTS[0]?.id || DEFAULT_VIDEO_ID;
-      setConfig({ type: 'video', videoId: id });
+    const id = config?.videoId;
+    if (config.type === 'video' && id) {
+      const scene = SCENES.find((s) => s.variants.some((v) => v.youtubeId === id)) || null;
+      const variant = scene ? scene.variants.find((v) => v.youtubeId === id) || null : null;
+      setCurrentSceneId(scene ? scene.id : null);
+      setCurrentVariantId(variant ? variant.id : null);
+    } else {
+      setCurrentSceneId(null);
+      setCurrentVariantId(null);
     }
-  }, [config?.type]);
+  }, [config.type, config.videoId]);
 
   useEffect(() => {
     const ratio = 16 / 9;
@@ -67,16 +61,6 @@ export default function Background() {
     window.addEventListener('resize', compute);
     return () => window.removeEventListener('resize', compute);
   }, []);
-
-  useEffect(() => {
-    const id = config?.videoId;
-    if (config.type === 'video' && id) {
-      const ri = ROOM_VARIANTS.findIndex((v) => v.id === id);
-      if (ri >= 0 && ri !== Number(roomIdx)) setRoomIdx(ri as any);
-      const ci = CAFE_VARIANTS.findIndex((v) => v.id === id);
-      if (ci >= 0 && ci !== Number(cafeIdx)) setCafeIdx(ci as any);
-    }
-  }, [config.type, config.videoId]);
 
   useEffect(() => {
     const open = () => setShowSelector(true)
@@ -148,30 +132,7 @@ export default function Background() {
         }
       } catch {}
     }
-    const cacheVideo = async () => {
-      if (config.type !== 'video') return
-      if (config.videoId) return
-      const key = config.videoKey || 'background_video'
-      if (config.videoKey) {
-        const blob = await getBlob(key)
-        if (blob && active) setCachedVideoUrl(URL.createObjectURL(blob))
-        return
-      }
-      const url = config.videoUrl
-      if (!url) return
-      try {
-        const res = await fetch(url)
-        if (!res.ok) return
-        const blob = await res.blob()
-        await putBlob(key, blob)
-        if (active) {
-          setCachedVideoUrl(URL.createObjectURL(blob))
-          setConfig({ ...config, videoKey: key })
-        }
-      } catch {}
-    }
     cacheImage()
-    cacheVideo()
     return () => { active = false }
   }, [config])
 
@@ -236,12 +197,9 @@ export default function Background() {
           current={config}
           onChange={setConfig}
           onClose={() => setShowSelector(false)}
-          loops={SCENIC_LOOPS}
         />
       )}
-      {config.type === 'video' && (config.videoUrl || cachedVideoUrl) && (
-        <video src={cachedVideoUrl || config.videoUrl} autoPlay muted loop playsInline preload="auto" className="fixed inset-0 -z-50 w-full h-full object-cover opacity-60" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }} />
-      )}
+      
       {config.type === 'image' && (cachedImageUrl || (config.imageUrl && !config.imageKey)) && (
         <img
           src={cachedImageUrl || config.imageUrl}

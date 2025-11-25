@@ -5,7 +5,7 @@ import { Command, CommandDialog, CommandInput, CommandList, CommandItem, Command
 import { useWidgets } from '@/lib/hooks/useWidgets'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage'
 import type { BackgroundConfig } from '@/app/components/Background'
-import variants from '@/lib/config/background-variants.json'
+import { SCENES } from '@/lib/data/scenes'
 import cmdActions from '@/lib/config/command-actions.json'
 
 export default function CommandPalette() {
@@ -13,8 +13,7 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null)
   const { addWidget, applyPreset, presets, lastPresetId } = useWidgets()
   const [, setBackgroundConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' })
-  const [roomIdx, setRoomIdx] = useLocalStorage('roomVariantIndex', 0)
-  const [cafeIdx, setCafeIdx] = useLocalStorage('cafeVariantIndex', 0)
+  const [selectedSceneId, setSelectedSceneId] = useLocalStorage('selectedSceneId', SCENES[0]?.id || 'study')
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -61,18 +60,11 @@ export default function CommandPalette() {
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Background">
-            <CommandItem onSelect={() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const idx = Number(roomIdx) % arr.length; setBackgroundConfig({ type: 'video', videoId: arr[idx].id } as any); setOpen(false) }}>
-              {(() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const idx = Number(roomIdx) % arr.length; const name = arr[idx]?.name || '—'; return `Room Cozy — current: ${name} (${idx + 1}/${arr.length})` })()}
-            </CommandItem>
-            <CommandItem onSelect={() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const next = (Number(roomIdx) + 1) % arr.length; setRoomIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
-              {(() => { const arr = (variants as any).room as Array<{id:string;name:string}>; const next = (Number(roomIdx) + 1) % arr.length; const name = arr[next]?.name || '—'; return `Next Room Loop — ${name} (${next + 1}/${arr.length})` })()}
-            </CommandItem>
-            <CommandItem onSelect={() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const idx = Number(cafeIdx) % arr.length; setBackgroundConfig({ type: 'video', videoId: arr[idx].id } as any); setOpen(false) }}>
-              {(() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const idx = Number(cafeIdx) % arr.length; const name = arr[idx]?.name || '—'; return `Cafe Cozy — current: ${name} (${idx + 1}/${arr.length})` })()}
-            </CommandItem>
-            <CommandItem onSelect={() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const next = (Number(cafeIdx) + 1) % arr.length; setCafeIdx(next); setBackgroundConfig({ type: 'video', videoId: arr[next].id } as any); setOpen(false) }}>
-              {(() => { const arr = (variants as any).cafe as Array<{id:string;name:string}>; const next = (Number(cafeIdx) + 1) % arr.length; const name = arr[next]?.name || '—'; return `Next Cafe Loop — ${name} (${next + 1}/${arr.length})` })()}
-            </CommandItem>
+            {SCENES.map((scene) => (
+              <CommandItem key={scene.id} onSelect={() => { setSelectedSceneId(scene.id); const v = scene.variants[0]; setBackgroundConfig({ type: 'video', videoId: v.youtubeId } as any); setOpen(false) }}>
+                {`Set ${scene.name} — ${scene.variants[0]?.name || 'Default'}`}
+              </CommandItem>
+            ))}
           </CommandGroup>
           <CommandGroup heading="Layout">
             <CommandItem onSelect={() => { window.dispatchEvent(new Event('open-widget-manager')); setOpen(false) }}>
