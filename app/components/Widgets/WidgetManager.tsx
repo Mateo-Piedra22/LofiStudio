@@ -133,37 +133,44 @@ export default function WidgetManager() {
   const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
   const initialGrid = React.useMemo(() => {
     const grid: { id: string | null; rowSpan: number; colSpan: number; start: boolean }[][] = Array.from({ length: cols }, () => Array.from({ length: rows }, () => ({ id: null, rowSpan: 1, colSpan: 1, start: false })));
-    const totals = Array.from({ length: cols }, () => 0);
+    const fitsSingle = (c: number, r: number, rs: number) => {
+      if (r + rs > rows) return false;
+      for (let rr = r; rr < r + rs; rr++) { if (grid[c][rr].id) return false; }
+      return true;
+    };
+    const fitsDouble = (c: number, r: number, rs: number) => {
+      if (c >= cols - 1) return false;
+      if (r + rs > rows) return false;
+      for (let rr = r; rr < r + rs; rr++) { if (grid[c][rr].id || grid[c + 1][rr].id) return false; }
+      return true;
+    };
     enabled.forEach((w) => {
       const size = getSize(w);
       const rowSpan = getRowSpan(size);
       const colSpan = getColSpan(size);
       if (colSpan === 1) {
-        const order = Array.from({ length: cols }, (_, i) => i).sort((a, b) => totals[a] - totals[b]);
-        const requiresTop = rowSpan === rows;
-        for (const c of order) {
-          if (totals[c] + rowSpan <= rows && (!requiresTop || totals[c] === 0)) {
-            const startRow = totals[c];
-            grid[c][startRow] = { id: w.id, rowSpan, colSpan: 1, start: true };
-            for (let r = startRow + 1; r < startRow + rowSpan; r++) grid[c][r] = { id: w.id, rowSpan, colSpan: 1, start: false };
-            totals[c] = startRow + rowSpan;
-            break;
+        let placed = false;
+        for (let c = 0; c < cols && !placed; c++) {
+          const startR = rowSpan === rows ? 0 : 0;
+          for (let r = startR; r <= rows - rowSpan && !placed; r++) {
+            if (fitsSingle(c, r, rowSpan)) {
+              grid[c][r] = { id: w.id, rowSpan, colSpan: 1, start: true };
+              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: w.id, rowSpan, colSpan: 1, start: false };
+              placed = true;
+            }
           }
         }
       } else {
-        if (cols < 2) return;
-        const pairs: [number, number][] = Array.from({ length: cols - 1 }, (_, i) => [i, i + 1]);
-        const orderedPairs = pairs.sort((pA, pB) => Math.max(totals[pA[0]], totals[pA[1]]) - Math.max(totals[pB[0]], totals[pB[1]]));
-        const requiresTop = rowSpan === rows;
-        for (const [c1, c2] of orderedPairs) {
-          const startRow = Math.max(totals[c1], totals[c2]);
-          if (startRow + rowSpan <= rows && (!requiresTop || startRow === 0)) {
-            grid[c1][startRow] = { id: w.id, rowSpan, colSpan: 2, start: true };
-            for (let r = startRow + 1; r < startRow + rowSpan; r++) grid[c1][r] = { id: w.id, rowSpan, colSpan: 2, start: false };
-            for (let r = startRow; r < startRow + rowSpan; r++) grid[c2][r] = { id: w.id, rowSpan, colSpan: 2, start: false };
-            totals[c1] = startRow + rowSpan;
-            totals[c2] = startRow + rowSpan;
-            break;
+        let placed = false;
+        for (let c = 0; c < cols - 1 && !placed; c++) {
+          const startR = rowSpan === rows ? 0 : 0;
+          for (let r = startR; r <= rows - rowSpan && !placed; r++) {
+            if (fitsDouble(c, r, rowSpan)) {
+              grid[c][r] = { id: w.id, rowSpan, colSpan: 2, start: true };
+              for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: w.id, rowSpan, colSpan: 2, start: false };
+              for (let rr = r; rr < r + rowSpan; rr++) grid[c + 1][rr] = { id: w.id, rowSpan, colSpan: 2, start: false };
+              placed = true;
+            }
           }
         }
       }
@@ -176,10 +183,10 @@ export default function WidgetManager() {
   function GridCell({ id, className, style }: { id?: string; className?: string; style?: React.CSSProperties }) {
     const { setNodeRef, isOver } = useDroppable(id ? { id } : { id: `cell-${Math.random().toString(36).slice(2)}`, disabled: true } as any);
     const ring = id
-      ? (isOver ? 'ring-2 ring-primary' : (id === highlightCell ? 'ring-2 ring-primary/60' : ''))
+      ? (isOver ? 'ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse' : (id === highlightCell ? 'ring-2 ring-primary/60 ring-offset-2 ring-offset-background' : ''))
       : '';
     return (
-      <div ref={setNodeRef} style={style} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', ring, className)} />
+      <div ref={setNodeRef} style={style} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-all duration-200', isOver && 'bg-primary/20', ring, className)} />
     );
   }
 
@@ -415,7 +422,7 @@ export default function WidgetManager() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragOver={handleDragOverGrid} onDragEnd={handleDragEndGrid}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragOver={handleDragOverGrid} onDragEnd={handleDragEndGrid} onDragCancel={() => setHighlightCell(null)}>
           <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: cols }).map((_, colIdx) => (
               Array.from({ length: rows }).map((_, rowIdx) => {
