@@ -7,9 +7,33 @@ export type ChangelogEntry = {
   image?: string;
 };
 
+/**
+ * 🏷️ SEMANTIC VERSIONING (vMAJOR.MINOR.PATCH)
+ * * 🐛 PATCH (x.x.1) : Bug fixes, parches de seguridad y ajustes visuales menores.
+ * ✨ MINOR (x.1.0) : Nuevas funcionalidades compatibles (Nuevos widgets, escenas, opciones).
+ * 💥 MAJOR (1.x.x) : Cambios estructurales drásticos o incompatibles (Rediseño total, cambio de DB).
+ */
+
 const changelog: ChangelogEntry[] = [
   {
-    version: '1.2.5.1',
+    version: '1.3.0',
+    date: '2025-11-25',
+    title: 'Brand Identity & Legal Pages Overhaul',
+    features: [
+      'Complete redesign of the Footer with 4-column layout and social integration',
+      'New professional "About Us" page with mission, team, and contact info',
+      'Full-featured "Legal", "Terms", and "Cookie Policy" pages with comprehensive real-world text',
+      'Unified "Glassmorphism" design language across all informational pages'
+    ],
+    fixes: [
+      'Fixed broken navigation links in the footer',
+      'Improved accessibility and readability on dark backgrounds',
+      'Standardized page layouts for consistent user experience'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
+    version: '1.2.5',
     date: '2025-11-25',
     title: 'Asset Refresh',
     features: [],

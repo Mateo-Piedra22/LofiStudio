@@ -11,7 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel'
-import { Star, ArrowRight, Coffee, Waves, Timer, CalendarDays, Settings, Sparkles } from 'lucide-react'
+import { Star, ArrowRight, Coffee, Waves, Timer, CalendarDays, Settings, Sparkles, Twitter, Instagram, Github } from 'lucide-react'
 
 type PublicReview = { userName: string | null; userImage: string | null; rating: number; comment: string | null }
 
@@ -249,39 +249,64 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="relative z-10 px-6 pt-8 pb-12">
-        <div className="max-w-7xl mx-auto bg-black/80 backdrop-blur-md p-8 text-gray-400 border-t border-gray-800 rounded-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start text-center md:text-left">
-            <div className="space-y-2">
-              <div className="flex items-center justify-center md:justify-start gap-3">
-                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-16 w-auto rounded-md" />
-                <span className="text-white text-lg font-bold uppercase tracking-wider">LofiStudio</span>
+      <footer className="relative z-10 px-6 pt-20 pb-12 bg-black/60 border-t border-white/5 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-10 w-auto rounded-lg shadow-lg" />
+                <span className="text-white text-xl font-bold tracking-tight">LofiStudio</span>
               </div>
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <VersionBadge />
-                <Link href="/changelog" className="text-xs text-muted-foreground hover:text-white">What's New</Link>
+              <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
+                Your personal sanctuary for focus and relaxation. Crafted with care to help you find your flow.
+              </p>
+              <div className="flex items-center gap-4 pt-2">
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+                  <Twitter className="w-5 h-5" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="GitHub">
+                  <Github className="w-5 h-5" />
+                </a>
               </div>
-              <p className="text-sm">A peaceful place to be the creator of whatever you desire.</p>
             </div>
-            <div className="space-y-2">
-              <p className="text-white font-semibold">Navigation</p>
-              <div className="flex flex-col gap-1">
-                <Link href="/privacy" className="hover:text-white">Privacy</Link>
-                <Link href="/terms" className="hover:text-white">Terms</Link>
-                <Link href="/faq" className="hover:text-white">FAQ</Link>
-                <Link href="/changelog" className="hover:text-white">Changelog</Link>
-              </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-6">Product</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li><Link href="/studio" className="hover:text-white transition-colors">Open Studio</Link></li>
+                <li><Link href="/changelog" className="hover:text-white transition-colors">Changelog</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              </ul>
             </div>
-            <div className="space-y-2">
-              <p className="text-white font-semibold">Social</p>
-              <div className="flex items-center justify-center md:justify-start gap-4">
-                <a href="#" className="hover:text-white">Twitter</a>
-                <a href="#" className="hover:text-white">Instagram</a>
-                <a href="#" className="hover:text-white">Discord</a>
+
+            <div>
+              <h4 className="text-white font-semibold mb-6">Legal</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li><Link href="/legal" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-6">Status</h4>
+              <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                </span>
+                All systems operational
               </div>
+              <VersionBadge />
             </div>
           </div>
-          <div className="mt-8 text-center text-xs">© {new Date().getFullYear()} LofiStudio</div>
+
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+            <p>© {new Date().getFullYear()} LofiStudio by MotionA. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </main>
