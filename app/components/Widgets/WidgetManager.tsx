@@ -170,12 +170,10 @@ export default function WidgetManager() {
     return grid;
   }, [enabled, isDesktop, isLandscape]);
 
-  function GridCell({ id, className, children }: { id: string; className?: string; children?: React.ReactNode }) {
-    const { setNodeRef, isOver } = useDroppable({ id });
+  function GridCell({ id, className, style }: { id?: string; className?: string; style?: React.CSSProperties }) {
+    const { setNodeRef, isOver } = useDroppable(id ? { id } : { id: `cell-${Math.random().toString(36).slice(2)}`, disabled: true } as any);
     return (
-      <div ref={setNodeRef} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', className)}>
-        {children}
-      </div>
+      <div ref={setNodeRef} style={style} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', className)} />
     );
   }
 
@@ -200,6 +198,13 @@ export default function WidgetManager() {
     const draggedId = String(active.id);
     const w = enabled.find(x => x.id === draggedId);
     if (!w) return;
+    const occupantStart = initialGrid[c][r];
+    if (occupantStart && occupantStart.id && occupantStart.start && occupantStart.id !== draggedId) {
+      const oldIndex = widgets.findIndex(x => x.id === draggedId);
+      const newIndex = widgets.findIndex(x => x.id === occupantStart.id);
+      if (oldIndex > -1 && newIndex > -1) reorderWidgets(oldIndex, newIndex);
+      return;
+    }
     const size = getSize(w);
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
@@ -316,43 +321,46 @@ export default function WidgetManager() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         <DndContext sensors={sensors} onDragEnd={handleDragEndGrid}>
-          <div className={cn('grid grid-flow-row-dense gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+          <div className={cn('relative grid grid-flow-row-dense gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+            {Array.from({ length: cols }).map((_, colIdx) => (
+              Array.from({ length: rows }).map((_, rowIdx) => {
+                const baseCell = initialGrid[colIdx][rowIdx];
+                const occupiedNonStart = !!baseCell.id && !baseCell.start;
+                const occupiedStart = !!baseCell.id && baseCell.start;
+                const extraCls = occupiedNonStart ? 'bg-primary/10 border-primary/30' : occupiedStart ? 'bg-primary/15 border-primary' : '';
+                return (
+                  <GridCell key={`base-${colIdx}-${rowIdx}`} id={`cell-${colIdx}-${rowIdx}`} className={cn('min-h-[64px] z-0', extraCls)} style={{ gridColumn: `${colIdx + 1}`, gridRow: `${rowIdx + 1}` }} />
+                );
+              })
+            ))}
             {Array.from({ length: cols }).map((_, colIdx) => (
               Array.from({ length: rows }).map((_, rowIdx) => {
                 const cell = initialGrid[colIdx][rowIdx];
-                const droppableId = `cell-${colIdx}-${rowIdx}`;
-                if (cell.id) {
-                  if (!cell.start) return null;
-                  const item = widgets.find(w => w.id === cell.id)!;
-                  const size = getSize(item);
-                  const rowSpan = getRowSpan(size);
-                  const colSpan = getColSpan(size);
-                  return (
-                    <div key={`item-${colIdx}-${rowIdx}`} style={{ gridColumn: `${colIdx + 1} / span ${colSpan}`, gridRow: `span ${rowSpan}` }}>
-                      <DraggableItem id={cell.id!}>
-                        <div className="rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
-                            <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 ml-auto">
-                            <Button
-                              onClick={() => removeWidget(cell.id!)}
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            >
-                              <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </DraggableItem>
-                    </div>
-                  );
-                }
+                if (!cell.id || !cell.start) return null;
+                const item = widgets.find(w => w.id === cell.id)!;
+                const size = getSize(item);
+                const rowSpan = getRowSpan(size);
+                const colSpan = getColSpan(size);
                 return (
-                  <div key={droppableId} style={{ gridColumn: `${colIdx + 1}`, gridRow: `span 1` }}>
-                    <GridCell id={droppableId} className="min-h-[64px]" />
+                  <div key={`item-${colIdx}-${rowIdx}`} style={{ gridColumn: `${colIdx + 1} / span ${colSpan}`, gridRow: `${rowIdx + 1} / span ${rowSpan}`, zIndex: 1 }}>
+                    <DraggableItem id={String(cell.id)}>
+                      <div className="rounded-xl glass border text-card-foreground p-3 h-full w-full flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="capitalize text-sm font-medium text-foreground">{item.type}</span>
+                          <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-auto">
+                          <Button
+                            onClick={() => removeWidget(String(cell.id))}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <AnimatedIcon animationSrc="/lottie/Trash2.json" fallbackIcon={Trash2} className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </DraggableItem>
                   </div>
                 );
               })
