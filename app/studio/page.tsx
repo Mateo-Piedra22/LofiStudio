@@ -772,11 +772,12 @@ export default function Home() {
             );
           })()}
         {isEditingLayout && (
-            <div className="pointer-events-none absolute inset-0 z-20 px-4 py-4">
+            <div className="pointer-events-none absolute inset-0 z-20">
               {(() => {
-                const dims = currentBreakpoint === 'lg' ? { cols: 3, rows: 3 } : currentBreakpoint === 'md' ? { cols: 3, rows: 3 } : { cols: 1, rows: 3 };
+                const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
+                const dims = { cols, rows: 3 };
                 return (
-                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : 'grid-cols-1'} gap-x-4`}>
+                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : dims.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-3 gap-y-3`}>
                     {Array.from({ length: dims.cols }).map((_, col) => (
                       <div key={col} className="flex flex-col gap-y-3">
                         {Array.from({ length: dims.rows }).map((_, row) => (
@@ -813,8 +814,8 @@ export default function Home() {
         )}
 
         {!isZenMode && showWidgetManager && (
-          <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-80' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
-            <div className={`${isEditingLayout ? 'w-80 glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
+          <div className={`fixed ${isEditingLayout ? 'top-24 right-6 w-[620px]' : 'inset-0 flex items-center justify-center'} z-50 transition-all duration-300`}>
+            <div className={`${isEditingLayout ? 'w-[620px] lg:w-[720px] glass-panel rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto' : 'w-full max-w-4xl glass-panel rounded-2xl p-6 max-h-[85vh] overflow-y-auto'}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className={`font-bold text-foreground ${isEditingLayout ? 'text-sm' : 'text-2xl'}`}>
                   {isEditingLayout ? 'Add Widgets' : 'Customize Layout'}

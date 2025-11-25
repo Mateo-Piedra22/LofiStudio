@@ -116,7 +116,7 @@ export default function WidgetManager() {
           <div className={`h-full ${danger ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${percent}%` }} />
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-5">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
           const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(w.size), 0);
@@ -170,14 +170,14 @@ export default function WidgetManager() {
         {isDesktop ? (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             <SortableContext items={enabled.map(w => w.id)} strategy={rectSortingStrategy}>
-              <div className={cn('grid gap-3 auto-rows-[60px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
+              <div className={cn('grid gap-x-6 gap-y-4 auto-rows-[72px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
                 {enabled.map((w) => {
                   const widget = w;
                   if (!widget) return null;
                   const size = getSize(widget);
                   const spanCls = spanClassForSize(size);
                   return (
-                    <SortableItem key={widget.id} id={widget.id} className={cn(spanCls)}>
+                    <SortableItem key={widget.id} id={widget.id} className={cn(spanCls, 'min-h-[60px]')}>
                       <div className="flex items-center gap-3">
                         <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
@@ -199,14 +199,14 @@ export default function WidgetManager() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className={cn('grid gap-3 auto-rows-[60px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
+          <div className={cn('grid gap-x-6 gap-y-4 auto-rows-[72px]', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop' : 'mobile'}>
             {enabled.map((w) => {
               const widget = w;
               if (!widget) return null;
               const size = getSize(widget);
               const spanCls = spanClassForSize(size);
               return (
-                <div key={widget.id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3')}> 
+                <div key={widget.id} className={cn(spanCls, 'rounded-xl glass border text-card-foreground p-3 min-h-[60px]')}> 
                   <div className="flex items-center gap-3">
                     <span className="capitalize text-sm font-medium text-foreground">{widget.type}</span>
                     <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{String(size)}</span>
