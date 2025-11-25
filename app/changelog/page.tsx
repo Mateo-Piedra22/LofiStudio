@@ -26,7 +26,7 @@ export default function ChangelogPage() {
       <div className="fixed inset-0 -z-10 bg-black/70" />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-8 py-8 md:py-10 max-w-4xl w-full">
+        <div className="glass-panel rounded-3xl border px-6 md:px-8 py-8 md:py-10 max-w-[906px] w-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-12 w-auto rounded-lg shadow-xl" />
