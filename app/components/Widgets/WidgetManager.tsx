@@ -7,8 +7,9 @@ import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2, GripVertical } from 'lucide-react'
 import React from 'react'
 import { WidgetConfig } from '@/lib/types';
-import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable, useDraggable } from '@dnd-kit/core';
+import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable, useDraggable, closestCenter } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragOverEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
@@ -170,10 +171,15 @@ export default function WidgetManager() {
     return grid;
   }, [enabled, isDesktop, isLandscape]);
 
+  const [highlightCell, setHighlightCell] = React.useState<string | null>(null);
+
   function GridCell({ id, className, style }: { id?: string; className?: string; style?: React.CSSProperties }) {
     const { setNodeRef, isOver } = useDroppable(id ? { id } : { id: `cell-${Math.random().toString(36).slice(2)}`, disabled: true } as any);
+    const ring = id
+      ? (isOver ? 'ring-2 ring-primary' : (id === highlightCell ? 'ring-2 ring-primary/60' : ''))
+      : '';
     return (
-      <div ref={setNodeRef} style={style} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', className)} />
+      <div ref={setNodeRef} style={style} className={cn('rounded-xl border border-white/10 bg-white/5 dark:bg-black/10 transition-colors', isOver && 'bg-primary/20', ring, className)} />
     );
   }
 
@@ -208,30 +214,61 @@ export default function WidgetManager() {
     const size = getSize(w);
     const rowSpan = getRowSpan(size);
     const colSpan = getColSpan(size);
-    if (rowSpan === 3 && r !== 0) return;
-    if (r + rowSpan > rows) return;
-    if (colSpan === 2) {
-      if (cols < 2 || c >= cols - 1) return;
-    }
+    const withinBounds = (cc: number, rr: number) => rr >= 0 && rr + rowSpan <= rows && cc >= 0 && (colSpan === 1 ? cc < cols : cc + 1 < cols);
     const grid = initialGrid.map(col => col.map(cell => ({ ...cell })));
+    const regionFree = (cc: number, rr: number) => {
+      if (!withinBounds(cc, rr)) return false;
+      if (colSpan === 2) {
+        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
+          if (grid[cc][r2].id || grid[cc + 1][r2].id) return false;
+        }
+        return true;
+      } else {
+        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
+          if (grid[cc][r2].id) return false;
+        }
+        return true;
+      }
+    };
+    const nearestValidStart = (cc: number, rr: number) => {
+      const candidates: { cc: number; rr: number; d: number }[] = [];
+      if (colSpan === 2) {
+        const pairs: number[] = [];
+        if (cc < cols - 1) pairs.push(cc);
+        if (cc > 0) pairs.push(cc - 1);
+        for (const c0 of pairs) {
+          for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
+            if (regionFree(c0, r0)) candidates.push({ cc: c0, rr: r0, d: Math.abs(cc - c0) + Math.abs(rr - r0) });
+          }
+        }
+      } else {
+        for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
+          if (regionFree(cc, r0)) candidates.push({ cc, rr: r0, d: Math.abs(rr - r0) });
+        }
+      }
+      candidates.sort((a, b) => a.d - b.d);
+      return candidates[0] || null;
+    };
     for (let cc = 0; cc < cols; cc++) {
       for (let rr = 0; rr < rows; rr++) {
         if (grid[cc][rr].id === draggedId) grid[cc][rr] = { id: null, rowSpan: 1, colSpan: 1, start: false };
       }
     }
+    let targetC = c;
+    let targetR = r;
+    if (!regionFree(targetC, targetR)) {
+      const near = nearestValidStart(c, r);
+      if (!near) return;
+      targetC = near.cc;
+      targetR = near.rr;
+    }
     if (colSpan === 2) {
-      for (let rr = r; rr < r + rowSpan; rr++) {
-        if (grid[c][rr].id || grid[c + 1][rr].id) return;
-      }
-      grid[c][r] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: draggedId, rowSpan, colSpan, start: false };
-      for (let rr = r; rr < r + rowSpan; rr++) grid[c + 1][rr] = { id: draggedId, rowSpan, colSpan, start: false };
+      grid[targetC][targetR] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetR + 1; rr2 < targetR + rowSpan; rr2++) grid[targetC][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
+      for (let rr2 = targetR; rr2 < targetR + rowSpan; rr2++) grid[targetC + 1][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
     } else {
-      for (let rr = r; rr < r + rowSpan; rr++) {
-        if (grid[c][rr].id) return;
-      }
-      grid[c][r] = { id: draggedId, rowSpan, colSpan, start: true };
-      for (let rr = r + 1; rr < r + rowSpan; rr++) grid[c][rr] = { id: draggedId, rowSpan, colSpan, start: false };
+      grid[targetC][targetR] = { id: draggedId, rowSpan, colSpan, start: true };
+      for (let rr2 = targetR + 1; rr2 < targetR + rowSpan; rr2++) grid[targetC][rr2] = { id: draggedId, rowSpan, colSpan, start: false };
     }
     const placedIds: string[] = [];
     for (let cc = 0; cc < cols; cc++) {
@@ -253,6 +290,64 @@ export default function WidgetManager() {
         working.splice(i, 0, moved);
       }
     }
+    setHighlightCell(null);
+  };
+
+  const handleDragOverGrid = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!active?.id || !over?.id) { setHighlightCell(null); return; }
+    const overId = String(over.id);
+    if (!overId.startsWith('cell-')) { setHighlightCell(null); return; }
+    const parts = overId.split('-');
+    const c = Number(parts[1]);
+    const r = Number(parts[2]);
+    const draggedId = String(active.id);
+    const w = enabled.find(x => x.id === draggedId);
+    if (!w) { setHighlightCell(null); return; }
+    const size = getSize(w);
+    const rowSpan = getRowSpan(size);
+    const colSpan = getColSpan(size);
+    const withinBounds = (cc: number, rr: number) => rr >= 0 && rr + rowSpan <= rows && cc >= 0 && (colSpan === 1 ? cc < cols : cc + 1 < cols);
+    const grid = initialGrid.map(col => col.map(cell => ({ ...cell })));
+    const regionFree = (cc: number, rr: number) => {
+      if (!withinBounds(cc, rr)) return false;
+      if (colSpan === 2) {
+        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
+          if (grid[cc][r2].id || grid[cc + 1][r2].id) return false;
+        }
+        return true;
+      } else {
+        for (let r2 = rr; r2 < rr + rowSpan; r2++) {
+          if (grid[cc][r2].id) return false;
+        }
+        return true;
+      }
+    };
+    let targetC = c;
+    let targetR = r;
+    if (!regionFree(targetC, targetR)) {
+      const candidates: { cc: number; rr: number; d: number }[] = [];
+      if (colSpan === 2) {
+        const pairs: number[] = [];
+        if (targetC < cols - 1) pairs.push(targetC);
+        if (targetC > 0) pairs.push(targetC - 1);
+        for (const c0 of pairs) {
+          for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
+            if (regionFree(c0, r0)) candidates.push({ cc: c0, rr: r0, d: Math.abs(targetC - c0) + Math.abs(targetR - r0) });
+          }
+        }
+      } else {
+        for (let r0 = 0; r0 <= rows - rowSpan; r0++) {
+          if (regionFree(targetC, r0)) candidates.push({ cc: targetC, rr: r0, d: Math.abs(targetR - r0) });
+        }
+      }
+      candidates.sort((a, b) => a.d - b.d);
+      const near = candidates[0];
+      if (!near) { setHighlightCell(null); return; }
+      targetC = near.cc;
+      targetR = near.rr;
+    }
+    setHighlightCell(`cell-${targetC}-${targetR}`);
   };
 
   return (
@@ -320,8 +415,8 @@ export default function WidgetManager() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
-        <DndContext sensors={sensors} onDragEnd={handleDragEndGrid}>
-          <div className={cn('relative grid grid-flow-row-dense gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragOver={handleDragOverGrid} onDragEnd={handleDragEndGrid}>
+          <div className={cn('relative grid grid-flow-row-dense items-stretch gap-4 auto-rows-[64px]', cols === 3 ? 'grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'}>
             {Array.from({ length: cols }).map((_, colIdx) => (
               Array.from({ length: rows }).map((_, rowIdx) => {
                 const baseCell = initialGrid[colIdx][rowIdx];
