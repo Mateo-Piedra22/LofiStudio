@@ -178,12 +178,10 @@ export function useWidgets() {
   }, [setWidgets, capacity, tileW, tileH]);
 
   useEffect(() => {
-    const hasWidgets = widgets && widgets.length > 0;
-    if (!widgetsLoaded || hasWidgets) return;
-    const presetToApply = lastPresetId || 'empty';
-    const exists = presets.some(p => p.id === presetToApply);
-    const target = exists ? presetToApply : 'empty';
-    applyPreset(target);
+    if (!widgetsLoaded) return;
+    if (widgets.length < baseCapacity) {
+      setWidgets(padToCapacity(widgets));
+    }
   }, [widgetsLoaded]);
 
   
