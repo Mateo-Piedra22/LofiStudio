@@ -15,16 +15,16 @@ import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@d
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(false);
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = React.useState(false);
   React.useEffect(() => {
-    const mq = typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px), (pointer: coarse)') : null as any;
-    const evalMatch = () => setIsMobile(!!mq?.matches);
+    const mq = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)') : null as any;
+    const evalMatch = () => setIsDesktop(!!mq?.matches);
     evalMatch();
     mq?.addEventListener?.('change', evalMatch);
     return () => mq?.removeEventListener?.('change', evalMatch);
   }, []);
-  return isMobile;
+  return isDesktop;
 }
 
 function SortableItem({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
@@ -49,8 +49,7 @@ function SortableItem({ id, children, className }: { id: string; children: React
 
 export default function WidgetManager() {
   const { widgets, addWidget, removeWidget, updateWidget, updateWidgetLayout, presets, applyPreset, capacity, lastPresetId } = useWidgets();
-  const isMobile = useIsMobile();
-  const isDesktop = !isMobile;
+  const isDesktop = useIsDesktop();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 15 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -91,10 +90,6 @@ export default function WidgetManager() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!active?.id || !over?.id || active.id === over.id) return;
-    const oldIndex = activeIds.indexOf(String(active.id));
-    const newIndex = activeIds.indexOf(String(over.id));
-    if (oldIndex === -1 || newIndex === -1) return;
-    setActiveIds((items) => arrayMove(items, oldIndex, newIndex));
     const byId = new Map(widgets.map(w => [w.id, w] as const));
     const a = byId.get(String(active.id));
     const b = byId.get(String(over.id));
@@ -104,6 +99,13 @@ export default function WidgetManager() {
     updateWidgetLayout(a.id, { x: bLayout.x, y: bLayout.y, w: aLayout.w, h: aLayout.h });
     updateWidgetLayout(b.id, { x: aLayout.x, y: aLayout.y, w: bLayout.w, h: bLayout.h });
   };
+
+  const idsToRenderDesktop = [...enabledWidgets]
+    .sort((a, b) => (a.layout?.y || 0) - (b.layout?.y || 0) || (a.layout?.x || 0) - (b.layout?.x || 0))
+    .map(w => w.id);
+  const idsToRenderMobile = [...enabledWidgets]
+    .sort((a, b) => (a.layout?.x || 0) - (b.layout?.x || 0) || (a.layout?.y || 0) - (b.layout?.y || 0))
+    .map(w => w.id);
 
   const spanClassFor = (t: WidgetConfig['type']) => {
     const groupName = (sizeConfig.assignments as any)[t] || 'small';
@@ -181,9 +183,9 @@ export default function WidgetManager() {
         <h3 className="text-lg font-medium text-foreground">Active Widgets</h3>
         {isDesktop ? (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext items={activeIds} strategy={rectSortingStrategy} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
-              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')}>
-                {activeIds.map((id) => {
+            <SortableContext items={idsToRenderDesktop} strategy={rectSortingStrategy}>
+              <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={'desktop-grid'}>
+                {idsToRenderDesktop.map((id) => {
                   const widget = widgets.find(w => w.id === id);
                   if (!widget) return null;
                   const spanCls = spanClassFor(widget.type);
@@ -210,8 +212,8 @@ export default function WidgetManager() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={isDesktop ? 'desktop-grid' : 'mobile-grid'}>
-            {activeIds.map((id) => {
+          <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')} key={'mobile-grid'}>
+            {idsToRenderMobile.map((id) => {
               const widget = widgets.find(w => w.id === id);
               if (!widget) return null;
               const spanCls = spanClassFor(widget.type);
