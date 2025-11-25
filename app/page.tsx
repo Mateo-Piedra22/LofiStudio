@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { signIn, useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import VersionBadge from '@/app/components/VersionBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -256,6 +257,10 @@ export default function HomePage() {
                 <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-16 w-auto rounded-md" />
                 <span className="text-white text-lg font-bold uppercase tracking-wider">LofiStudio</span>
               </div>
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <VersionBadge />
+                <Link href="/changelog" className="text-xs text-muted-foreground hover:text-white">What's New</Link>
+              </div>
               <p className="text-sm">A peaceful place to be the creator of whatever you desire.</p>
             </div>
             <div className="space-y-2">
@@ -264,6 +269,7 @@ export default function HomePage() {
                 <Link href="/privacy" className="hover:text-white">Privacy</Link>
                 <Link href="/terms" className="hover:text-white">Terms</Link>
                 <Link href="/faq" className="hover:text-white">FAQ</Link>
+                <Link href="/changelog" className="hover:text-white">Changelog</Link>
               </div>
             </div>
             <div className="space-y-2">

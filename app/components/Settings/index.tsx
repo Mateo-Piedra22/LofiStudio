@@ -9,6 +9,7 @@ import ThemeSelector from './ThemeSelector';
 import { X, Download, Upload, Trash2, AlertCircle, Video, Box, Palette, Image, Repeat } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import ReviewExperience from '@/app/components/Settings/ReviewExperience';
+import VersionBadge from '@/app/components/VersionBadge';
 import { useWidgets } from '@/lib/hooks/useWidgets';
 import type { BackgroundConfig } from '@/app/components/Background';
 import { Switch } from '@/components/ui/switch';
@@ -594,11 +595,11 @@ export default function Settings({
             <ReviewExperience />
           </div>
 
-          {/* About */}
           <div className="pt-4 border-t border-border">
-            <p className="text-muted-foreground text-xs text-center">
-              LofiStudio v1.0 - A productivity app for focused work
-            </p>
+            <div className="flex items-center justify-center gap-2">
+              <VersionBadge />
+              <a href="/changelog" className="text-xs text-muted-foreground hover:text-foreground">What's New</a>
+            </div>
           </div>
         </CardContent>
       </Card>

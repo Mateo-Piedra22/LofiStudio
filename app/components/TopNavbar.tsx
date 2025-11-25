@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import ThemeSelector from '@/app/components/Settings/ThemeSelector';
-import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X } from 'lucide-react'
+import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X, Sparkles } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import UserAuth from '@/app/components/UserAuth';
 
@@ -181,7 +181,7 @@ export default function TopNavbar() {
 
                 <div className="space-y-3">
                   <div className="text-sm uppercase tracking-wider text-white/60">Links</div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-4 gap-3">
                     <Link href="/" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <Home className="w-5 h-5" />
                       <span>Home</span>
@@ -190,6 +190,10 @@ export default function TopNavbar() {
                       <Settings className="w-5 h-5" />
                       <span>Settings</span>
                     </button>
+                    <Link href="/changelog" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <Sparkles className="w-5 h-5" />
+                      <span>Changelog</span>
+                    </Link>
                     <button onClick={reauth} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
                       <span>Completar permisos</span>
