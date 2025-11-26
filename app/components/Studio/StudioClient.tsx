@@ -31,6 +31,12 @@ import NotesWidget from '@/app/components/Widgets/NotesWidget';
 import BreathingWidget from '@/app/components/Widgets/BreathingWidget';
 import DictionaryWidget from '@/app/components/Widgets/DictionaryWidget';
 import DraggableWidget from '@/app/components/Widgets/DraggableWidget';
+import HabitTrackerWidget from '@/app/components/Widgets/HabitTrackerWidget';
+import DailyFocusWidget from '@/app/components/Widgets/DailyFocusWidget';
+import CalculatorWidget from '@/app/components/Widgets/CalculatorWidget';
+import QuickLinksWidget from '@/app/components/Widgets/QuickLinksWidget';
+import FlashcardWidget from '@/app/components/Widgets/FlashcardWidget';
+import EmbedWidget from '@/app/components/Widgets/EmbedWidget';
 import { SettingsIcon, Activity, BarChart3, X, Layout, Menu, Keyboard, EyeOff, Eye, Check, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { VideoInfo } from '@/app/components/Player';
@@ -785,6 +791,12 @@ export default function StudioClient() {
                         {widget.type === 'breathing' && <BreathingWidget />}
                         {widget.type === 'dictionary' && <DictionaryWidget />}
                         {widget.type === 'timer' && <PomodoroTimer currentVideo={currentVideo} />}
+                        {widget.type === 'habit' && <HabitTrackerWidget id={widget.id} settings={widget.settings} />}
+                        {widget.type === 'focus' && <DailyFocusWidget id={widget.id} settings={widget.settings} />}
+                        {widget.type === 'calculator' && <CalculatorWidget id={widget.id} settings={widget.settings} />}
+                        {widget.type === 'quicklinks' && <QuickLinksWidget id={widget.id} settings={widget.settings} />}
+                        {widget.type === 'flashcard' && <FlashcardWidget id={widget.id} settings={widget.settings} />}
+                        {widget.type === 'embed' && <EmbedWidget id={widget.id} settings={widget.settings} />}
                       </DraggableWidget>
                     </div>
                   );

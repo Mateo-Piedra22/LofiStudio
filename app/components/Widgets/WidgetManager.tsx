@@ -4,7 +4,7 @@ import { useWidgets } from '@/lib/hooks/useWidgets';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
-import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2, GripVertical } from 'lucide-react'
+import { Clock, Cloud, Image as ImageIcon, CheckSquare, StickyNote, Quote, Calendar as CalendarIcon, Wind, Book, Timer, Trash2, GripVertical, Activity, Target, Calculator, Link as LinkIcon, Globe, BookOpen } from 'lucide-react'
 import React from 'react'
 import { WidgetConfig } from '@/lib/types';
 import sizeConfig from '@/lib/config/widget-sizes.json';
@@ -172,6 +172,12 @@ export default function WidgetManager() {
     { type: 'breathing', label: 'Breathing', iconName: 'Wind', size: '1x2' },
     { type: 'dictionary', label: 'Dictionary', iconName: 'Book', size: '1x2' },
     { type: 'timer', label: 'Timer', iconName: 'Timer', size: '1x1' },
+    { type: 'habit', label: 'Habits', iconName: 'Activity', size: '1x2' },
+    { type: 'focus', label: 'Focus', iconName: 'Target', size: '2x1' },
+    { type: 'calculator', label: 'Calculator', iconName: 'Calculator', size: '1x2' },
+    { type: 'quicklinks', label: 'Quick Links', iconName: 'Link', size: '2x1' },
+    { type: 'flashcard', label: 'Flashcards', iconName: 'BookOpen', size: '2x1' },
+    { type: 'embed', label: 'Embed', iconName: 'Globe', size: '2x2' },
   ];
 
   const blocksForSize = (s: WidgetConfig['size'] | undefined) => {
@@ -291,6 +297,12 @@ export default function WidgetManager() {
                   Wind,
                   Book,
                   Timer,
+                  Activity,
+                  Target,
+                  Calculator,
+                  Link: LinkIcon,
+                  Globe,
+                  BookOpen,
                 }
                 const Fallback = ICON_MAP[widget.iconName] || Clock
                 return <AnimatedIcon animationSrc={`/lottie/${widget.iconName}.json`} fallbackIcon={Fallback} className="w-8 h-8 mb-2" />

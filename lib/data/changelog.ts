@@ -16,6 +16,23 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.4.0',
+    date: '2025-11-26',
+    title: 'Productivity & Knowledge Widgets Pack',
+    features: [
+      'New pack 1 Widgets: Habit Tracker, Daily Focus, Calculator',
+      'New pack 2 Widgets: Quick Links, Flashcards, Iframe Embed',
+      'Enhanced Widget Persistence: Seamless settings synchronization for all new widgets',
+      'Flexible Config Architecture: Support for complex widget data structures'
+    ],
+    fixes: [
+      'Added 3D transform utilities to global CSS for advanced animations',
+      'Implemented secure sandbox attributes for iframe widgets to prevent malicious scripts',
+      'Optimized widget size assignments for better grid layout compatibility'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.3.0',
     date: '2025-11-25',
     title: 'Brand Identity & Legal Pages Overhaul',

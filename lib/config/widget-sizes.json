@@ -16,6 +16,12 @@
     "breathing": "medium",
     "dictionary": "medium",
     "tasks": "medium",
-    "calendar": "medium"
+    "calendar": "medium",
+    "habit": "medium",
+    "focus": "small",
+    "calculator": "medium",
+    "quicklinks": "small",
+    "flashcard": "small",
+    "embed": "medium"
   }
 }
