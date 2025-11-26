@@ -14,11 +14,27 @@ const inter = Inter({ subsets: ['latin'] });
 
 
 export const metadata: Metadata = {
-  title: 'LofiStudio - Productivity & Lofi Music',
+  metadataBase: new URL('https://lofi-studio-ma.vercel.app'),
+  title: {
+    default: 'LofiStudio - Productivity & Lofi Music',
+    template: '%s | LofiStudio',
+  },
   description: 'Immersive productivity app with Lofi music, Pomodoro timer, and customizable widgets',
-  keywords: ['lofi', 'productivity', 'pomodoro', 'focus', 'study', 'music'],
+  keywords: ['lofi generator', 'focus timer', 'pomodoro online', 'ambient sounds', 'study music', 'productivity tools'],
   generator: 'v0.app',
   manifest: '/manifest.json',
+  openGraph: {
+    type: 'website',
+    siteName: 'LofiStudio',
+    url: '/og-image.png',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+  },
 };
 
 export const viewport: Viewport = {
