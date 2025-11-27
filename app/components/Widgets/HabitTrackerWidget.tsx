@@ -6,6 +6,7 @@ import { Plus, Trash2, Check, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWidgets } from '@/lib/hooks/useWidgets';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { format, subDays, isSameDay, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ interface HabitTrackerWidgetProps {
 
 export default function HabitTrackerWidget({ id, settings }: HabitTrackerWidgetProps) {
   const { updateWidget } = useWidgets();
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const habits: Habit[] = settings?.habits || [];
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
@@ -79,23 +81,25 @@ export default function HabitTrackerWidget({ id, settings }: HabitTrackerWidgetP
   };
 
   return (
-    <div className="h-full w-full flex flex-col p-4 overflow-hidden relative">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <AnimatedIcon animationSrc="/lottie/Activity.json" fallbackIcon={Activity} className="w-5 h-5" />
-          <span className="font-semibold text-sm">Habits</span>
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+      {showWidgetHeaders && (
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Activity.json" fallbackIcon={Activity} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Habits</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setIsAdding(!isAdding)}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => setIsAdding(!isAdding)}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
+      )}
 
-      <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pr-1 custom-scrollbar">
+      <div data-slot="content" className="flex-1 overflow-y-auto space-y-3 min-h-0 pr-1 custom-scrollbar">
         {isAdding && (
           <div className="flex gap-2 mb-2">
             <Input

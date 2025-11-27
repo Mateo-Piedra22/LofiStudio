@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useWidgets } from '@/lib/hooks/useWidgets';
-import { Link2, Trash2, ExternalLink, AlertCircle } from 'lucide-react';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import { Link2, Trash2, ExternalLink, AlertCircle, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { cn } from '@/lib/utils';
 
 interface EmbedWidgetProps {
@@ -16,6 +18,7 @@ interface EmbedWidgetProps {
 
 export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
   const { updateWidget } = useWidgets();
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const embedUrl = settings?.embedUrl || '';
   const [inputUrl, setInputUrl] = useState('');
   const [error, setError] = useState('');
@@ -81,59 +84,74 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
     setError('');
   };
 
-  if (!embedUrl) {
-    return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center relative">
-        <div className="w-full max-w-xs space-y-4">
-          <div className="flex flex-col items-center gap-2 text-muted-foreground mb-2">
-             <Link2 className="w-8 h-8 opacity-50" />
-             <h3 className="font-medium">Embed Content</h3>
-             <p className="text-xs opacity-70">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Input
-              placeholder="https://..."
-              value={inputUrl}
-              onChange={(e) => setInputUrl(e.target.value)}
-              className="h-9 text-sm"
-              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-            />
-            <Button size="sm" onClick={handleSave}>Embed</Button>
-          </div>
-          {error && <p className="text-xs text-destructive flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full w-full relative group bg-black/5">
-      <iframe
-        src={embedUrl}
-        className="w-full h-full border-0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-        loading="lazy"
-      />
-      
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-         <a 
-           href={embedUrl} 
-           target="_blank" 
-           rel="noopener noreferrer"
-           className="bg-background/80 backdrop-blur text-foreground p-1.5 rounded-md hover:bg-background shadow-sm"
-           title="Open in new tab"
-         >
-           <ExternalLink className="w-3 h-3" />
-         </a>
-         <button 
-           onClick={clearEmbed}
-           className="bg-destructive/80 backdrop-blur text-destructive-foreground p-1.5 rounded-md hover:bg-destructive shadow-sm"
-           title="Remove embed"
-         >
-           <Trash2 className="w-3 h-3" />
-         </button>
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+      {showWidgetHeaders && (
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Video.json" fallbackIcon={Video} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Embed</span>
+          </div>
+          {embedUrl && (
+            <div className="flex items-center gap-1">
+              <a 
+                href={embedUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={cn(
+                  "h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted/50 transition-colors",
+                  "text-muted-foreground hover:text-foreground"
+                )}
+                title="Open in new tab"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                onClick={clearEmbed}
+                title="Clear embed"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden rounded-lg bg-black/5 dark:bg-black/20">
+        {!embedUrl ? (
+          <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-full max-w-xs space-y-4">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground mb-2">
+                 <Link2 className="w-8 h-8 opacity-50" />
+                 <h3 className="font-medium">Embed Content</h3>
+                 <p className="text-xs opacity-70">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
+              </div>
+              
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://..."
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  className="h-9 text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                />
+                <Button size="sm" onClick={handleSave}>Embed</Button>
+              </div>
+              {error && <p className="text-xs text-destructive flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
+            </div>
+          </div>
+        ) : (
+          <iframe
+            src={embedUrl}
+            className="w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+            loading="lazy"
+          />
+        )}
       </div>
     </div>
   );

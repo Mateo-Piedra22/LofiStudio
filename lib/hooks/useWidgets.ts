@@ -95,6 +95,12 @@ export function useWidgets() {
     breathing: { w: tileW, h: tileH },
     dictionary: { w: tileW, h: tileH },
     timer: { w: tileW, h: tileH },
+    habit: { w: tileW, h: tileH },
+    focus: { w: tileW, h: tileH },
+    calculator: { w: tileW, h: tileH },
+    quicklinks: { w: tileW, h: tileH },
+    flashcard: { w: tileW, h: tileH },
+    embed: { w: tileW, h: tileH },
     SPACER: { w: tileW, h: tileH },
   };
 

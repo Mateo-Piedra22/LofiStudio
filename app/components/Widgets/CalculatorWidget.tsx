@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useWidgets } from '@/lib/hooks/useWidgets';
+import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { Calculator as CalculatorIcon, Delete } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
@@ -15,6 +16,7 @@ interface CalculatorWidgetProps {
 
 export default function CalculatorWidget({ id, settings }: CalculatorWidgetProps) {
   const { updateWidget } = useWidgets();
+  const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const [display, setDisplay] = useState('0');
   const [equation, setEquation] = useState('');
   const [history, setHistory] = useState<string[]>(settings?.history || []);
@@ -104,38 +106,45 @@ export default function CalculatorWidget({ id, settings }: CalculatorWidgetProps
   ];
 
   return (
-    <div className="h-full w-full flex flex-col p-3 overflow-hidden relative">
-      <div className="absolute top-2 left-3 opacity-30 pointer-events-none">
-        <AnimatedIcon animationSrc="/lottie/Calculator.json" fallbackIcon={CalculatorIcon} className="w-4 h-4" />
-      </div>
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+      {showWidgetHeaders && (
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
+          <div className="flex items-center gap-2">
+            <AnimatedIcon animationSrc="/lottie/Calculator.json" fallbackIcon={CalculatorIcon} className="w-5 h-5" />
+            <span className="text-lg font-semibold text-foreground">Calculator</span>
+          </div>
+        </div>
+      )}
 
-      <div className="flex-1 flex flex-col justify-end items-end px-2 pb-2 min-h-0">
-        <div className="text-[10px] text-muted-foreground space-y-0.5 w-full text-right mb-1 opacity-60">
-          {history.map((h, i) => (
-            <div key={i} className="truncate">{h}</div>
+      <div data-slot="content" className="flex-1 w-full flex flex-col min-h-0 relative">
+        <div className="flex-1 flex flex-col justify-end items-end px-2 pb-2 min-h-0">
+          <div className="text-[10px] text-muted-foreground space-y-0.5 w-full text-right mb-1 opacity-60">
+            {history.map((h, i) => (
+              <div key={i} className="truncate">{h}</div>
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground h-4">{equation}</div>
+          <div className="text-3xl font-light tracking-wider truncate w-full text-right">
+            {display}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2 h-[60%]">
+          {buttons.map((btn, i) => (
+            <button
+              key={i}
+              onClick={btn.onClick}
+              className={cn(
+                "rounded-lg flex items-center justify-center text-sm transition-all active:scale-95 hover:bg-muted/30",
+                btn.cls,
+                btn.isSpecial ? "" : "bg-muted/10 glass-sm"
+              )}
+              style={btn.label === '=' ? { gridRow: 'span 2' } : btn.label === '0' ? { gridColumn: 'span 2' } : {}}
+            >
+              {btn.label}
+            </button>
           ))}
         </div>
-        <div className="text-xs text-muted-foreground h-4">{equation}</div>
-        <div className="text-3xl font-light tracking-wider truncate w-full text-right">
-          {display}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-4 gap-2 h-[60%]">
-        {buttons.map((btn, i) => (
-          <button
-            key={i}
-            onClick={btn.onClick}
-            className={cn(
-              "rounded-lg flex items-center justify-center text-sm transition-all active:scale-95 hover:bg-muted/30",
-              btn.cls,
-              btn.isSpecial ? "" : "bg-muted/10 glass-sm"
-            )}
-            style={btn.label === '=' ? { gridRow: 'span 2' } : btn.label === '0' ? { gridColumn: 'span 2' } : {}}
-          >
-            {btn.label}
-          </button>
-        ))}
       </div>
     </div>
   );

@@ -457,7 +457,17 @@ export default function StudioClient() {
     if (currentBreakpoint !== 'lg') return;
     const c = getConstraints();
     const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
-    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
+    
+    // Determine visual width span based on widget type/size
+    const draggingWidget = widgets.find(w => w.id === newItem.i);
+    let widthSpan = 1;
+    if (draggingWidget && draggingWidget.size) {
+      const [wStr] = draggingWidget.size.split('x');
+      widthSpan = parseInt(wStr, 10) || 1;
+    }
+
+    const maxAllowedCol = Math.max(0, maxColIdx - (widthSpan - 1));
+    const snappedCol = Math.max(0, Math.min(maxAllowedCol, Math.round(newItem.x / tileW)));
     const span = Math.max(1, Math.ceil((newItem.h / tileH)));
     const attemptedRow = Math.floor(newItem.y / tileH);
     let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), attemptedRow));
@@ -492,7 +502,7 @@ export default function StudioClient() {
       let bestCol = snappedCol;
       let bestRow = snappedRow;
       let bestDist = Infinity;
-      for (let cIdx = 0; cIdx <= 2; cIdx++) {
+      for (let cIdx = 0; cIdx <= maxAllowedCol; cIdx++) {
         if (colTotals[cIdx] + span > maxRows) continue;
         const candX = cIdx * tileW;
         for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
@@ -534,7 +544,17 @@ export default function StudioClient() {
     if (currentBreakpoint !== 'lg') return;
     const c = getConstraints();
     const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
-    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
+    
+    // Determine visual width span based on widget type/size
+    const draggingWidget = widgets.find(w => w.id === newItem.i);
+    let widthSpan = 1;
+    if (draggingWidget && draggingWidget.size) {
+      const [wStr] = draggingWidget.size.split('x');
+      widthSpan = parseInt(wStr, 10) || 1;
+    }
+
+    const maxAllowedCol = Math.max(0, maxColIdx - (widthSpan - 1));
+    const snappedCol = Math.max(0, Math.min(maxAllowedCol, Math.round(newItem.x / tileW)));
     const span = Math.max(1, Math.ceil((newItem.h / tileH)));
     let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(newItem.y / tileH)));
     if (span === 3) snappedRow = 0;
@@ -564,7 +584,7 @@ export default function StudioClient() {
       let bestRow = snappedRow;
       let bestDist = Infinity;
       const attemptedRow = Math.floor(newItem.y / tileH);
-      for (let cIdx = 0; cIdx <= maxColIdx; cIdx++) {
+      for (let cIdx = 0; cIdx <= maxAllowedCol; cIdx++) {
         if (colTotals[cIdx] + span > maxRows) continue;
         const candX = cIdx * tileW;
         for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
@@ -767,7 +787,7 @@ export default function StudioClient() {
                   if (isSpacer) {
                     return (
                       <div key={widget.id} className={cn('col-span-1 hidden lg:block', spanCls)}>
-                        <div className="opacity-0 h-full w-full" />
+                        <div className="h-full w-full glass" style={{ '--glass-opacity': '0', '--widget-glass-opacity': '0' } as React.CSSProperties} />
                       </div>
                     );
                   }
