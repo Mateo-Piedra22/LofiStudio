@@ -456,7 +456,7 @@ export default function StudioClient() {
   const onItemChanged = (_layout: any[], _oldItem: any, newItem: any) => {
     if (currentBreakpoint !== 'lg') return;
     const c = getConstraints();
-    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 2 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
     
     // Determine visual width span based on widget type/size
     const draggingWidget = widgets.find(w => w.id === newItem.i);
@@ -481,36 +481,81 @@ export default function StudioClient() {
     const occupied = new Set<string>();
     constrained.forEach((it: any) => {
       if (it.i === draggedId) return;
+      const wItem = widgets.find(w => w.id === it.i);
+      let wSpan = 1;
+      if (wItem && wItem.size) {
+         const [ws] = wItem.size.split('x');
+         wSpan = parseInt(ws, 10) || 1;
+      }
       const s = Math.max(1, Math.ceil((it.h / tileH)));
-      for (let k = 0; k < s; k++) occupied.add(`${it.x},${it.y + k * tileH}`);
+      for (let w = 0; w < wSpan; w++) {
+        const x = it.x + (w * tileW);
+        for (let k = 0; k < s; k++) {
+            occupied.add(`${x},${it.y + k * tileH}`);
+        }
+      }
     });
     const colTotals = [0, 0, 0];
     constrained.forEach((it: any) => {
       if (it.i === draggedId) return;
+      const wItem = widgets.find(w => w.id === it.i);
+      let wSpan = 1;
+      if (wItem && wItem.size) {
+         const [ws] = wItem.size.split('x');
+         wSpan = parseInt(ws, 10) || 1;
+      }
       const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
       const s = Math.max(1, Math.ceil((it.h / tileH)));
-      colTotals[colIdx] += s;
+      for (let k = 0; k < wSpan; k++) {
+        if (colIdx + k <= maxColIdx) {
+            colTotals[colIdx + k] += s;
+        }
+      }
     });
-    const exceedsColCapacity = colTotals[snappedCol] + span > maxRows;
+
+    let exceedsColCapacity = false;
+    for (let k = 0; k < widthSpan; k++) {
+        if (colTotals[snappedCol + k] + span > maxRows) {
+            exceedsColCapacity = true;
+            break;
+        }
+    }
+
     const targetCellsFree = (() => {
-      for (let k = 0; k < span; k++) {
-        if (occupied.has(`${targetX},${targetY + k * tileH}`)) return false;
+      for (let w = 0; w < widthSpan; w++) {
+        const tx = targetX + (w * tileW);
+        for (let k = 0; k < span; k++) {
+          if (occupied.has(`${tx},${targetY + k * tileH}`)) return false;
+        }
       }
       return true;
     })();
+
     if (!targetCellsFree || exceedsColCapacity) {
       let bestCol = snappedCol;
       let bestRow = snappedRow;
       let bestDist = Infinity;
       for (let cIdx = 0; cIdx <= maxAllowedCol; cIdx++) {
-        if (colTotals[cIdx] + span > maxRows) continue;
+        let colFits = true;
+        for (let k = 0; k < widthSpan; k++) {
+             if (colTotals[cIdx + k] + span > maxRows) {
+                 colFits = false;
+                 break;
+             }
+        }
+        if (!colFits) continue;
+        
         const candX = cIdx * tileW;
         for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
           if (span === 3 && r !== 0) continue;
           if (span === 2 && r > 1) continue;
           let free = true;
-          for (let k = 0; k < span; k++) {
-            if (occupied.has(`${candX},${r * tileH + k * tileH}`)) { free = false; break; }
+          for (let w = 0; w < widthSpan; w++) {
+             const cx = candX + (w * tileW);
+             for (let k = 0; k < span; k++) {
+               if (occupied.has(`${cx},${r * tileH + k * tileH}`)) { free = false; break; }
+             }
+             if (!free) break;
           }
           if (free) {
             const d = Math.abs(cIdx - snappedCol) + Math.abs(r - attemptedRow);
@@ -543,7 +588,7 @@ export default function StudioClient() {
   const onDragging = (_layout: any[], _oldItem: any, newItem: any) => {
     if (currentBreakpoint !== 'lg') return;
     const c = getConstraints();
-    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 2 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
     
     // Determine visual width span based on widget type/size
     const draggingWidget = widgets.find(w => w.id === newItem.i);
@@ -564,35 +609,81 @@ export default function StudioClient() {
     const occupied = new Set<string>();
     _layout.forEach((it: any) => {
       if (it.i === newItem.i) return;
+      const wItem = widgets.find(w => w.id === it.i);
+      let wSpan = 1;
+      if (wItem && wItem.size) {
+         const [ws] = wItem.size.split('x');
+         wSpan = parseInt(ws, 10) || 1;
+      }
       const s = Math.max(1, Math.ceil((it.h / tileH)));
-      for (let k = 0; k < s; k++) occupied.add(`${it.x},${it.y + k * tileH}`);
+      for (let w = 0; w < wSpan; w++) {
+        const x = it.x + (w * tileW);
+        for (let k = 0; k < s; k++) {
+            occupied.add(`${x},${it.y + k * tileH}`);
+        }
+      }
     });
     const colTotals = [0, 0, 0];
     _layout.forEach((it: any) => {
       if (it.i === newItem.i) return;
+      const wItem = widgets.find(w => w.id === it.i);
+      let wSpan = 1;
+      if (wItem && wItem.size) {
+         const [ws] = wItem.size.split('x');
+         wSpan = parseInt(ws, 10) || 1;
+      }
       const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
       const s = Math.max(1, Math.ceil((it.h / tileH)));
-      colTotals[colIdx] += s;
+      for (let k = 0; k < wSpan; k++) {
+        if (colIdx + k <= maxColIdx) {
+            colTotals[colIdx + k] += s;
+        }
+      }
     });
     let blocked = false;
-    for (let k = 0; k < span; k++) {
-      if (occupied.has(`${targetX},${targetY + k * tileH}`)) { blocked = true; break; }
+    for (let w = 0; w < widthSpan; w++) {
+        const tx = targetX + (w * tileW);
+        for (let k = 0; k < span; k++) {
+          if (occupied.has(`${tx},${targetY + k * tileH}`)) { blocked = true; break; }
+        }
+        if (blocked) break;
     }
-    if (colTotals[snappedCol] + span > maxRows) blocked = true;
+    
+    if (!blocked) {
+        for (let k = 0; k < widthSpan; k++) {
+            if (colTotals[snappedCol + k] + span > maxRows) {
+                blocked = true;
+                break;
+            }
+        }
+    }
+
     if (blocked) {
       let bestCol = snappedCol;
       let bestRow = snappedRow;
       let bestDist = Infinity;
       const attemptedRow = Math.floor(newItem.y / tileH);
       for (let cIdx = 0; cIdx <= maxAllowedCol; cIdx++) {
-        if (colTotals[cIdx] + span > maxRows) continue;
+        let colFits = true;
+        for (let k = 0; k < widthSpan; k++) {
+             if (colTotals[cIdx + k] + span > maxRows) {
+                 colFits = false;
+                 break;
+             }
+        }
+        if (!colFits) continue;
+
         const candX = cIdx * tileW;
         for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
           if (span === 3 && r !== 0) continue;
           if (span === 2 && r > 1) continue;
           let free = true;
-          for (let k = 0; k < span; k++) {
-            if (occupied.has(`${candX},${r * tileH + k * tileH}`)) { free = false; break; }
+          for (let w = 0; w < widthSpan; w++) {
+             const cx = candX + (w * tileW);
+             for (let k = 0; k < span; k++) {
+               if (occupied.has(`${cx},${r * tileH + k * tileH}`)) { free = false; break; }
+             }
+             if (!free) break;
           }
           if (free) {
             const d = Math.abs(cIdx - snappedCol) + Math.abs(r - attemptedRow);
