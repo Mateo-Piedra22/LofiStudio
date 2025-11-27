@@ -60,7 +60,7 @@ export default function StudioClient() {
   const [isTopbarHidden, setIsTopbarHidden] = useState(false);
   const [hideBackground, setHideBackground] = useState(false);
   const canTopbarInteract = (!isEditingLayout || !isTopbarHidden) && !isZenMode;
-  const { widgets, removeWidget, updateWidget, applyPreset, widgetsLoaded, updateWidgetLayouts } = useWidgets();
+  const { widgets, removeWidget, updateWidget, applyPreset, widgetsLoaded } = useWidgets();
   const { data: session } = useSession();
   const [showWidgetHeaders, setShowWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
   const [googleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false);
@@ -351,39 +351,28 @@ export default function StudioClient() {
   // Transform widgets to react-grid-layout format
   const typeById = new Map(widgets.map(w => [w.id, w.type] as const));
 
-  const getConstraints = (cols: number = 1) => ({ minW: tileW, minH: tileH, maxW: tileW * cols, maxH: tileH * maxRows });
+  const getConstraints = () => ({ minW: tileW, minH: tileH, maxW: tileW, maxH: tileH * maxRows });
 
   const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 
   const layout = widgets
-    .filter(w => w.enabled && w.layout && w.type !== 'SPACER')
+    .filter(w => w.enabled && w.layout)
     .map(w => {
-      const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-      const group = (sizeConfig.groups as any)[groupName];
-      const wCols = Math.ceil(Math.max(1, Math.min(3, group?.cols ?? 1)));
-      const wRows = Math.ceil(Math.max(1, Math.min(3, group?.rows ?? 1)));
-
-      const c = getConstraints(wCols);
+      const c = getConstraints();
       const col = Math.floor((w.layout?.x ?? 0) / tileW);
       const row = Math.floor((w.layout?.y ?? 0) / tileH);
       const span = Math.max(1, Math.ceil(((w.layout?.h ?? tileH) / tileH)));
-      const x = clamp(col, 0, 3 - wCols) * tileW;
-      
+      const x = clamp(col, 0, 2) * tileW;
       let rowClamped = clamp(row, 0, Math.max(0, maxRows - span));
       if (span === 3) rowClamped = 0;
       if (span === 2 && rowClamped > 1) rowClamped = 1;
-      
       const y = rowClamped * tileH;
       const hUnits = clamp(w.layout?.h ?? tileH, tileH, tileH * maxRows);
-      
-      // Ensure width matches config
-      const wUnits = wCols * tileW;
-
       return {
         i: w.id,
         x,
         y,
-        w: wUnits,
+        w: tileW,
         h: hUnits,
         minW: c.minW,
         minH: c.minH,
@@ -410,8 +399,7 @@ export default function StudioClient() {
         for (const it of arr) {
           if (!it || typeof it.i !== 'string') return false;
           if (typeof it.x !== 'number' || typeof it.y !== 'number' || typeof it.w !== 'number' || typeof it.h !== 'number') return false;
-          // Removed strict tileW check to allow variable width
-          if (it.w < tileW || it.w > tileW * 3) return false;
+          if (it.w !== tileW) return false;
           if (it.h < tileH || it.h > tileH * maxRows) return false;
           const span = Math.max(1, Math.ceil((it.h / tileH)));
           const rowIdx = Math.floor(it.y / tileH);
@@ -436,123 +424,176 @@ export default function StudioClient() {
   }, [widgets.length]);
 
   const onLayoutChange = (currentLayout: any[], allLayouts?: any) => {
-    // 1. Clamp items to grid bounds (max 3 rows)
-    const clampedLayout = currentLayout.map(item => {
-        const spanH = Math.max(1, Math.round(item.h / tileH));
-        const maxRow = Math.max(0, 3 - spanH);
-        // Clamp Y to valid range
-        const clampedY = Math.max(0, Math.min(item.y, maxRow * tileH));
-        return { ...item, y: clampedY };
-    });
-
-    // 2. Update state
     if (allLayouts) {
-      const next = { ...allLayouts, [currentBreakpoint]: clampedLayout };
+      const next = Object.fromEntries(Object.entries(allLayouts).map(([bp, items]: any) => [
+        bp,
+        items.map((it: any) => {
+          const c = getConstraints();
+          const snappedCol = Math.max(0, Math.min(2, Math.floor(it.x / tileW)));
+          const span = Math.max(1, Math.ceil((it.h / tileH)));
+          let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(it.y / tileH)));
+          if (span === 3) snappedRow = 0;
+          if (span === 2 && snappedRow > 1) snappedRow = 1;
+          const targetX = snappedCol * tileW;
+          const targetY = snappedRow * tileH;
+          return { ...it, ...c, x: targetX, y: targetY, w: tileW, h: it.h };
+        })
+      ]));
       setGridLayouts(next);
     }
-
-    // 3. Persist changes
-    if (currentBreakpoint === 'lg') {
-        const updates = clampedLayout.map((l: any) => ({ id: l.i, x: l.x, y: l.y }));
-        updateWidgetLayouts(updates);
-    }
-  };
-
-  const checkCollision = (layout: any[], newItem: any, x: number, y: number, w: number, h: number) => {
-      const spanW = Math.max(1, Math.round(w / tileW));
-      const spanH = Math.max(1, Math.round(h / tileH));
-      const col = Math.round(x / tileW);
-      const row = Math.round(y / tileH);
+    if (currentBreakpoint !== 'lg') return;
+    currentLayout.forEach((l: any) => {
+      const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+      const snappedCol = Math.max(0, Math.min(maxColIdx, Math.floor(l.x / tileW)));
+      const span = Math.max(1, Math.ceil((l.h / tileH)));
+      const snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(l.y / tileH)));
+      const targetX = snappedCol * tileW;
+      const targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
       
-      // Check bounds
-      if (col < 0 || col + spanW > 3) return true;
-      if (row < 0 || row + spanH > 3) return true;
-
-      // Check overlap
-      for (const item of layout) {
-          if (item.i === newItem.i) continue;
-          
-          // Ignore SPACERs from collision checks
-          if (typeById.get(item.i) === 'SPACER') continue;
-
-          const iCol = Math.round(item.x / tileW);
-          const iRow = Math.round(item.y / tileH);
-          const iW = Math.max(1, Math.round(item.w / tileW));
-          const iH = Math.max(1, Math.round(item.h / tileH));
-
-          // AABB collision
-          if (col < iCol + iW && col + spanW > iCol &&
-              row < iRow + iH && row + spanH > iRow) {
-              return true;
-          }
-      }
-      return false;
+    });
   };
 
   const onItemChanged = (_layout: any[], _oldItem: any, newItem: any) => {
     if (currentBreakpoint !== 'lg') return;
-    
-    const spanW = Math.max(1, Math.round(newItem.w / tileW));
-    const spanH = Math.max(1, Math.round(newItem.h / tileH));
-    
-    const maxColIdx = Math.max(0, 3 - spanW);
+    const c = getConstraints();
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
     const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
-    
-    const maxRowIdx = Math.max(0, 3 - spanH);
+    const span = Math.max(1, Math.ceil((newItem.h / tileH)));
     const attemptedRow = Math.floor(newItem.y / tileH);
-    const snappedRow = Math.max(0, Math.min(maxRowIdx, attemptedRow));
-
+    let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), attemptedRow));
+    if (span === 3) snappedRow = 0;
+    if (span === 2 && snappedRow > 1) snappedRow = 1;
     let targetX = snappedCol * tileW;
-    let targetY = snappedRow * tileH;
-    
-    // Check if this position is valid (no collision)
-    const collision = checkCollision(_layout, newItem, targetX, targetY, newItem.w, newItem.h);
-    
-    if (collision) {
-        // Find nearest free spot
-        let bestDist = Infinity;
-        let bestX = targetX;
-        let bestY = targetY;
-        
-        for (let c = 0; c <= maxColIdx; c++) {
-            for (let r = 0; r <= maxRowIdx; r++) {
-                const cx = c * tileW;
-                const cy = r * tileH;
-                if (!checkCollision(_layout, newItem, cx, cy, newItem.w, newItem.h)) {
-                    const dist = Math.abs(c - snappedCol) + Math.abs(r - snappedRow);
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestX = cx;
-                        bestY = cy;
-                    }
-                }
-            }
+    let targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
+    const draggedId = newItem.i;
+    const oldPos = beforeDrag.find((it: any) => it.i === draggedId);
+    const constrained = _layout.map((it: any) => ({ ...it, ...c, w: tileW, h: it.h }));
+    const occupied = new Set<string>();
+    constrained.forEach((it: any) => {
+      if (it.i === draggedId) return;
+      const s = Math.max(1, Math.ceil((it.h / tileH)));
+      for (let k = 0; k < s; k++) occupied.add(`${it.x},${it.y + k * tileH}`);
+    });
+    const colTotals = [0, 0, 0];
+    constrained.forEach((it: any) => {
+      if (it.i === draggedId) return;
+      const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
+      const s = Math.max(1, Math.ceil((it.h / tileH)));
+      colTotals[colIdx] += s;
+    });
+    const exceedsColCapacity = colTotals[snappedCol] + span > maxRows;
+    const targetCellsFree = (() => {
+      for (let k = 0; k < span; k++) {
+        if (occupied.has(`${targetX},${targetY + k * tileH}`)) return false;
+      }
+      return true;
+    })();
+    if (!targetCellsFree || exceedsColCapacity) {
+      let bestCol = snappedCol;
+      let bestRow = snappedRow;
+      let bestDist = Infinity;
+      for (let cIdx = 0; cIdx <= 2; cIdx++) {
+        if (colTotals[cIdx] + span > maxRows) continue;
+        const candX = cIdx * tileW;
+        for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
+          if (span === 3 && r !== 0) continue;
+          if (span === 2 && r > 1) continue;
+          let free = true;
+          for (let k = 0; k < span; k++) {
+            if (occupied.has(`${candX},${r * tileH + k * tileH}`)) { free = false; break; }
+          }
+          if (free) {
+            const d = Math.abs(cIdx - snappedCol) + Math.abs(r - attemptedRow);
+            if (d < bestDist) { bestDist = d; bestCol = cIdx; bestRow = r; }
+          }
         }
-        targetX = bestX;
-        targetY = bestY;
+      }
+      snappedRow = bestRow;
+      targetX = bestCol * tileW;
+      targetY = snappedRow * tileH;
     }
-    
-    if (attemptedRow !== snappedRow && !collision) {
-         // Show toast only if we clamped due to bounds, not collision (collision toast might be confusing)
-         // But here we clamped attemptedRow to maxRowIdx.
-         const now = Date.now();
-         if (now - (lastDragToastRef.current || 0) >= 1200 && (attemptedRow > maxRowIdx)) {
-            lastDragToastRef.current = now;
-            try { toast.warning('Fuera de límites', 2000); } catch {}
-         }
+    if (attemptedRow !== snappedRow) {
+      const now = Date.now();
+      if (now - (lastDragToastRef.current || 0) >= 1200) {
+        lastDragToastRef.current = now;
+        try { toast.warning(span >= 3 ? 'Este widget ocupa 3 bloques. Solo fila 0 es válida.' : span === 2 ? 'Este widget ocupa 2 bloques. Filas válidas: 0, 1.' : 'Este widget ocupa 1 bloque. Filas válidas: 0, 1, 2.', 2000); } catch {}
+        try { if (typeof navigator !== 'undefined' && 'vibrate' in navigator) (navigator as any).vibrate(10); } catch {}
+      }
     }
-
     setGridLayouts((prev: any) => ({
       ...prev,
-      [currentBreakpoint]: _layout.map((it: any) => (
-        it.i === newItem.i ? { ...it, x: targetX, y: targetY } : it
+      [currentBreakpoint]: constrained.map((it: any) => (
+        it.i === draggedId ? { ...it, x: targetX, y: targetY } : it
       )),
     }));
+    // No persistimos coordenadas; el orden lo define el índice del array
+    if (currentBreakpoint !== 'lg') return;
   };
 
   const onDragging = (_layout: any[], _oldItem: any, newItem: any) => {
-     // Same logic as onItemChanged basically, but maybe lighter or just reuse
-     onItemChanged(_layout, _oldItem, newItem);
+    if (currentBreakpoint !== 'lg') return;
+    const c = getConstraints();
+    const maxColIdx = currentBreakpoint === 'lg' ? 2 : currentBreakpoint === 'md' ? 1 : (isLandscape && currentBreakpoint === 'sm') ? 1 : 0;
+    const snappedCol = Math.max(0, Math.min(maxColIdx, Math.round(newItem.x / tileW)));
+    const span = Math.max(1, Math.ceil((newItem.h / tileH)));
+    let snappedRow = Math.max(0, Math.min(Math.max(0, maxRows - span), Math.floor(newItem.y / tileH)));
+    if (span === 3) snappedRow = 0;
+    if (span === 2 && snappedRow > 1) snappedRow = 1;
+    let targetX = snappedCol * tileW;
+    let targetY = Math.min(snappedRow * tileH, Math.max(0, (maxRows - span) * tileH));
+    const occupied = new Set<string>();
+    _layout.forEach((it: any) => {
+      if (it.i === newItem.i) return;
+      const s = Math.max(1, Math.ceil((it.h / tileH)));
+      for (let k = 0; k < s; k++) occupied.add(`${it.x},${it.y + k * tileH}`);
+    });
+    const colTotals = [0, 0, 0];
+    _layout.forEach((it: any) => {
+      if (it.i === newItem.i) return;
+      const colIdx = Math.max(0, Math.min(maxColIdx, Math.floor(it.x / tileW)));
+      const s = Math.max(1, Math.ceil((it.h / tileH)));
+      colTotals[colIdx] += s;
+    });
+    let blocked = false;
+    for (let k = 0; k < span; k++) {
+      if (occupied.has(`${targetX},${targetY + k * tileH}`)) { blocked = true; break; }
+    }
+    if (colTotals[snappedCol] + span > maxRows) blocked = true;
+    if (blocked) {
+      let bestCol = snappedCol;
+      let bestRow = snappedRow;
+      let bestDist = Infinity;
+      const attemptedRow = Math.floor(newItem.y / tileH);
+      for (let cIdx = 0; cIdx <= maxColIdx; cIdx++) {
+        if (colTotals[cIdx] + span > maxRows) continue;
+        const candX = cIdx * tileW;
+        for (let r = 0; r <= Math.max(0, maxRows - span); r++) {
+          if (span === 3 && r !== 0) continue;
+          if (span === 2 && r > 1) continue;
+          let free = true;
+          for (let k = 0; k < span; k++) {
+            if (occupied.has(`${candX},${r * tileH + k * tileH}`)) { free = false; break; }
+          }
+          if (free) {
+            const d = Math.abs(cIdx - snappedCol) + Math.abs(r - attemptedRow);
+            if (d < bestDist) { bestDist = d; bestCol = cIdx; bestRow = r; }
+          }
+        }
+      }
+      snappedRow = bestRow;
+      targetX = bestCol * tileW;
+      targetY = snappedRow * tileH;
+    }
+    setGridLayouts((prev: any) => ({
+      ...prev,
+      [currentBreakpoint]: _layout.map((it: any) => ({
+        ...it,
+        ...c,
+        w: tileW,
+        h: it.h,
+        ...(it.i === newItem.i ? { x: targetX, y: targetY } : {})
+      }))
+    }));
   };
 
   const handleEditLayoutToggle = () => {
@@ -567,7 +608,6 @@ export default function StudioClient() {
   const reflowGrid = () => {
     if ((gridLayouts?.lg?.length || 0) > 0) return;
     const rows = 3;
-    const cols = 3;
     const cap = 9;
     const enabled = widgets.filter(w => w.enabled);
     const ordered = [...enabled];
@@ -576,77 +616,53 @@ export default function StudioClient() {
       const [clk] = ordered.splice(clockIdx, 1);
       ordered.splice(1, 0, clk);
     }
-    const getDims = (t: string) => {
+    const heightUnitsFor = (t: string) => {
       const groupName = (sizeConfig.assignments as any)[t] || 'small';
-      const group = (sizeConfig.groups as any)[groupName];
-      const r = Math.ceil(Math.max(1, Math.min(3, group?.rows ?? 1)));
-      const c = Math.ceil(Math.max(1, Math.min(3, group?.cols ?? 1)));
-      return { rows: r, cols: c };
+      const rowsFor = (sizeConfig.groups as any)[groupName]?.rows || 1;
+      return Math.round(rowsFor * tileH);
     };
 
     const take = ordered.slice(0, cap);
-    const updates: { i: string; x: number; y: number; w: number; h: number; minW: number; minH: number; maxW: number; maxH: number }[] = [];
-    const occupied = new Set<string>();
-
-    take.forEach((w) => {
-      const { rows: h, cols: wCols } = getDims(w.type);
+    const cols: { id: string; type: string; h: number }[][] = [[], [], []];
+    const totals = [0, 0, 0];
+    const maxUnitsPerCol = rows * tileH;
+    take.forEach((w, idx) => {
+      const desiredH = heightUnitsFor(w.type);
+      const order = [0, 1, 2].sort((a, b) => totals[a] - totals[b]);
       let placed = false;
-      
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (placed) break;
-          
-          if (c + wCols > cols) continue;
-          if (r + h > rows) continue;
-          
-          let fits = true;
-          for (let x = 0; x < wCols; x++) {
-            for (let y = 0; y < h; y++) {
-              if (occupied.has(`${c + x},${r + y}`)) {
-                fits = false;
-                break;
-              }
-            }
-            if (!fits) break;
-          }
-          
-          if (fits) {
-            placed = true;
-            updates.push({
-              i: w.id,
-              x: c * tileW,
-              y: r * tileH,
-              w: wCols * tileW,
-              h: h * tileH,
-              minW: tileW,
-              minH: tileH,
-              maxW: tileW * cols,
-              maxH: tileH * rows
-            });
-            for (let x = 0; x < wCols; x++) {
-              for (let y = 0; y < h; y++) {
-                occupied.add(`${c + x},${r + y}`);
-              }
-            }
-          }
+      for (const c of order) {
+        const requiresTop = desiredH === tileH * rows;
+        if (totals[c] + desiredH <= maxUnitsPerCol && (!requiresTop || totals[c] === 0)) {
+          cols[c].push({ id: w.id, type: w.type, h: desiredH });
+          totals[c] += desiredH;
+          placed = true;
+          break;
         }
       }
-      
       if (!placed) {
         updateWidget(w.id, { enabled: false });
       }
     });
     
+    const updates: { i: string; x: number; y: number; w: number; h: number; minW: number; minH: number; maxW: number; maxH: number }[] = [];
+    cols.forEach((colItems, colIdx) => {
+      let y = 0;
+      colItems.forEach((ci) => {
+        const wId = ci.id;
+        const hUnits = ci.h;
+        const x = colIdx * tileW;
+        updates.push({ i: wId, x, y, w: tileW, h: hUnits, minW: tileW, minH: tileH, maxW: tileW, maxH: tileH * rows });
+        // No persistimos coordenadas; el orden lo define el índice del array
+        y += hUnits;
+      });
+    });
     const constrainedUpdates = updates.map(it => ({ ...it, ...getConstraints() }));
-    // Ensure w/h from calculation are preserved, overriding getConstraints if it forces 1x1
-    const finalUpdates = updates; 
-
     setGridLayouts({
-      lg: finalUpdates,
-      md: finalUpdates,
-      sm: finalUpdates,
-      xs: finalUpdates,
-      xxs: finalUpdates,
+      lg: constrainedUpdates,
+      md: constrainedUpdates,
+      sm: constrainedUpdates,
+      xs: constrainedUpdates,
+      xxs: constrainedUpdates,
     });
     ordered.slice(cap).forEach(w => updateWidget(w.id, { enabled: false }));
   };
@@ -721,30 +737,47 @@ export default function StudioClient() {
         <div className={`relative z-10 w-full transition-opacity duration-500`} style={{ height: '100vh', minHeight: '100vh' }} data-ui="main-grid">
           {(() => {
             const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
-            
+            const cap = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 9 : (isLandscape ? 4 : 3);
+            const board = widgets.slice(0, cap);
             const rowsFor = (t: string) => {
               const groupName = (sizeConfig.assignments as any)[t] || 'small';
               const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
               const capped = Math.max(1, Math.min(3, rawRows));
               return Math.ceil(capped);
             };
-
-            const getWidgetDims = (t: string) => {
-              const groupName = (sizeConfig.assignments as any)[t] || 'small';
-              const group = (sizeConfig.groups as any)[groupName];
-              const rows = Math.ceil(Math.max(1, Math.min(3, group?.rows ?? 1)));
-              const cols = Math.ceil(Math.max(1, Math.min(3, group?.cols ?? 1)));
-              return { rows, cols };
+            const sizeToClasses = (s?: string) => {
+              if (s === '2x1') return cols === 3 ? 'col-span-1 lg:col-span-2 row-span-1' : cols === 2 ? 'col-span-2 row-span-1' : 'col-span-1 row-span-1';
+              if (s === '1x2') return 'col-span-1 row-span-2';
+              if (s === '2x2') return cols === 3 ? 'col-span-1 lg:col-span-2 row-span-2' : cols === 2 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-2';
+              if (s === '1x3') return 'col-span-1 row-span-3';
+              if (s === '3x1') return cols === 3 ? 'col-span-1 lg:col-span-3 row-span-1' : 'col-span-1 row-span-1';
+              return 'col-span-1 row-span-1';
             };
-
-            const renderWidget = (widget: any) => {
-                const { rows, cols } = getWidgetDims(widget.type);
-                return (
-                    <DraggableWidget
-                        isEditing={isEditingLayout}
+            return (
+              <div
+                className={cn('grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
+                key={currentBreakpoint}
+                style={{ gridAutoRows: `${rowHeight}px` }}
+              >
+                {board.map(widget => {
+                  const isSpacer = widget.type === 'SPACER' || !widget.enabled;
+                  const rows = rowsFor(widget.type);
+                  const fallbackSize = `1x${rows}`;
+                  const spanCls = isSpacer ? 'col-span-1 row-span-1' : sizeToClasses(widget.size || fallbackSize);
+                  if (isSpacer) {
+                    return (
+                      <div key={widget.id} className={cn('col-span-1 hidden lg:block', spanCls)}>
+                        <div className="opacity-0 h-full w-full" />
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={widget.id} className={cn('col-span-1', spanCls)}>
+                      <DraggableWidget
+                        isEditing={false}
                         onRemove={() => removeWidget(widget.id)}
-                        className="h-full w-full"
-                    >
+                        className="h-full"
+                      >
                         {widget.type === 'clock' && <ClockWidget />}
                         {widget.type === 'worldtime' && <WorldTimeWidget />}
                         {widget.type === 'weather' && (
@@ -764,86 +797,30 @@ export default function StudioClient() {
                         {widget.type === 'quicklinks' && <QuickLinksWidget id={widget.id} settings={widget.settings} />}
                         {widget.type === 'flashcard' && <FlashcardWidget id={widget.id} settings={widget.settings} />}
                         {widget.type === 'embed' && <EmbedWidget id={widget.id} settings={widget.settings} />}
-                        {widget.type === 'SPACER' && (
-                            <div className="w-full h-full border-2 border-dashed border-muted-foreground/30 rounded-xl flex items-center justify-center bg-muted/10">
-                                <span className="text-xs font-medium text-muted-foreground/50">SPACER</span>
-                            </div>
-                        )}
-                    </DraggableWidget>
-                );
-            };
-
-            if (isEditingLayout) {
-                const realWidgets = widgets.filter(w => w.enabled && (w.type !== 'SPACER' || isEditingLayout));
-                return (
-                    <ResponsiveGridLayout
-                        className="layout"
-                        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-                        cols={{ lg: 3, md: 3, sm: 2, xs: 1, xxs: 1 }}
-                        rowHeight={rowHeight}
-                        layouts={gridLayouts}
-                        onLayoutChange={onLayoutChange}
-                        onBreakpointChange={(bp) => setCurrentBreakpoint(bp as any)}
-                        onDrag={onDragging}
-                        isDraggable={true}
-                        isResizable={false}
-                        compactType={null}
-                        preventCollision={true}
-                        margin={[12, 12]}
-                    >
-                        {realWidgets.map(w => {
-                            const { rows, cols } = getWidgetDims(w.type);
-                            return (
-                                <div key={w.id} data-grid={{ x: w.layout?.x || 0, y: w.layout?.y || 0, w: cols * tileW, h: rows * tileH }}>
-                                    {renderWidget(w)}
-                                </div>
-                            );
-                        })}
-                    </ResponsiveGridLayout>
-                );
-            }
-
-            return (
-              <div
-                className={cn('grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
-                key={currentBreakpoint}
-                style={{ gridAutoRows: `${rowHeight}px` }}
-              >
-                {widgets.map(widget => {
-                  const x = widget.layout?.x ?? 0;
-                  const y = widget.layout?.y ?? 0;
-                  const w = widget.layout?.w ?? 1;
-                  const h = widget.layout?.h ?? 1;
-                  
-                  const isSpacer = widget.type === 'SPACER' || !widget.enabled;
-                  const style = (cols === 3) ? {
-                      gridColumnStart: x + 1,
-                      gridColumnEnd: `span ${w}`,
-                      gridRowStart: y + 1,
-                      gridRowEnd: `span ${h}`
-                  } : {};
-                  
-                  if (isSpacer) {
-                    return (
-                      <div key={widget.id} className="hidden lg:block" style={style}>
-                        <div className="opacity-0 h-full w-full" />
-                      </div>
-                    );
-                  }
-                  
-                  return (
-                    <div key={widget.id} className={cn('col-span-1')} style={style}>
-                      {renderWidget(widget)}
+                      </DraggableWidget>
                     </div>
                   );
                 })}
               </div>
             );
           })()}
-          
-          {isEditingLayout && (
-            <div className="pointer-events-none absolute inset-0 z-0">
-               {/* Background grid lines can be added here if needed */}
+        {isEditingLayout && (
+            <div className="pointer-events-none absolute inset-0 z-20">
+              {(() => {
+                const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
+                const dims = { cols, rows: 3 };
+                return (
+                  <div className={`h-full w-full grid ${dims.cols === 3 ? 'grid-cols-3' : dims.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-3 gap-y-3`}>
+                    {Array.from({ length: dims.cols }).map((_, col) => (
+                      <div key={col} className="flex flex-col gap-y-3">
+                        {Array.from({ length: dims.rows }).map((_, row) => (
+                          <div key={`${col}-${row}`} className="rounded-lg border border-white/10 bg-white/5 dark:bg-black/10" style={{ height: `${Math.round(rowHeight * tileH)}px` }} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

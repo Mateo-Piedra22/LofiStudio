@@ -93,7 +93,7 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
 
   if (isEditing) {
     return (
-      <div data-ui="widget" className="h-full w-full flex flex-col p-4 rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden relative">
+      <div className="h-full w-full flex flex-col p-4 bg-background/50 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="font-semibold text-sm">Edit Deck</span>
           <div className="flex gap-1">
@@ -147,27 +147,20 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
   const currentCard = cards[currentIndex];
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden relative group/widget p-4">
-      {/* Header */}
-      <div data-slot="header" className="flex items-center justify-between mb-2 shrink-0">
-         <div className="flex items-center gap-2 text-foreground/90">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-                <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={BookOpen} className="w-4 h-4 text-primary" />
-            </div>
-            <span className="font-semibold text-sm tracking-tight">Flashcards</span>
-         </div>
-         <div className="flex gap-1 opacity-0 group-hover/widget:opacity-100 transition-opacity">
-            <Button size="icon" variant="ghost" className="h-6 w-6 hover:bg-primary/10 hover:text-primary transition-colors" onClick={handleShuffle} title="Shuffle">
-              <Shuffle className="w-3 h-3" />
-            </Button>
-            <Button size="icon" variant="ghost" className="h-6 w-6 hover:bg-primary/10 hover:text-primary transition-colors" onClick={startEditing} title="Edit Deck">
-              <Edit2 className="w-3 h-3" />
-            </Button>
-         </div>
+    <div className="h-full w-full flex flex-col relative group/widget p-4">
+      {/* Header Controls */}
+      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover/widget:opacity-100 transition-opacity flex gap-1">
+        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleShuffle} title="Shuffle">
+          <Shuffle className="w-3 h-3" />
+        </Button>
+        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={startEditing} title="Edit Deck">
+          <Edit2 className="w-3 h-3" />
+        </Button>
       </div>
-      
-      <div className="text-xs text-muted-foreground mb-2 text-center opacity-70">
-         {currentIndex + 1} / {cards.length}
+
+      <div className="absolute top-3 left-4 flex items-center gap-2 opacity-50">
+        <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={BookOpen} className="w-4 h-4" />
+        <span className="text-xs">{currentIndex + 1} / {cards.length}</span>
       </div>
 
       {/* Card Area */}
@@ -180,14 +173,14 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
           onClick={() => setIsFlipped(!isFlipped)}
         >
           {/* Front */}
-          <div className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-             <p className="font-medium text-lg leading-snug text-foreground/90">{currentCard?.question || "No cards"}</p>
+          <div className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center p-6 text-center shadow-sm">
+             <p className="font-medium text-lg leading-snug">{currentCard?.question || "No cards"}</p>
              <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Question</span>
           </div>
 
           {/* Back */}
-          <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/40 border border-secondary/50 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-             <p className="font-medium text-lg leading-snug text-foreground/90">{currentCard?.answer}</p>
+          <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/40 border border-secondary/50 flex items-center justify-center p-6 text-center shadow-sm">
+             <p className="font-medium text-lg leading-snug">{currentCard?.answer}</p>
              <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Answer</span>
           </div>
         </div>
@@ -198,19 +191,19 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors" 
+          className="h-8 w-8 rounded-full hover:bg-primary/10" 
           onClick={(e) => { e.stopPropagation(); handlePrev(); }}
           disabled={cards.length <= 1}
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
         
-        <span className="text-[10px] text-muted-foreground select-none">Tap to flip</span>
+        <span className="text-[10px] text-muted-foreground">Tap card to flip</span>
 
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors" 
+          className="h-8 w-8 rounded-full hover:bg-primary/10" 
           onClick={(e) => { e.stopPropagation(); handleNext(); }}
           disabled={cards.length <= 1}
         >

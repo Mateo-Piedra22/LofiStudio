@@ -60,19 +60,17 @@ export default function DictionaryWidget() {
     };
 
     return (
-        <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden p-4 relative group/widget">
+        <div data-ui="widget" className="hover:shadow-lg transition-shadow duration-300 h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4">
             {showWidgetHeaders ? (
-                <div data-slot="header" className="flex items-center justify-between mb-2 shrink-0">
-                    <div className="flex items-center justify-start gap-2 text-foreground/90">
-                        <div className="p-1.5 rounded-lg bg-primary/10">
-                            <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="font-semibold text-sm tracking-tight">Dictionary</span>
+                <div data-slot="header" className="flex items-center justify-between px-2 py-1">
+                    <div className="flex items-center justify-start gap-2 text-foreground">
+                        <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={Book} className="w-5 h-5" />
+                        <span className="text-lg font-semibold">Dictionary</span>
                     </div>
                     <div className="flex items-center space-x-2" />
                 </div>
             ) : null}
-            <div data-slot="content" className={`flex-1 min-h-0 w-full flex flex-col items-center justify-start gap-3`}>
+            <div data-slot="content" className={`flex-1 min-h-0 w-full flex flex-col items-center justify-start gap-4 p-4`}>
                 <form onSubmit={searchWord} className="flex gap-2">
                     <Input
                         value={query}

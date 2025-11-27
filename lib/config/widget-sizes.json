@@ -1,25 +1,23 @@
 {
   "groups": {
-    "small": { "rows": 1, "cols": 1 },
-    "medium": { "rows": 2, "cols": 1 },
-    "large": { "rows": 3, "cols": 1 },
-    "special": { "rows": 2.5, "cols": 1 },
-    "wide_small": { "rows": 1, "cols": 2 },
-    "wide_medium": { "rows": 2, "cols": 2 }
+    "small": { "rows": 1 },
+    "medium": { "rows": 2 },
+    "large": { "rows": 3 },
+    "special": { "rows": 2.5 }
   },
   "assignments": {
     "clock": "small",
     "worldtime": "small",
     "weather": "small",
-    "quote": "wide_small",
+    "quote": "small",
     "timer": "small",
     "gif": "medium",
     "notes": "medium",
     "breathing": "medium",
     "dictionary": "medium",
-    "tasks": "wide_medium",
-    "calendar": "wide_medium",
-    "habit": "wide_medium",
+    "tasks": "medium",
+    "calendar": "medium",
+    "habit": "medium",
     "focus": "small",
     "calculator": "medium",
     "quicklinks": "small",

@@ -56,12 +56,6 @@
   }
 }
 
-@layer components {
-  .glass-widget {
-    @apply bg-card/30 backdrop-blur-md border border-border/40;
-  }
-}
-
 @layer base {
   * {
     @apply border-border;

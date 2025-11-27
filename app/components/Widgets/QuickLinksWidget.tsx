@@ -66,19 +66,17 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
   };
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden p-4 relative group/widget">
-      <div data-slot="header" className="flex items-center justify-between mb-3 shrink-0">
-        <div className="flex items-center gap-2 text-foreground/90">
-           <div className="p-1.5 rounded-lg bg-primary/10">
-             <AnimatedIcon animationSrc="/lottie/Link.json" fallbackIcon={LinkIcon} className="w-4 h-4 text-primary" />
-           </div>
-           <span className="font-semibold text-sm tracking-tight">Quick Links</span>
+    <div className="h-full w-full flex flex-col p-4 relative group/widget">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <AnimatedIcon animationSrc="/lottie/Link.json" fallbackIcon={LinkIcon} className="w-5 h-5" />
+          <span className="font-semibold text-sm">Quick Links</span>
         </div>
         {!isAdding && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:bg-primary/10 hover:text-primary transition-colors rounded-full"
+            className="h-6 w-6"
             onClick={() => setIsAdding(true)}
           >
             <Plus className="w-4 h-4" />
@@ -86,76 +84,72 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
         )}
       </div>
 
-      <div className="flex-1 w-full min-h-0 overflow-hidden relative">
-        {isAdding ? (
-          <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-md p-4 flex flex-col justify-center animate-in fade-in zoom-in duration-200 rounded-lg">
-            <div className="space-y-3">
-              <Input
-                placeholder="URL (e.g., youtube.com)"
-                value={newUrl}
-                onChange={(e) => setNewUrl(e.target.value)}
-                className="h-9 text-xs"
-                autoFocus
-              />
-              <Input
-                placeholder="Title (Optional)"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="h-9 text-xs"
-                onKeyDown={(e) => e.key === 'Enter' && addLink()}
-              />
-              <div className="flex gap-2 justify-end mt-2">
-                <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="h-8 px-3 text-xs">Cancel</Button>
-                <Button size="sm" onClick={addLink} className="h-8 px-3 text-xs">Add</Button>
-              </div>
+      {isAdding ? (
+        <div className="flex flex-col gap-2 animate-in fade-in zoom-in duration-200">
+          <Input
+            placeholder="URL (e.g., youtube.com)"
+            value={newUrl}
+            onChange={(e) => setNewUrl(e.target.value)}
+            className="h-8 text-xs"
+            autoFocus
+          />
+          <Input
+            placeholder="Title (Optional)"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="h-8 text-xs"
+            onKeyDown={(e) => e.key === 'Enter' && addLink()}
+          />
+          <div className="flex gap-2 justify-end mt-1">
+            <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="h-7 px-2 text-xs">Cancel</Button>
+            <Button size="sm" onClick={addLink} className="h-7 px-2 text-xs">Add</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-3 overflow-y-auto custom-scrollbar p-1">
+          {links.map((link) => (
+            <div key={link.id} className="group relative flex flex-col items-center gap-1.5">
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 rounded-xl bg-muted/20 hover:bg-muted/40 border border-white/5 flex items-center justify-center transition-all hover:scale-105 hover:shadow-md"
+                title={link.title}
+              >
+                {!imgErrors[link.id] ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={getFaviconUrl(link.url)}
+                    alt={link.title}
+                    className="w-6 h-6 object-contain"
+                    onError={() => setImgErrors(prev => ({ ...prev, [link.id]: true }))}
+                  />
+                ) : (
+                  <Globe className="w-6 h-6 opacity-50" />
+                )}
+              </a>
+              <span className="text-[10px] text-muted-foreground truncate w-full text-center px-1">
+                {link.title}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  removeLink(link.id);
+                }}
+                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity scale-75 hover:scale-100"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-4 gap-3 overflow-y-auto custom-scrollbar p-1 h-full content-start">
-            {links.map((link) => (
-              <div key={link.id} className="group relative flex flex-col items-center gap-1.5">
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-xl bg-muted/20 hover:bg-muted/40 border border-white/5 flex items-center justify-center transition-all hover:scale-105 hover:shadow-md relative overflow-hidden"
-                  title={link.title}
-                >
-                  {!imgErrors[link.id] ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={getFaviconUrl(link.url)}
-                      alt={link.title}
-                      className="w-6 h-6 object-contain"
-                      onError={() => setImgErrors(prev => ({ ...prev, [link.id]: true }))}
-                    />
-                  ) : (
-                    <Globe className="w-6 h-6 opacity-50" />
-                  )}
-                </a>
-                <span className="text-[10px] text-muted-foreground truncate w-full text-center px-1">
-                  {link.title}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    removeLink(link.id);
-                  }}
-                  className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity scale-75 hover:scale-100 z-10 shadow-sm"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-            {links.length === 0 && (
-              <div className="col-span-4 flex flex-col items-center justify-center py-8 text-muted-foreground opacity-60 gap-2 h-full">
-                <Globe className="w-8 h-8 opacity-20" />
-                <span className="text-xs">Add your favorite sites</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          ))}
+          {links.length === 0 && (
+            <div className="col-span-4 flex flex-col items-center justify-center py-4 text-muted-foreground opacity-60 gap-2">
+              <Globe className="w-8 h-8 opacity-20" />
+              <span className="text-xs">Add your favorite sites</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
