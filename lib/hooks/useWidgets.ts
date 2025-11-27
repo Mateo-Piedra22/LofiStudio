@@ -152,47 +152,80 @@ export function useWidgets() {
         return prev;
       }
       
-      const newSpan = getRowsFromSize(resolvedSize);
-      // Column fit constraints (3 columns desktop equivalent): ensure a 1x2 or 1x3 fits vertically
-      const maxPerCol = 3;
-      const totals = [0, 0, 0];
-      const getRows = (w: WidgetConfig) => {
-        if (w.size) {
-          const parts = String(w.size).split('x');
-          const h = Number(parts[1]) || 1;
-          return Math.max(1, Math.min(3, h));
+      // Check if it fits in the 3x3 grid using robust layout simulation
+      const checkGridFit = () => {
+        // Helper to resolve size consistently
+        const resolveSize = (w: WidgetConfig | { type: string, size?: any }) => {
+            if (w.size) return w.size;
+            if (w.type === 'embed') return '2x2';
+            if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
+            
+            const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+            const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
+            const capped = Math.max(1, Math.min(3, rawRows));
+            const rowsInt = Math.ceil(capped);
+            return (`1x${rowsInt}`) as WidgetConfig['size'];
+        };
+
+        const grid = Array(3).fill(null).map(() => Array(3).fill(false));
+        const activeWidgets = prev.filter(w => w.type !== 'SPACER' && w.enabled);
+        
+        // Items to place: existing enabled widgets + new one
+        const itemsToPlace = [
+            ...activeWidgets.map(w => ({ type: w.type, size: resolveSize(w) })), 
+            { type, size: resolvedSize }
+        ];
+
+        for (const item of itemsToPlace) {
+            const parts = String(item.size).split('x');
+            const w = Number(parts[0]) || 1;
+            const h = Number(parts[1]) || 1;
+            
+            let placed = false;
+            // Scan for first fit (row-major)
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    if (placed) break;
+                    
+                    if (r + h > 3 || c + w > 3) continue; // Out of bounds
+                    
+                    let fits = true;
+                    // Check collision
+                    for (let ir = 0; ir < h; ir++) {
+                        for (let ic = 0; ic < w; ic++) {
+                            if (grid[r + ir][c + ic]) {
+                                fits = false;
+                                break;
+                            }
+                        }
+                        if (!fits) break;
+                    }
+                    
+                    if (fits) {
+                        // Mark occupied
+                        for (let ir = 0; ir < h; ir++) {
+                            for (let ic = 0; ic < w; ic++) {
+                                grid[r + ir][c + ic] = true;
+                            }
+                        }
+                        placed = true;
+                    }
+                }
+                if (placed) break;
+            }
+            if (!placed) return false;
         }
-        const grp = (sizeConfig.assignments as any)[w.type] || 'small';
-        const r = (sizeConfig.groups as any)[grp]?.rows ?? 1;
-        return Math.max(1, Math.min(3, Math.ceil(r)));
+        return true;
       };
-      const enabled = prev.filter(w => w.enabled);
-      enabled.forEach((w) => {
-        const desired = getRows(w);
-        const order = [0, 1, 2].sort((a, b) => totals[a] - totals[b]);
-        const requiresTop = desired === maxPerCol;
-        for (const c of order) {
-          if (totals[c] + desired <= maxPerCol && (!requiresTop || totals[c] === 0)) {
-            totals[c] += desired;
-            break;
-          }
-        }
-      });
-      const desiredNew = (() => {
-        const parts = String(resolvedSize).split('x');
-        const h = Number(parts[1]) || 1;
-        return Math.max(1, Math.min(3, h));
-      })();
-      const canPlace = [0, 1, 2].some((c) => {
-        const requiresTop = desiredNew === maxPerCol;
-        return totals[c] + desiredNew <= maxPerCol && (!requiresTop || totals[c] === 0);
-      });
-      if (!canPlace) {
+
+      if (!checkGridFit()) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
         }
         return prev;
       }
+      
+      const newSpan = getRowsFromSize(resolvedSize);
       const newWidget: WidgetConfig = {
         id: crypto.randomUUID(),
         type,
