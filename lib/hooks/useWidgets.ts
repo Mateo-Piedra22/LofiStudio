@@ -117,12 +117,23 @@ export function useWidgets() {
     setWidgets((prev) => {
       const exists = prev.some((w) => w.type === type && w.enabled);
       if (exists) return prev;
-      const spanForSize = (s?: WidgetConfig['size']) => {
+      // Helper to calculate blocks (width * height)
+      const getBlocks = (s?: WidgetConfig['size']) => {
+        if (!s) return 1;
+        const parts = String(s).split('x');
+        const w = Number(parts[0]) || 1;
+        const h = Number(parts[1]) || 1;
+        return w * h;
+      };
+
+      // Helper to calculate rows (height)
+      const getRowsFromSize = (s?: WidgetConfig['size']) => {
         if (!s) return 1;
         const parts = String(s).split('x');
         const h = Number(parts[1]) || 1;
         return Math.max(1, Math.min(3, Math.ceil(h)));
       };
+
       const defaultRows = (() => {
         const groupName = (sizeConfig.assignments as any)[type] || 'small';
         const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
@@ -130,14 +141,18 @@ export function useWidgets() {
         return Math.ceil(capped);
       })();
       const resolvedSize: WidgetConfig['size'] = size || (`1x${defaultRows}` as WidgetConfig['size']);
-      const usedBlocks = prev.filter(w => w.type !== 'SPACER' && w.enabled).reduce((sum, w) => sum + spanForSize(w.size), 0);
-      const newSpan = spanForSize(resolvedSize);
-      if (usedBlocks + newSpan > capacity) {
+      
+      const usedBlocks = prev.filter(w => w.type !== 'SPACER' && w.enabled).reduce((sum, w) => sum + getBlocks(w.size), 0);
+      const newBlocks = getBlocks(resolvedSize);
+      
+      if (usedBlocks + newBlocks > capacity) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('grid-capacity-reached'));
         }
         return prev;
       }
+      
+      const newSpan = getRowsFromSize(resolvedSize);
       // Column fit constraints (3 columns desktop equivalent): ensure a 1x2 or 1x3 fits vertically
       const maxPerCol = 3;
       const totals = [0, 0, 0];

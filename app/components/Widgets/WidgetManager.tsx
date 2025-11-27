@@ -131,6 +131,11 @@ export default function WidgetManager() {
     // Helper to get size (duplicated from below, but needed here)
     const getWSize = (w: WidgetConfig) => {
         if (w.size) return w.size;
+        
+        // Robust fallback for known sizes if size prop is missing
+        if (w.type === 'embed') return '2x2';
+        if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
+        
         const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
         const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
         const capped = Math.max(1, Math.min(3, rawRows));
@@ -141,8 +146,9 @@ export default function WidgetManager() {
     for (const w of widgets) {
       const size = getWSize(w);
       const parts = String(size).split('x');
-      const h = Number(parts[1]) || 1;
-      const blocks = Math.max(1, Math.min(3, Math.ceil(h)));
+      const width = Number(parts[0]) || 1;
+      const height = Number(parts[1]) || 1;
+      const blocks = width * height;
 
       if (blocksUsed + blocks <= limit) {
         result.push(w);
@@ -183,10 +189,24 @@ export default function WidgetManager() {
   const blocksForSize = (s: WidgetConfig['size'] | undefined) => {
     if (!s) return 1;
     const parts = String(s).split('x');
+    const w = Number(parts[0]) || 1;
     const h = Number(parts[1]) || 1;
-    return Math.max(1, Math.min(3, Math.ceil(h)));
+    return w * h;
   };
-  const usedBlocksVisible = realWidgets.reduce((sum, w) => sum + blocksForSize(w.size), 0);
+  
+  const getRobustSize = (w: WidgetConfig) => {
+      if (w.size) return w.size;
+      if (w.type === 'embed') return '2x2';
+      if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
+      
+      const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+      const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
+      const capped = Math.max(1, Math.min(3, rawRows));
+      const rowsInt = Math.ceil(capped);
+      return (`1x${rowsInt}`) as WidgetConfig['size'];
+  };
+
+  const usedBlocksVisible = realWidgets.reduce((sum, w) => sum + blocksForSize(getRobustSize(w)), 0);
   const percent = Math.min(100, Math.round((usedBlocksVisible / capacity) * 100));
   const danger = usedBlocksVisible >= capacity;
   const hiddenCount = 0;
@@ -214,12 +234,7 @@ export default function WidgetManager() {
   };
 
   const getSize = (w: WidgetConfig): WidgetConfig['size'] => {
-    if (w.size) return w.size;
-    const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-    const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-    const capped = Math.max(1, Math.min(3, rawRows));
-    const rowsInt = Math.ceil(capped);
-    return (`1x${rowsInt}`) as WidgetConfig['size'];
+    return getRobustSize(w);
   };
   const getRowSpan = (s: WidgetConfig['size'] | undefined) => {
     if (!s) return 1;
@@ -231,6 +246,7 @@ export default function WidgetManager() {
     if (!s) return 1;
     const v = String(s);
     if (v === '2x1' || v === '2x2') return 2;
+    if (v === '3x1') return 3;
     return 1;
   };
   const spanClassForSize = (s: WidgetConfig['size'] | undefined) => {
@@ -263,9 +279,10 @@ export default function WidgetManager() {
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-5">
         {availableWidgets.map((widget) => {
           const isAdded = widgets.some((w) => w.type === widget.type && w.enabled);
-          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(w.size), 0);
-          const span = widget.size === '1x2' || widget.size === '2x2' ? 2 : 1;
-          const atCapacity = usedBlocks + span > capacity;
+          const usedBlocks = widgets.filter(w => w.enabled).reduce((sum, w) => sum + blocksForSize(getRobustSize(w)), 0);
+          const parts = String(widget.size).split('x');
+          const widgetBlocks = (Number(parts[0]) || 1) * (Number(parts[1]) || 1);
+          const atCapacity = usedBlocks + widgetBlocks > capacity;
           return (
             <button
               key={widget.type}
