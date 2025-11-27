@@ -68,12 +68,14 @@ export default function BreathingWidget() {
     };
 
     return (
-        <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300 relative">
+        <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden p-4 relative group/widget">
             {showWidgetHeaders ? (
-                <div data-slot="header" className="flex items-center justify-between px-2 py-1">
-                    <div className="flex items-center gap-2">
-                        <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-5 h-5" />
-                        <span className="text-lg font-semibold text-foreground">Breathing</span>
+                <div data-slot="header" className="flex items-center justify-between mb-4 shrink-0">
+                    <div className="flex items-center gap-2 text-foreground/90">
+                        <div className="p-1.5 rounded-lg bg-primary/10">
+                            <AnimatedIcon animationSrc="/lottie/Wind.json" fallbackIcon={Wind} className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="font-semibold text-sm tracking-tight">Breathing</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <select

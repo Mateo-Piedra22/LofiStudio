@@ -6,6 +6,7 @@ import { Link2, Trash2, ExternalLink, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import AnimatedIcon from '@/app/components/ui/animated-icon';
 
 interface EmbedWidgetProps {
   id: string;
@@ -81,59 +82,71 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
     setError('');
   };
 
-  if (!embedUrl) {
-    return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center relative">
-        <div className="w-full max-w-xs space-y-4">
-          <div className="flex flex-col items-center gap-2 text-muted-foreground mb-2">
-             <Link2 className="w-8 h-8 opacity-50" />
-             <h3 className="font-medium">Embed Content</h3>
-             <p className="text-xs opacity-70">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Input
-              placeholder="https://..."
-              value={inputUrl}
-              onChange={(e) => setInputUrl(e.target.value)}
-              className="h-9 text-sm"
-              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-            />
-            <Button size="sm" onClick={handleSave}>Embed</Button>
-          </div>
-          {error && <p className="text-xs text-destructive flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full w-full relative group bg-black/5">
-      <iframe
-        src={embedUrl}
-        className="w-full h-full border-0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-        loading="lazy"
-      />
-      
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-         <a 
-           href={embedUrl} 
-           target="_blank" 
-           rel="noopener noreferrer"
-           className="bg-background/80 backdrop-blur text-foreground p-1.5 rounded-md hover:bg-background shadow-sm"
-           title="Open in new tab"
-         >
-           <ExternalLink className="w-3 h-3" />
-         </a>
-         <button 
-           onClick={clearEmbed}
-           className="bg-destructive/80 backdrop-blur text-destructive-foreground p-1.5 rounded-md hover:bg-destructive shadow-sm"
-           title="Remove embed"
-         >
-           <Trash2 className="w-3 h-3" />
-         </button>
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass-widget border text-card-foreground shadow-sm overflow-hidden relative group/widget">
+      {/* Header */}
+      <div data-slot="header" className="flex items-center justify-between p-2 shrink-0 bg-background/40 backdrop-blur-sm z-10 border-b border-border/10">
+         <div className="flex items-center gap-2 text-foreground/90">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+                <AnimatedIcon animationSrc="/lottie/Link.json" fallbackIcon={Link2} className="w-4 h-4 text-primary" />
+            </div>
+            <span className="font-semibold text-sm tracking-tight">Embed</span>
+         </div>
+         {embedUrl && (
+             <div className="flex gap-1 opacity-0 group-hover/widget:opacity-100 transition-opacity">
+                <a 
+                   href={embedUrl} 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="h-6 w-6 flex items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                   title="Open in new tab"
+                 >
+                   <ExternalLink className="w-3 h-3" />
+                 </a>
+                 <Button 
+                   size="icon" 
+                   variant="ghost" 
+                   className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                   onClick={clearEmbed}
+                   title="Remove embed"
+                 >
+                   <Trash2 className="w-3 h-3" />
+                 </Button>
+             </div>
+         )}
+      </div>
+
+      <div className="flex-1 w-full relative min-h-0 bg-background/20">
+          {embedUrl ? (
+             <iframe
+                src={embedUrl}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+                loading="lazy"
+              />
+          ) : (
+             <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-full max-w-xs space-y-4">
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground mb-2">
+                     <h3 className="font-medium">Embed Content</h3>
+                     <p className="text-xs opacity-70">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="https://..."
+                      value={inputUrl}
+                      onChange={(e) => setInputUrl(e.target.value)}
+                      className="h-9 text-sm"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                    />
+                    <Button size="sm" onClick={handleSave}>Embed</Button>
+                  </div>
+                  {error && <p className="text-xs text-destructive flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
+                </div>
+             </div>
+          )}
       </div>
     </div>
   );
