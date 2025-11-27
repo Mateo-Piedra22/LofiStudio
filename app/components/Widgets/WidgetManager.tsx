@@ -132,15 +132,15 @@ export default function WidgetManager() {
     const getWSize = (w: WidgetConfig) => {
         if (w.size) return w.size;
         
-        // Robust fallback for known sizes if size prop is missing
-        if (w.type === 'embed') return '2x2';
-        if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
-        
         const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-        const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-        const capped = Math.max(1, Math.min(3, rawRows));
-        const rowsInt = Math.ceil(capped);
-        return (`1x${rowsInt}`) as WidgetConfig['size'];
+        const group = (sizeConfig.groups as any)[groupName];
+        const rawRows = group?.rows ?? 1;
+        const rawCols = group?.cols ?? 1;
+        
+        const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+        const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+        
+        return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
     };
 
     for (const w of widgets) {
@@ -166,26 +166,6 @@ export default function WidgetManager() {
   const gridItems = visibleWidgets; // Use the pruned list
   const realWidgets = gridItems.filter(w => w.type !== 'SPACER' && w.enabled);
 
-  const availableWidgets: { type: WidgetConfig['type']; label: string; iconName: string; size: WidgetConfig['size'] }[] = [
-    { type: 'clock', label: 'Clock', iconName: 'Clock', size: '1x1' },
-    { type: 'worldtime', label: 'World Time', iconName: 'Clock', size: '1x1' },
-    { type: 'weather', label: 'Weather', iconName: 'Cloud', size: '1x1' },
-    { type: 'gif', label: 'GIF', iconName: 'Image', size: '1x2' },
-    { type: 'tasks', label: 'Tasks', iconName: 'CheckSquare', size: '1x2' },
-    { type: 'notes', label: 'Notes', iconName: 'StickyNote', size: '1x2' },
-    { type: 'quote', label: 'Quote', iconName: 'Quote', size: '1x1' },
-    { type: 'calendar', label: 'Calendar', iconName: 'Calendar', size: '1x2' },
-    { type: 'breathing', label: 'Breathing', iconName: 'Wind', size: '1x2' },
-    { type: 'dictionary', label: 'Dictionary', iconName: 'Book', size: '1x2' },
-    { type: 'timer', label: 'Timer', iconName: 'Timer', size: '1x1' },
-    { type: 'habit', label: 'Habits', iconName: 'Activity', size: '1x2' },
-    { type: 'focus', label: 'Focus', iconName: 'Target', size: '2x1' },
-    { type: 'calculator', label: 'Calculator', iconName: 'Calculator', size: '1x2' },
-    { type: 'quicklinks', label: 'Quick Links', iconName: 'Link', size: '2x1' },
-    { type: 'flashcard', label: 'Flashcards', iconName: 'BookOpen', size: '2x1' },
-    { type: 'embed', label: 'Embed', iconName: 'Globe', size: '2x2' },
-  ];
-
   const blocksForSize = (s: WidgetConfig['size'] | undefined) => {
     if (!s) return 1;
     const parts = String(s).split('x');
@@ -196,15 +176,42 @@ export default function WidgetManager() {
   
   const getRobustSize = (w: WidgetConfig) => {
       if (w.size) return w.size;
-      if (w.type === 'embed') return '2x2';
-      if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
       
       const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-      const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-      const capped = Math.max(1, Math.min(3, rawRows));
-      const rowsInt = Math.ceil(capped);
-      return (`1x${rowsInt}`) as WidgetConfig['size'];
+      const group = (sizeConfig.groups as any)[groupName];
+      const rawRows = group?.rows ?? 1;
+      const rawCols = group?.cols ?? 1;
+      
+      const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+      const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+      
+      return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
   };
+
+  const WIDGET_DEFINITIONS = [
+    { type: 'clock', label: 'Clock', iconName: 'Clock' },
+    { type: 'worldtime', label: 'World Time', iconName: 'Clock' },
+    { type: 'weather', label: 'Weather', iconName: 'Cloud' },
+    { type: 'gif', label: 'GIF', iconName: 'Image' },
+    { type: 'tasks', label: 'Tasks', iconName: 'CheckSquare' },
+    { type: 'notes', label: 'Notes', iconName: 'StickyNote' },
+    { type: 'quote', label: 'Quote', iconName: 'Quote' },
+    { type: 'calendar', label: 'Calendar', iconName: 'Calendar' },
+    { type: 'breathing', label: 'Breathing', iconName: 'Wind' },
+    { type: 'dictionary', label: 'Dictionary', iconName: 'Book' },
+    { type: 'timer', label: 'Timer', iconName: 'Timer' },
+    { type: 'habit', label: 'Habits', iconName: 'Activity' },
+    { type: 'focus', label: 'Focus', iconName: 'Target' },
+    { type: 'calculator', label: 'Calculator', iconName: 'Calculator' },
+    { type: 'quicklinks', label: 'Quick Links', iconName: 'Link' },
+    { type: 'flashcard', label: 'Flashcards', iconName: 'BookOpen' },
+    { type: 'embed', label: 'Embed', iconName: 'Globe' },
+  ] as const;
+
+  const availableWidgets = WIDGET_DEFINITIONS.map(def => ({
+      ...def,
+      size: getRobustSize({ type: def.type } as WidgetConfig)
+  }));
 
   const usedBlocksVisible = realWidgets.reduce((sum, w) => sum + blocksForSize(getRobustSize(w)), 0);
   const percent = Math.min(100, Math.round((usedBlocksVisible / capacity) * 100));
@@ -348,7 +355,7 @@ export default function WidgetManager() {
                   <div key={`base-${i}`} className="h-full w-full rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
                 ))}
               </div>
-              <div className={cn('relative z-10 grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
+              <div className={cn('relative z-10 grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-dense' : cols === 2 ? 'grid-cols-2 grid-flow-dense' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
               {gridItems.map((item) => {
                 const size = getSize(item);
                 const cls = spanClassForSize(size);

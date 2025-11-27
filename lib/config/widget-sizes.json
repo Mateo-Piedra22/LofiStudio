@@ -1,9 +1,11 @@
 {
   "groups": {
-    "small": { "rows": 1 },
-    "medium": { "rows": 2 },
-    "large": { "rows": 3 },
-    "special": { "rows": 2.5 }
+    "small": { "rows": 1, "cols": 1 },
+    "medium": { "rows": 2, "cols": 1 },
+    "large": { "rows": 3, "cols": 1 },
+    "wide": { "rows": 1, "cols": 2 },
+    "square": { "rows": 2, "cols": 2 },
+    "special": { "rows": 2.5, "cols": 1 }
   },
   "assignments": {
     "clock": "small",
@@ -18,10 +20,10 @@
     "tasks": "medium",
     "calendar": "medium",
     "habit": "medium",
-    "focus": "small",
+    "focus": "wide",
     "calculator": "medium",
-    "quicklinks": "small",
-    "flashcard": "small",
-    "embed": "medium"
+    "quicklinks": "wide",
+    "flashcard": "wide",
+    "embed": "square"
   }
 }

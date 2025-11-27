@@ -83,27 +83,6 @@ export function useWidgets() {
     return () => window.removeEventListener('responsive:capacity', handler as any);
   }, []);
 
-  const DEFAULT_SIZE: Record<WidgetConfig['type'], { w: number; h: number }> = {
-    clock: { w: tileW, h: tileH },
-    worldtime: { w: tileW, h: tileH },
-    weather: { w: tileW, h: tileH },
-    gif: { w: tileW, h: tileH },
-    tasks: { w: tileW, h: tileH },
-    notes: { w: tileW, h: tileH },
-    quote: { w: tileW, h: tileH },
-    calendar: { w: tileW, h: tileH },
-    breathing: { w: tileW, h: tileH },
-    dictionary: { w: tileW, h: tileH },
-    timer: { w: tileW, h: tileH },
-    habit: { w: tileW, h: tileH },
-    focus: { w: tileW, h: tileH },
-    calculator: { w: tileW, h: tileH },
-    quicklinks: { w: tileW, h: tileH },
-    flashcard: { w: tileW, h: tileH },
-    embed: { w: tileW, h: tileH },
-    SPACER: { w: tileW, h: tileH },
-  };
-
   const presets: WidgetPreset[] = (presetsJson as any).presets as any;
   // We need to access the background setter, but it's in another component.
   // We can store the background preference in localStorage directly here as a side effect of applying a preset.
@@ -134,13 +113,16 @@ export function useWidgets() {
         return Math.max(1, Math.min(3, Math.ceil(h)));
       };
 
-      const defaultRows = (() => {
+      const defaultSize = (() => {
         const groupName = (sizeConfig.assignments as any)[type] || 'small';
-        const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-        const capped = Math.max(1, Math.min(3, rawRows));
-        return Math.ceil(capped);
+        const group = (sizeConfig.groups as any)[groupName];
+        const rawRows = group?.rows ?? 1;
+        const rawCols = group?.cols ?? 1;
+        const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+        const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+        return `${colsInt}x${rowsInt}` as WidgetConfig['size'];
       })();
-      const resolvedSize: WidgetConfig['size'] = size || (`1x${defaultRows}` as WidgetConfig['size']);
+      const resolvedSize: WidgetConfig['size'] = size || defaultSize;
       
       const usedBlocks = prev.filter(w => w.type !== 'SPACER' && w.enabled).reduce((sum, w) => sum + getBlocks(w.size), 0);
       const newBlocks = getBlocks(resolvedSize);
@@ -157,14 +139,16 @@ export function useWidgets() {
         // Helper to resolve size consistently
         const resolveSize = (w: WidgetConfig | { type: string, size?: any }) => {
             if (w.size) return w.size;
-            if (w.type === 'embed') return '2x2';
-            if (['quicklinks', 'flashcard', 'focus'].includes(w.type)) return '2x1';
             
             const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-            const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-            const capped = Math.max(1, Math.min(3, rawRows));
-            const rowsInt = Math.ceil(capped);
-            return (`1x${rowsInt}`) as WidgetConfig['size'];
+            const group = (sizeConfig.groups as any)[groupName];
+            const rawRows = group?.rows ?? 1;
+            const rawCols = group?.cols ?? 1;
+            
+            const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+            const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+            
+            return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
         };
 
         const grid = Array(3).fill(null).map(() => Array(3).fill(false));
