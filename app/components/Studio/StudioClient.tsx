@@ -957,7 +957,7 @@ export default function StudioClient() {
 
         {/* Floating Player */}
         <div className={(isEditingLayout || isZenMode) ? 'opacity-0 pointer-events-none transition-opacity' : 'transition-opacity'}>
-          <Player currentVideo={currentVideo} setCurrentVideo={setCurrentVideo} />
+          <Player currentVideo={currentVideo} setCurrentVideo={setCurrentVideo} onOpenStats={() => setShowStats(true)} />
         </div>
 
         
@@ -1044,9 +1044,6 @@ export default function StudioClient() {
              <div className="md:hidden mt-3 flex items-center justify-center gap-3">
               <Button onClick={() => setShowSettings(true)} variant="secondary" size="icon" className="h-10 w-10 rounded-full">
                 <SettingsIcon className="w-5 h-5" />
-              </Button>
-              <Button onClick={() => setShowStats(true)} variant="ghost" size="icon" className="h-10 w-10 rounded-full">
-                <BarChart3 className="w-5 h-5" />
               </Button>
             </div>
           </div>

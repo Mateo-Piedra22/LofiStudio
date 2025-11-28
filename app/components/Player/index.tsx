@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
-import { Pause, Play, Music2, ChevronUp, ChevronDown, Search, Shuffle, Repeat, SkipBack, SkipForward, List, X } from 'lucide-react'
+import { Pause, Play, Music2, ChevronUp, ChevronDown, Search, Shuffle, Repeat, SkipBack, SkipForward, List, X, BarChart3 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -28,9 +28,10 @@ export interface VideoInfo {
 interface PlayerProps {
   currentVideo: VideoInfo | null;
   setCurrentVideo: (video: VideoInfo | null) => void;
+  onOpenStats?: () => void;
 }
 
-export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
+export default function Player({ currentVideo, setCurrentVideo, onOpenStats }: PlayerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useLocalStorage('playerVolume', 50);
@@ -604,7 +605,7 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
               <p className="text-sm text-muted-foreground">No music selected</p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 flex-wrap justify-end">
             <Button
               onClick={handlePlayPause}
               variant="ghost"
@@ -625,6 +626,11 @@ export default function Player({ currentVideo, setCurrentVideo }: PlayerProps) {
             >
               {mode === 'radio' ? 'Lofi Radio' : 'YouTube'}
             </Badge>
+            {onOpenStats && (
+              <Button onClick={onOpenStats} variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-accent/10 transition-colors">
+                <BarChart3 className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            )}
             <button onClick={() => setIsExpanded(true)} className="p-2 rounded-full hover:bg-accent/10 transition-colors">
               <AnimatedIcon animationSrc="/lottie/ChevronUp.json" fallbackIcon={ChevronUp} className="w-4 h-4 text-muted-foreground" />
             </button>
