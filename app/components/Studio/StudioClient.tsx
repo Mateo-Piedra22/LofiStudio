@@ -850,11 +850,13 @@ export default function StudioClient() {
             const cols = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 3 : (isLandscape ? 2 : 1);
             const cap = currentBreakpoint === 'lg' || currentBreakpoint === 'md' ? 9 : (isLandscape ? 4 : 3);
             const board = widgets.slice(0, cap);
-            const rowsFor = (t: string) => {
+            const getSizeFromConfig = (t: string) => {
               const groupName = (sizeConfig.assignments as any)[t] || 'small';
-              const rawRows = (sizeConfig.groups as any)[groupName]?.rows ?? 1;
-              const capped = Math.max(1, Math.min(3, rawRows));
-              return Math.ceil(capped);
+              const group = (sizeConfig.groups as any)[groupName];
+              return {
+                rows: Math.ceil(Math.max(1, Math.min(3, group?.rows ?? 1))),
+                cols: Math.ceil(Math.max(1, Math.min(3, group?.cols ?? 1)))
+              };
             };
             const sizeToClasses = (s?: string) => {
               if (s === '2x1') return cols === 3 ? 'col-span-1 lg:col-span-2 row-span-1' : cols === 2 ? 'col-span-2 row-span-1' : 'col-span-1 row-span-1';
@@ -866,14 +868,14 @@ export default function StudioClient() {
             };
             return (
               <div
-                className={cn('grid gap-3', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
+                className={cn('grid gap-3 grid-flow-dense', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')}
                 key={currentBreakpoint}
                 style={{ gridAutoRows: `${rowHeight}px` }}
               >
                 {board.map(widget => {
                   const isSpacer = widget.type === 'SPACER' || !widget.enabled;
-                  const rows = rowsFor(widget.type);
-                  const fallbackSize = `1x${rows}`;
+                  const { rows, cols: wCols } = getSizeFromConfig(widget.type);
+                  const fallbackSize = `${wCols}x${rows}`;
                   const spanCls = isSpacer ? 'col-span-1 row-span-1' : sizeToClasses(widget.size || fallbackSize);
                   if (isSpacer) {
                     return (
