@@ -16,6 +16,22 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.4.1',
+    date: '2025-11-27',
+    title: 'Grid Engine Perfection',
+    features: [
+      'Smart Grid Packing: The layout engine now intelligently fills gaps, ensuring a compact and neat workspace',
+      'Unified Widget Sizing: Widget dimensions are now centrally managed, making future updates smoother and more consistent'
+    ],
+    fixes: [
+      'Accurate Capacity Counting: Fixed an issue where larger widgets weren\'t counting correctly towards the grid limit',
+      'Visual Sync Resolved: Eliminated discrepancies between the customization preview and the main dashboard',
+      'Smart Placement: Widgets now properly respect grid boundaries and won\'t be placed if they don\'t fit, preventing layout breaks',
+      'Spacer Logic Optimized: Invisible spacers now behave predictably, preventing overflow and layout shifts'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.4.0',
     date: '2025-11-26',
     title: 'Productivity & Knowledge Widgets Pack',
