@@ -20,10 +20,10 @@
     "tasks": "medium",
     "calendar": "medium",
     "habit": "medium",
-    "focus": "wide",
+    "focus": "small",
     "calculator": "medium",
     "quicklinks": "wide",
-    "flashcard": "wide",
+    "flashcard": "small",
     "embed": "square"
   }
 }

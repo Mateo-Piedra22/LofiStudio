@@ -74,21 +74,21 @@ export default function DailyFocusWidget({ id, settings }: DailyFocusWidgetProps
   };
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300 group">
       {showWidgetHeaders && (
         <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Target.json" fallbackIcon={Target} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">Daily Focus</span>
+            <span className="text-lg font-semibold text-foreground/90">Daily Focus</span>
           </div>
           {!isEditing && focusData.text && (
              <Button 
                variant="ghost" 
                size="sm" 
-               className="h-8 w-8 p-0" 
+               className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-white/10" 
                onClick={startEditing}
              >
-               <Pencil className="w-4 h-4" />
+               <Pencil className="w-4 h-4 text-muted-foreground" />
              </Button>
           )}
         </div>
@@ -96,40 +96,51 @@ export default function DailyFocusWidget({ id, settings }: DailyFocusWidgetProps
 
       <div data-slot="content" className="flex-1 w-full flex flex-col items-center justify-center relative overflow-hidden">
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="w-full max-w-md">
-            <label className="block text-center text-lg font-medium mb-3 text-muted-foreground">
-              What is your main goal today?
+          <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col items-center">
+            <label className="block text-center text-sm font-medium mb-4 text-muted-foreground/80 uppercase tracking-widest">
+              What is your main goal?
             </label>
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="w-full bg-transparent border-b-2 border-primary/50 text-center text-2xl font-semibold py-2 focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/30"
-              placeholder="Focus on..."
+              className="w-full bg-transparent border-b border-white/20 text-center text-2xl font-light py-2 focus:outline-none focus:border-primary/70 transition-all placeholder:text-muted-foreground/20 text-foreground"
+              placeholder="..."
             />
           </form>
         ) : (
-          <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+          <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
             <button
               onClick={toggleComplete}
-              className={cn(
-                "flex items-center gap-3 text-2xl font-bold transition-all duration-300 hover:scale-105",
-                focusData.completed ? "text-muted-foreground line-through decoration-primary decoration-2" : "text-foreground"
-              )}
+              className="flex flex-col items-center gap-4 group/btn"
             >
               <div className={cn(
-                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors",
-                focusData.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/50 group-hover:border-primary"
+                "w-12 h-12 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-500",
+                focusData.completed 
+                  ? "bg-primary/90 border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-110" 
+                  : "border-white/20 hover:border-primary/50 hover:bg-white/5"
               )}>
-                {focusData.completed && <CheckCircle2 className="w-5 h-5" />}
+                {focusData.completed ? (
+                   <CheckCircle2 className="w-6 h-6 text-primary-foreground" />
+                ) : (
+                   <div className="w-3 h-3 rounded-full bg-white/10 group-hover/btn:bg-primary/50 transition-colors" />
+                )}
               </div>
-              {focusData.text}
+              
+              <span className={cn(
+                "text-2xl md:text-3xl font-light text-center transition-all duration-500 px-4 leading-tight",
+                focusData.completed 
+                  ? "text-muted-foreground line-through decoration-primary/50 decoration-1 opacity-50 blur-[0.5px]" 
+                  : "text-foreground/90"
+              )}>
+                {focusData.text}
+              </span>
             </button>
             
             {focusData.completed && (
-              <p className="text-sm font-medium text-primary animate-bounce">
-                Good job! 🎉
+              <p className="text-xs font-medium text-primary/80 animate-pulse uppercase tracking-widest">
+                Completed
               </p>
             )}
           </div>

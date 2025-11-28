@@ -68,18 +68,18 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
   };
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders && (
         <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Link.json" fallbackIcon={LinkIcon} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">Quick Links</span>
+            <span className="text-lg font-semibold text-foreground/90">Quick Links</span>
           </div>
           {!isAdding && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 rounded-full hover:bg-white/10"
               onClick={() => setIsAdding(true)}
             >
               <Plus className="w-4 h-4" />
@@ -88,37 +88,37 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
         </div>
       )}
 
-      <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden">
+      <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden flex flex-col justify-center">
         {isAdding ? (
-          <div className="flex flex-col gap-2 animate-in fade-in zoom-in duration-200">
+          <div className="flex flex-col gap-3 animate-in fade-in zoom-in duration-200 bg-white/5 p-3 rounded-xl border border-white/5">
             <Input
               placeholder="URL (e.g., youtube.com)"
               value={newUrl}
               onChange={(e) => setNewUrl(e.target.value)}
-              className="h-8 text-xs"
+              className="h-9 text-xs bg-white/5 border-white/10 focus-visible:ring-white/20"
               autoFocus
             />
             <Input
               placeholder="Title (Optional)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="h-8 text-xs"
+              className="h-9 text-xs bg-white/5 border-white/10 focus-visible:ring-white/20"
               onKeyDown={(e) => e.key === 'Enter' && addLink()}
             />
             <div className="flex gap-2 justify-end mt-1">
-              <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="h-7 px-2 text-xs">Cancel</Button>
-              <Button size="sm" onClick={addLink} className="h-7 px-2 text-xs">Add</Button>
+              <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="h-8 px-3 text-xs hover:bg-white/10 rounded-lg">Cancel</Button>
+              <Button size="sm" onClick={addLink} className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-foreground rounded-lg">Add</Button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-3 overflow-y-auto custom-scrollbar p-1">
+          <div className="grid grid-cols-4 gap-y-4 gap-x-2 overflow-y-auto custom-scrollbar p-1 place-items-center content-center h-full">
             {links.map((link) => (
-              <div key={link.id} className="group relative flex flex-col items-center gap-1.5">
+              <div key={link.id} className="group relative flex flex-col items-center gap-2 w-full">
                 <a
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-xl bg-muted/20 hover:bg-muted/40 border border-white/5 flex items-center justify-center transition-all hover:scale-105 hover:shadow-md"
+                  className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:bg-white/10 hover:shadow-lg hover:shadow-white/5"
                   title={link.title}
                 >
                   {!imgErrors[link.id] ? (
@@ -126,14 +126,14 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
                     <img
                       src={getFaviconUrl(link.url)}
                       alt={link.title}
-                      className="w-6 h-6 object-contain"
+                      className="w-7 h-7 object-contain drop-shadow-sm"
                       onError={() => setImgErrors(prev => ({ ...prev, [link.id]: true }))}
                     />
                   ) : (
-                    <Globe className="w-6 h-6 opacity-50" />
+                    <Globe className="w-7 h-7 opacity-60 text-foreground/80" />
                   )}
                 </a>
-                <span className="text-[10px] text-muted-foreground truncate w-full text-center px-1">
+                <span className="text-[10px] font-medium text-muted-foreground/80 truncate w-full text-center px-0.5 leading-tight group-hover:text-foreground transition-colors">
                   {link.title}
                 </span>
                 <button
@@ -141,16 +141,18 @@ export default function QuickLinksWidget({ id, settings }: QuickLinksWidgetProps
                     e.preventDefault();
                     removeLink(link.id);
                   }}
-                  className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity scale-75 hover:scale-100"
+                  className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all scale-75 hover:scale-100 shadow-sm"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5" />
                 </button>
               </div>
             ))}
             {links.length === 0 && (
-              <div className="col-span-4 flex flex-col items-center justify-center py-4 text-muted-foreground opacity-60 gap-2">
-                <Globe className="w-8 h-8 opacity-20" />
-                <span className="text-xs">Add your favorite sites</span>
+              <div className="col-span-4 flex flex-col items-center justify-center py-4 text-muted-foreground opacity-60 gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 border-dashed">
+                    <Globe className="w-7 h-7 opacity-30" />
+                </div>
+                <span className="text-xs font-medium">Add your favorite sites</span>
               </div>
             )}
           </div>

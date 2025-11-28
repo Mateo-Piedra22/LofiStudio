@@ -85,12 +85,12 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
   };
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders && (
         <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Video.json" fallbackIcon={Video} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">Embed</span>
+            <span className="text-lg font-semibold text-foreground/90">Embed</span>
           </div>
           {embedUrl && (
             <div className="flex items-center gap-1">
@@ -99,7 +99,7 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted/50 transition-colors",
+                  "h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors",
                   "text-muted-foreground hover:text-foreground"
                 )}
                 title="Open in new tab"
@@ -109,7 +109,7 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 p-0 text-destructive/80 hover:text-destructive hover:bg-destructive/10 rounded-full"
                 onClick={clearEmbed}
                 title="Clear embed"
               >
@@ -120,33 +120,37 @@ export default function EmbedWidget({ id, settings }: EmbedWidgetProps) {
         </div>
       )}
 
-      <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden rounded-lg bg-black/5 dark:bg-black/20">
+      <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden rounded-xl bg-white/5 border border-white/5">
         {!embedUrl ? (
           <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-full max-w-xs space-y-4">
-              <div className="flex flex-col items-center gap-2 text-muted-foreground mb-2">
-                 <Link2 className="w-8 h-8 opacity-50" />
-                 <h3 className="font-medium">Embed Content</h3>
-                 <p className="text-xs opacity-70">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
+            <div className="w-full max-w-xs space-y-6 flex flex-col items-center">
+              <div className="flex flex-col items-center gap-3 text-muted-foreground mb-2">
+                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+                    <Link2 className="w-8 h-8 opacity-40" />
+                 </div>
+                 <div className="space-y-1">
+                   <h3 className="font-medium text-foreground/90">Embed Content</h3>
+                   <p className="text-xs opacity-60 max-w-[200px]">Paste a URL from Spotify, YouTube, or other embeddable sites.</p>
+                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full">
                 <Input
                   placeholder="https://..."
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
-                  className="h-9 text-sm"
+                  className="h-9 text-sm bg-white/5 border-white/10 focus-visible:ring-white/20"
                   onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 />
-                <Button size="sm" onClick={handleSave}>Embed</Button>
+                <Button size="sm" onClick={handleSave} className="h-9 bg-white/10 hover:bg-white/20 text-foreground">Embed</Button>
               </div>
-              {error && <p className="text-xs text-destructive flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
+              {error && <p className="text-xs text-destructive flex items-center justify-center gap-1 animate-in slide-in-from-top-1"><AlertCircle className="w-3 h-3"/> {error}</p>}
             </div>
           </div>
         ) : (
           <iframe
             src={embedUrl}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 rounded-xl opacity-95 hover:opacity-100 transition-opacity"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
             loading="lazy"

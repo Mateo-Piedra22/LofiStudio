@@ -81,17 +81,17 @@ export default function HabitTrackerWidget({ id, settings }: HabitTrackerWidgetP
   };
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders && (
-        <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
+        <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-3">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Activity.json" fallbackIcon={Activity} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">Habits</span>
+            <span className="text-lg font-semibold text-foreground/90">Habits</span>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 rounded-full hover:bg-white/10"
             onClick={() => setIsAdding(!isAdding)}
           >
             <Plus className="w-4 h-4" />
@@ -99,44 +99,46 @@ export default function HabitTrackerWidget({ id, settings }: HabitTrackerWidgetP
         </div>
       )}
 
-      <div data-slot="content" className="flex-1 overflow-y-auto space-y-3 min-h-0 pr-1 custom-scrollbar">
+      <div data-slot="content" className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1 custom-scrollbar">
         {isAdding && (
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-3 animate-in slide-in-from-top-2">
             <Input
               value={newHabitName}
               onChange={(e) => setNewHabitName(e.target.value)}
               placeholder="New habit..."
-              className="h-8 text-xs"
+              className="h-9 text-xs bg-white/5 border-white/10 focus-visible:ring-white/20"
               onKeyDown={(e) => e.key === 'Enter' && addHabit()}
               autoFocus
             />
-            <Button size="sm" onClick={addHabit} className="h-8 px-2">Add</Button>
+            <Button size="sm" onClick={addHabit} className="h-9 px-3 bg-white/10 hover:bg-white/20 text-foreground">Add</Button>
           </div>
         )}
 
         {habits.length === 0 && !isAdding && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs text-center opacity-60">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs text-center opacity-60 gap-2">
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+               <Activity className="w-6 h-6 opacity-50" />
+            </div>
             <p>No habits yet.</p>
-            <p>Click + to start tracking.</p>
           </div>
         )}
 
         {habits.map((habit) => (
-          <div key={habit.id} className="group">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-medium truncate max-w-[120px]" title={habit.name}>
+          <div key={habit.id} className="group bg-white/5 rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium truncate max-w-[140px] text-foreground/90 pl-1" title={habit.name}>
                 {habit.name}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive/80 hover:text-destructive hover:bg-destructive/10 rounded-full"
                 onClick={() => deleteHabit(habit.id)}
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </div>
-            <div className="flex justify-between gap-1">
+            <div className="flex justify-between gap-1.5">
               {days.map((day, i) => {
                 const dateStr = format(day, 'yyyy-MM-dd');
                 const isCompleted = habit.completedDates.includes(dateStr);
@@ -147,15 +149,19 @@ export default function HabitTrackerWidget({ id, settings }: HabitTrackerWidgetP
                     key={i}
                     onClick={() => toggleHabit(habit.id, day)}
                     className={cn(
-                      "flex-1 aspect-square rounded-full flex items-center justify-center text-[8px] transition-all duration-200 border",
+                      "flex-1 aspect-square rounded-full flex items-center justify-center text-[9px] font-medium transition-all duration-300",
                       isCompleted 
-                        ? "bg-primary text-primary-foreground border-primary" 
-                        : "bg-muted/30 border-muted-foreground/20 hover:border-primary/50",
-                      isToday && !isCompleted && "ring-1 ring-primary/30"
+                        ? "bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.5)] scale-105" 
+                        : "bg-transparent border border-white/10 text-muted-foreground hover:border-white/30",
+                      isToday && !isCompleted && "border-primary/50 text-primary animate-pulse"
                     )}
                     title={format(day, 'MMM d')}
                   >
-                    {isCompleted ? <Check className="w-3 h-3" /> : format(day, 'EEEEE')}
+                    {isCompleted ? (
+                       <Check className="w-3 h-3" /> 
+                    ) : (
+                       <span className="opacity-70">{format(day, 'EEEEE')}</span>
+                    )}
                   </button>
                 );
               })}

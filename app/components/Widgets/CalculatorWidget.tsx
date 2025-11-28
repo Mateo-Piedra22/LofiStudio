@@ -106,40 +106,43 @@ export default function CalculatorWidget({ id, settings }: CalculatorWidgetProps
   ];
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders && (
         <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Calculator.json" fallbackIcon={CalculatorIcon} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">Calculator</span>
+            <span className="text-lg font-semibold text-foreground/90">Calculator</span>
           </div>
         </div>
       )}
 
       <div data-slot="content" className="flex-1 w-full flex flex-col min-h-0 relative">
-        <div className="flex-1 flex flex-col justify-end items-end px-2 pb-2 min-h-0">
-          <div className="text-[10px] text-muted-foreground space-y-0.5 w-full text-right mb-1 opacity-60">
+        <div className="flex-1 flex flex-col justify-end items-end px-3 pb-3 min-h-0">
+          <div className="text-[10px] text-muted-foreground/60 space-y-0.5 w-full text-right mb-1 opacity-60 font-mono">
             {history.map((h, i) => (
               <div key={i} className="truncate">{h}</div>
             ))}
           </div>
           <div className="text-xs text-muted-foreground h-4">{equation}</div>
-          <div className="text-3xl font-light tracking-wider truncate w-full text-right">
+          <div className="text-4xl font-light tracking-tight truncate w-full text-right text-foreground/90">
             {display}
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 h-[60%]">
+        <div className="grid grid-cols-4 gap-2 h-[65%] w-full max-w-[280px] mx-auto">
           {buttons.map((btn, i) => (
             <button
               key={i}
               onClick={btn.onClick}
               className={cn(
-                "rounded-lg flex items-center justify-center text-sm transition-all active:scale-95 hover:bg-muted/30",
-                btn.cls,
-                btn.isSpecial ? "" : "bg-muted/10 glass-sm"
+                "rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 active:scale-90 shadow-sm",
+                btn.cls ? btn.cls : "bg-white/5 hover:bg-white/10 text-foreground",
+                btn.label === 'C' || btn.label === '⌫' ? "text-destructive/80 bg-destructive/5 hover:bg-destructive/10" : "",
+                ['÷', '×', '-', '+', '='].includes(btn.label) && !btn.isSpecial ? "bg-primary/10 text-primary hover:bg-primary/20" : "",
+                btn.isSpecial ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-lg" : "",
+                btn.label === '0' ? "col-span-2 w-full rounded-2xl pl-6 justify-start" : "aspect-square"
               )}
-              style={btn.label === '=' ? { gridRow: 'span 2' } : btn.label === '0' ? { gridColumn: 'span 2' } : {}}
+              style={btn.label === '=' ? { gridRow: 'span 2', borderRadius: '1rem' } : btn.label === '0' ? { gridColumn: 'span 2' } : {}}
             >
               {btn.label}
             </button>

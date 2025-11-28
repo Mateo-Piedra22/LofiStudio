@@ -165,12 +165,12 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
   const currentCard = cards[currentIndex];
 
   return (
-    <div data-ui="widget" className="h-full w-full flex flex-col rounded-xl glass border text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
+    <div data-ui="widget" className="h-full w-full flex flex-col rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 text-card-foreground shadow-sm overflow-hidden p-4 hover:shadow-lg transition-shadow duration-300">
       {showWidgetHeaders && (
         <div data-slot="header" className="flex items-center justify-between px-2 py-1 mb-2">
           <div className="flex items-center gap-2">
             <AnimatedIcon animationSrc="/lottie/Book.json" fallbackIcon={BookOpen} className="w-5 h-5" />
-            <span className="text-lg font-semibold text-foreground">
+            <span className="text-lg font-semibold text-foreground/90">
               {isEditing ? 'Edit Deck' : 'Flashcards'}
             </span>
             {!isEditing && cards.length > 0 && (
@@ -182,19 +182,19 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
           <div className="flex items-center gap-1">
             {!isEditing ? (
               <>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShuffle} title="Shuffle" disabled={cards.length === 0}>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white/10 rounded-full" onClick={handleShuffle} title="Shuffle" disabled={cards.length === 0}>
                   <Shuffle className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={startEditing} title="Edit Deck">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white/10 rounded-full" onClick={startEditing} title="Edit Deck">
                   <Edit2 className="w-4 h-4" />
                 </Button>
               </>
             ) : (
               <>
-                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10" onClick={() => setIsEditing(false)}>
+                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 rounded-full" onClick={() => setIsEditing(false)}>
                    <X className="w-4 h-4" />
                  </Button>
-                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-500 hover:bg-green-500/10" onClick={saveEditing}>
+                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-500 hover:bg-green-500/10 rounded-full" onClick={saveEditing}>
                    <Save className="w-4 h-4" />
                  </Button>
               </>
@@ -205,39 +205,39 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
 
       <div data-slot="content" className="flex-1 w-full min-h-0 relative overflow-hidden flex flex-col">
         {isEditing ? (
-          <div className="flex flex-col h-full bg-background/50 backdrop-blur-md rounded-lg p-2">
+          <div className="flex flex-col h-full bg-black/20 rounded-xl p-3 border border-white/5">
             <div className="flex gap-2 mb-3">
               <Input 
                 placeholder="Q" 
                 value={newQ} 
                 onChange={e => setNewQ(e.target.value)} 
-                className="h-8 text-xs flex-1"
+                className="h-9 text-xs flex-1 bg-white/5 border-white/10 focus-visible:ring-white/20"
               />
               <Input 
                 placeholder="A" 
                 value={newA} 
                 onChange={e => setNewA(e.target.value)} 
-                className="h-8 text-xs flex-1"
+                className="h-9 text-xs flex-1 bg-white/5 border-white/10 focus-visible:ring-white/20"
               />
-              <Button size="sm" onClick={addCard} className="h-8 w-8 p-0">
+              <Button size="sm" onClick={addCard} className="h-9 w-9 p-0 rounded-full bg-white/10 hover:bg-white/20 text-foreground">
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
               {editedCards.map((card, i) => (
-                <div key={card.id} className="flex items-center gap-2 p-2 rounded-md bg-muted/30 border text-xs">
-                  <div className="flex-1 overflow-hidden">
-                    <div className="font-medium truncate" title={card.question}>Q: {card.question}</div>
-                    <div className="text-muted-foreground truncate" title={card.answer}>A: {card.answer}</div>
+                <div key={card.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/5 text-xs hover:bg-white/10 transition-colors">
+                  <div className="flex-1 overflow-hidden space-y-1">
+                    <div className="font-medium truncate text-foreground/90" title={card.question}><span className="opacity-50 mr-1">Q:</span>{card.question}</div>
+                    <div className="text-muted-foreground truncate" title={card.answer}><span className="opacity-50 mr-1">A:</span>{card.answer}</div>
                   </div>
-                  <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={() => removeCard(card.id)}>
-                    <Trash2 className="w-3 h-3" />
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/80 hover:text-destructive hover:bg-destructive/10 rounded-full" onClick={() => removeCard(card.id)}>
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               ))}
               {editedCards.length === 0 && (
-                <div className="text-center text-muted-foreground text-xs py-4">No cards. Add one above!</div>
+                <div className="text-center text-muted-foreground text-xs py-8">No cards. Add one above!</div>
               )}
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
           <div className="h-full w-full flex flex-col">
              {/* Card Area */}
              {cards.length > 0 ? (
-                <div className="flex-1 flex items-center justify-center my-2 perspective-1000">
+                <div className="flex-1 flex items-center justify-center my-2 perspective-1000 relative group">
                   <div 
                     className={cn(
                       "relative w-full h-full transition-all duration-500 transform-style-3d cursor-pointer",
@@ -254,23 +254,26 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
                     onClick={() => setIsFlipped(!isFlipped)}
                   >
                     {/* Front */}
-                    <div className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-                       <p className="font-medium text-lg leading-snug">{currentCard?.question}</p>
-                       <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Question</span>
+                    <div className="absolute w-full h-full backface-hidden rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center p-8 text-center shadow-lg">
+                       <p className="font-medium text-xl leading-relaxed text-foreground/90 select-none">{currentCard?.question}</p>
+                       <span className="absolute bottom-4 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-[0.2em]">Tap to Flip</span>
                     </div>
 
                     {/* Back */}
-                    <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/40 border border-secondary/50 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-                       <p className="font-medium text-lg leading-snug">{currentCard?.answer}</p>
-                       <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Answer</span>
+                    <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center p-8 text-center shadow-lg">
+                       <p className="font-medium text-xl leading-relaxed text-foreground/90 select-none">{currentCard?.answer}</p>
+                       <span className="absolute bottom-4 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-[0.2em]">Answer</span>
                     </div>
                   </div>
                 </div>
              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 opacity-70">
-                    <p className="text-sm font-medium mb-2">No flashcards yet</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 opacity-70">
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+                        <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-sm font-medium mb-2 text-foreground/80">No flashcards yet</p>
                     <p className="text-xs text-muted-foreground mb-4">Create your own deck to start studying.</p>
-                    <Button size="sm" variant="outline" onClick={startEditing}>
+                    <Button size="sm" variant="outline" onClick={startEditing} className="rounded-full px-6 border-white/10 bg-white/5 hover:bg-white/10">
                         Create Deck
                     </Button>
                 </div>
@@ -278,27 +281,29 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
 
             {/* Navigation */}
             {cards.length > 0 && (
-                <div className="flex items-center justify-center gap-4 h-8 shrink-0">
+                <div className="flex items-center justify-center gap-6 h-12 shrink-0">
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full hover:bg-primary/10" 
+                    className="h-10 w-10 rounded-full hover:bg-white/10 transition-colors" 
                     onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                     disabled={cards.length <= 1}
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-5 h-5 opacity-70" />
                 </Button>
                 
-                <span className="text-[10px] text-muted-foreground">Tap card to flip</span>
+                <span className="text-[10px] text-muted-foreground/50 font-mono tracking-widest">
+                    {currentIndex + 1} / {cards.length}
+                </span>
 
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full hover:bg-primary/10" 
+                    className="h-10 w-10 rounded-full hover:bg-white/10 transition-colors" 
                     onClick={(e) => { e.stopPropagation(); handleNext(); }}
                     disabled={cards.length <= 1}
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-5 h-5 opacity-70" />
                 </Button>
                 </div>
             )}
