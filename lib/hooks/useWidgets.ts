@@ -26,9 +26,23 @@ export function useWidgets() {
     return w * h;
   };
 
+  const resolveSize = (w: WidgetConfig | { type: string, size?: any }) => {
+    if (w.size) return w.size;
+    
+    const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+    const group = (sizeConfig.groups as any)[groupName];
+    const rawRows = group?.rows ?? 1;
+    const rawCols = group?.cols ?? 1;
+    
+    const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+    const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+    
+    return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
+  };
+
   const padToCapacity = (arr: WidgetConfig[]) => {
     const realWidgets = arr.filter(w => w.type !== 'SPACER');
-    const usedBlocks = realWidgets.reduce((sum, w) => sum + getBlocks(w.size), 0);
+    const usedBlocks = realWidgets.reduce((sum, w) => sum + getBlocks(resolveSize(w)), 0);
     const neededSpacers = Math.max(0, baseCapacity - usedBlocks);
     
     // We want to preserve existing spacers' positions relative to widgets if possible,
@@ -161,21 +175,6 @@ export function useWidgets() {
       
       // Check if it fits in the 3x3 grid using robust layout simulation
       const checkGridFit = () => {
-        // Helper to resolve size consistently
-        const resolveSize = (w: WidgetConfig | { type: string, size?: any }) => {
-            if (w.size) return w.size;
-            
-            const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-            const group = (sizeConfig.groups as any)[groupName];
-            const rawRows = group?.rows ?? 1;
-            const rawCols = group?.cols ?? 1;
-            
-            const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
-            const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
-            
-            return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
-        };
-
         const grid = Array(3).fill(null).map(() => Array(3).fill(false));
         const activeWidgets = prev.filter(w => w.type !== 'SPACER' && w.enabled);
         
