@@ -16,10 +16,44 @@ export function useWidgets() {
   const [capacity, setCapacity] = useState<number>(baseCapacity);
 
   const makeSpacer = () => ({ id: `spacer-${crypto.randomUUID()}`, type: 'SPACER' as const, layout: { x: 0, y: 0, w: tileW, h: tileH }, enabled: false, settings: {}, size: '1x1' as const });
+
+  // Helper to calculate blocks (width * height)
+  const getBlocks = (s?: WidgetConfig['size']) => {
+    if (!s) return 1;
+    const parts = String(s).split('x');
+    const w = Number(parts[0]) || 1;
+    const h = Number(parts[1]) || 1;
+    return w * h;
+  };
+
   const padToCapacity = (arr: WidgetConfig[]) => {
-    const next = [...arr];
-    while (next.length < baseCapacity) next.push(makeSpacer());
-    return next;
+    const realWidgets = arr.filter(w => w.type !== 'SPACER');
+    const usedBlocks = realWidgets.reduce((sum, w) => sum + getBlocks(w.size), 0);
+    const neededSpacers = Math.max(0, baseCapacity - usedBlocks);
+    
+    // We want to preserve existing spacers' positions relative to widgets if possible,
+    // but drop excess ones.
+    let allowedSpacers = neededSpacers;
+    const result: WidgetConfig[] = [];
+    
+    for (const w of arr) {
+        if (w.type === 'SPACER') {
+            if (allowedSpacers > 0) {
+                result.push(w);
+                allowedSpacers--;
+            }
+        } else {
+            result.push(w);
+        }
+    }
+    
+    // If we still need spacers (e.g. because we stripped some or started with few), append them
+    while (allowedSpacers > 0) {
+        result.push(makeSpacer());
+        allowedSpacers--;
+    }
+    
+    return result;
   };
 
   useEffect(() => {
@@ -96,15 +130,6 @@ export function useWidgets() {
     setWidgets((prev) => {
       const exists = prev.some((w) => w.type === type && w.enabled);
       if (exists) return prev;
-      // Helper to calculate blocks (width * height)
-      const getBlocks = (s?: WidgetConfig['size']) => {
-        if (!s) return 1;
-        const parts = String(s).split('x');
-        const w = Number(parts[0]) || 1;
-        const h = Number(parts[1]) || 1;
-        return w * h;
-      };
-
       // Helper to calculate rows (height)
       const getRowsFromSize = (s?: WidgetConfig['size']) => {
         if (!s) return 1;
