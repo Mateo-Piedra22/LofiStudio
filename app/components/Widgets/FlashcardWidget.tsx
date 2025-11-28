@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWidgets } from '@/lib/hooks/useWidgets';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { ChevronLeft, ChevronRight, Shuffle, Edit2, Plus, Trash2, X, Save, RotateCw, BookOpen } from 'lucide-react';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import { cn } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 
 interface Flashcard {
   id: string;
@@ -26,12 +27,10 @@ interface FlashcardWidgetProps {
 
 export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) {
   const { updateWidget } = useWidgets();
+  const { data: session } = useSession();
   const [showWidgetHeaders] = useLocalStorage('showWidgetHeaders', true);
-  const cards: Flashcard[] = settings?.cards || [
-    { id: '1', question: 'What is the capital of France?', answer: 'Paris' },
-    { id: '2', question: 'What is 2 + 2?', answer: '4' },
-    { id: '3', question: 'What does HTML stand for?', answer: 'HyperText Markup Language' },
-  ];
+  const [localFlashcards, setLocalFlashcards] = useLocalStorage<Flashcard[]>('flashcards_data', []);
+  const cards: Flashcard[] = settings?.cards || [];
   const currentIndex = settings?.currentIndex || 0;
 
   const [isFlipped, setIsFlipped] = useState(false);
@@ -41,6 +40,41 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
   const [editedCards, setEditedCards] = useState<Flashcard[]>([]);
   const [newQ, setNewQ] = useState('');
   const [newA, setNewA] = useState('');
+
+  // Load from DB or LocalStorage on mount/login
+  useEffect(() => {
+    const load = async () => {
+      if (session?.user) {
+        // Logged in: Load from DB
+        try {
+          const res = await fetch('/api/user/settings');
+          if (!res.ok) return;
+          const data = await res.json();
+          
+          let prefs = data.preferences;
+          if (typeof prefs === 'string') {
+             try { prefs = JSON.parse(prefs); } catch {}
+          }
+          
+          if (prefs?.flashcards && Array.isArray(prefs.flashcards)) {
+             if (prefs.flashcards.length > 0) {
+               updateWidget(id, { settings: { ...settings, cards: prefs.flashcards } });
+             }
+          }
+        } catch (e) {
+          console.error('Failed to load flashcards from DB', e);
+        }
+      } else {
+        // Not logged in: Load from LocalStorage
+        // We restore from 'flashcards_data' if available and current widget is empty
+        if (localFlashcards.length > 0 && cards.length === 0) {
+           updateWidget(id, { settings: { ...settings, cards: localFlashcards } });
+        }
+      }
+    };
+    load();
+  }, [session, id]); // Run on session change or id change. 
+  // We exclude localFlashcards/cards/settings from deps to avoid loops, as we only want initial load.
 
   const handleNext = () => {
     setIsFlipped(false);
@@ -72,8 +106,43 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
     setIsFlipped(false);
   };
 
+  const saveData = async (newCards: Flashcard[]) => {
+    if (session?.user) {
+      try {
+        // Fetch current settings first to preserve other preferences
+        const res = await fetch('/api/user/settings');
+        const data = await res.json();
+        
+        let prefs = data.preferences;
+        if (typeof prefs === 'string') {
+           try { prefs = JSON.parse(prefs); } catch {}
+        }
+        if (!prefs || typeof prefs !== 'object') prefs = {};
+        
+        prefs.flashcards = newCards;
+        
+        await fetch('/api/user/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+             theme: data.theme,
+             pomodoroWork: data.pomodoroWork,
+             pomodoroBreak: data.pomodoroBreak,
+             preferences: prefs
+          })
+        });
+      } catch (e) {
+        console.error('Failed to save flashcards to DB', e);
+      }
+    } else {
+      // Save to LocalStorage for guest users
+      setLocalFlashcards(newCards);
+    }
+  };
+
   const saveEditing = () => {
     updateWidget(id, { settings: { ...settings, cards: editedCards, currentIndex: 0 } });
+    saveData(editedCards);
     setIsEditing(false);
   };
 
@@ -113,7 +182,7 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
           <div className="flex items-center gap-1">
             {!isEditing ? (
               <>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShuffle} title="Shuffle">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShuffle} title="Shuffle" disabled={cards.length === 0}>
                   <Shuffle className="w-4 h-4" />
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={startEditing} title="Edit Deck">
@@ -168,59 +237,71 @@ export default function FlashcardWidget({ id, settings }: FlashcardWidgetProps) 
                 </div>
               ))}
               {editedCards.length === 0 && (
-                <div className="text-center text-muted-foreground text-xs py-4">No cards</div>
+                <div className="text-center text-muted-foreground text-xs py-4">No cards. Add one above!</div>
               )}
             </div>
           </div>
         ) : (
           <div className="h-full w-full flex flex-col">
              {/* Card Area */}
-            <div className="flex-1 flex items-center justify-center my-2 perspective-1000">
-              <div 
-                className={cn(
-                  "relative w-full h-full transition-all duration-500 transform-style-3d cursor-pointer",
-                  isFlipped ? "rotate-y-180" : ""
-                )}
-                onClick={() => setIsFlipped(!isFlipped)}
-              >
-                {/* Front */}
-                <div className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-                   <p className="font-medium text-lg leading-snug">{currentCard?.question || "No cards"}</p>
-                   <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Question</span>
-                </div>
+             {cards.length > 0 ? (
+                <div className="flex-1 flex items-center justify-center my-2 perspective-1000">
+                  <div 
+                    className={cn(
+                      "relative w-full h-full transition-all duration-500 transform-style-3d cursor-pointer",
+                      isFlipped ? "rotate-y-180" : ""
+                    )}
+                    onClick={() => setIsFlipped(!isFlipped)}
+                  >
+                    {/* Front */}
+                    <div className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                       <p className="font-medium text-lg leading-snug">{currentCard?.question}</p>
+                       <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Question</span>
+                    </div>
 
-                {/* Back */}
-                <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/40 border border-secondary/50 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
-                   <p className="font-medium text-lg leading-snug">{currentCard?.answer}</p>
-                   <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Answer</span>
+                    {/* Back */}
+                    <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/40 border border-secondary/50 flex items-center justify-center p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                       <p className="font-medium text-lg leading-snug">{currentCard?.answer}</p>
+                       <span className="absolute bottom-3 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Answer</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+             ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 opacity-70">
+                    <p className="text-sm font-medium mb-2">No flashcards yet</p>
+                    <p className="text-xs text-muted-foreground mb-4">Create your own deck to start studying.</p>
+                    <Button size="sm" variant="outline" onClick={startEditing}>
+                        Create Deck
+                    </Button>
+                </div>
+             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-center gap-4 h-8 shrink-0">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-full hover:bg-primary/10" 
-                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                disabled={cards.length <= 1}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              
-              <span className="text-[10px] text-muted-foreground">Tap card to flip</span>
+            {cards.length > 0 && (
+                <div className="flex items-center justify-center gap-4 h-8 shrink-0">
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full hover:bg-primary/10" 
+                    onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                    disabled={cards.length <= 1}
+                >
+                    <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                <span className="text-[10px] text-muted-foreground">Tap card to flip</span>
 
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-full hover:bg-primary/10" 
-                onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                disabled={cards.length <= 1}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full hover:bg-primary/10" 
+                    onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                    disabled={cards.length <= 1}
+                >
+                    <ChevronRight className="w-4 h-4" />
+                </Button>
+                </div>
+            )}
           </div>
         )}
       </div>

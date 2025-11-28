@@ -162,6 +162,9 @@ export default function UserAuth() {
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
                     <a href="/terms">Terms & Conditions</a>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
+                    <a href="/cookies">Cookies Policy</a>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

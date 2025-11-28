@@ -19,7 +19,8 @@ import { createPortal } from 'react-dom';
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = React.useState(false);
   React.useEffect(() => {
-    const mq = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)') : null as any;
+    // Match md breakpoint from StudioClient (>= 996px)
+    const mq = typeof window !== 'undefined' ? window.matchMedia('(min-width: 996px)') : null as any;
     const evalMatch = () => setIsDesktop(!!mq?.matches);
     evalMatch();
     mq?.addEventListener?.('change', evalMatch);
@@ -122,25 +123,31 @@ export default function WidgetManager() {
 
   // Helper to calculate visible widgets that fit in the 3x3 grid (9 blocks)
   const visibleWidgets = React.useMemo(() => {
-    // We assume desktop 3x3 for this logic as it's the main issue
-    // For mobile, we just show everything usually, but let's keep consistency
-    const limit = 9; 
+    const limit = isDesktop ? 9 : 3; 
     const result: WidgetConfig[] = [];
     let blocksUsed = 0;
 
     // Helper to get size (duplicated from below, but needed here)
     const getWSize = (w: WidgetConfig) => {
-        if (w.size) return w.size;
+        let size = w.size;
+        if (!size) {
+            const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+            const group = (sizeConfig.groups as any)[groupName];
+            const rawRows = group?.rows ?? 1;
+            const rawCols = group?.cols ?? 1;
+            
+            const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+            const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+            size = `${colsInt}x${rowsInt}` as WidgetConfig['size'];
+        }
         
-        const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-        const group = (sizeConfig.groups as any)[groupName];
-        const rawRows = group?.rows ?? 1;
-        const rawCols = group?.cols ?? 1;
-        
-        const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
-        const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
-        
-        return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
+        if (!isDesktop) {
+            // Mobile: force width 1
+            const parts = String(size).split('x');
+            const h = Number(parts[1]) || 1;
+            return `1x${h}` as WidgetConfig['size'];
+        }
+        return size;
     };
 
     for (const w of widgets) {
@@ -161,7 +168,7 @@ export default function WidgetManager() {
       // Spacers that overflow are dropped
     }
     return result;
-  }, [widgets]);
+  }, [widgets, isDesktop]);
 
   const gridItems = visibleWidgets; // Use the pruned list
   const realWidgets = gridItems.filter(w => w.type !== 'SPACER' && w.enabled);
@@ -175,17 +182,24 @@ export default function WidgetManager() {
   };
   
   const getRobustSize = (w: WidgetConfig) => {
-      if (w.size) return w.size;
-      
-      const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
-      const group = (sizeConfig.groups as any)[groupName];
-      const rawRows = group?.rows ?? 1;
-      const rawCols = group?.cols ?? 1;
-      
-      const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
-      const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
-      
-      return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
+      let size = w.size;
+      if (!size) {
+          const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
+          const group = (sizeConfig.groups as any)[groupName];
+          const rawRows = group?.rows ?? 1;
+          const rawCols = group?.cols ?? 1;
+          
+          const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
+          const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
+          size = `${colsInt}x${rowsInt}` as WidgetConfig['size'];
+      }
+
+      if (!isDesktop) {
+          const parts = String(size).split('x');
+          const h = Number(parts[1]) || 1;
+          return `1x${h}` as WidgetConfig['size'];
+      }
+      return size as WidgetConfig['size'];
   };
 
   const WIDGET_DEFINITIONS = [
@@ -264,7 +278,7 @@ export default function WidgetManager() {
     if (s === '1x2') return 'col-span-1 row-span-2';
     return 'col-span-1 row-span-1';
   };
-  const cols = isDesktop ? 3 : (isLandscape ? 2 : 1);
+  const cols = isDesktop ? 3 : 1;
 
   // Strategy that disables sorting visualization (items stay put until dropped)
   const noOpStrategy = () => null;
@@ -350,12 +364,12 @@ export default function WidgetManager() {
         >
           <SortableContext items={gridItems.map(w => w.id)} strategy={noOpStrategy}>
             <div className="relative">
-              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : cols === 2 ? 'grid-cols-2' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
+              <div className={cn('pointer-events-none absolute inset-0 z-0 hidden lg:grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')} style={{ gridAutoRows: `${rowHeight}px` }}>
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div key={`base-${i}`} className="h-full w-full rounded-xl border border-white/10 bg-white/5 dark:bg-black/10" />
                 ))}
               </div>
-              <div className={cn('relative z-10 grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-dense' : cols === 2 ? 'grid-cols-2 grid-flow-dense' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
+              <div className={cn('relative z-10 grid gap-3 items-stretch', cols === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-dense' : 'grid-cols-1')} key={isDesktop ? 'desktop' : 'mobile'} style={{ gridAutoRows: `${rowHeight}px` }}>
               {gridItems.map((item) => {
                 const size = getSize(item);
                 const cls = spanClassForSize(size);

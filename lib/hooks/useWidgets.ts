@@ -14,6 +14,8 @@ export function useWidgets() {
   const tileH = (layoutConfig as any).tileH ?? 1;
   const baseCapacity = 9;
   const [capacity, setCapacity] = useState<number>(baseCapacity);
+  const [gridCols, setGridCols] = useState<number>(3);
+  const [gridRows, setGridRows] = useState<number>(3);
 
   const makeSpacer = () => ({ id: `spacer-${crypto.randomUUID()}`, type: 'SPACER' as const, layout: { x: 0, y: 0, w: tileW, h: tileH }, enabled: false, settings: {}, size: '1x1' as const });
 
@@ -27,7 +29,14 @@ export function useWidgets() {
   };
 
   const resolveSize = (w: WidgetConfig | { type: string, size?: any }) => {
-    if (w.size) return w.size;
+    if (w.size) {
+      if (gridCols === 1) {
+        const parts = String(w.size).split('x');
+        const h = Number(parts[1]) || 1;
+        return `1x${h}` as WidgetConfig['size'];
+      }
+      return w.size;
+    }
     
     const groupName = (sizeConfig.assignments as any)[w.type] || 'small';
     const group = (sizeConfig.groups as any)[groupName];
@@ -37,13 +46,22 @@ export function useWidgets() {
     const rowsInt = Math.ceil(Math.max(1, Math.min(3, rawRows)));
     const colsInt = Math.ceil(Math.max(1, Math.min(3, rawCols)));
     
+    if (gridCols === 1) {
+      return `1x${rowsInt}` as WidgetConfig['size'];
+    }
+
     return (`${colsInt}x${rowsInt}`) as WidgetConfig['size'];
   };
 
   const padToCapacity = (arr: WidgetConfig[]) => {
     const realWidgets = arr.filter(w => w.type !== 'SPACER');
+    // Note: We use the current capacity state here.
+    // However, we must ensure we don't accidentally count hidden widgets if we are in mobile mode?
+    // Actually, persistence requires we keep all widgets.
+    // But for SPACER calculation, we should only fill up to current capacity.
+    
     const usedBlocks = realWidgets.reduce((sum, w) => sum + getBlocks(resolveSize(w)), 0);
-    const neededSpacers = Math.max(0, baseCapacity - usedBlocks);
+    const neededSpacers = Math.max(0, capacity - usedBlocks);
     
     // We want to preserve existing spacers' positions relative to widgets if possible,
     // but drop excess ones.
@@ -113,18 +131,32 @@ export function useWidgets() {
         }
       }
 
-      if (!hasSaved && widgets.length < baseCapacity) {
+      if (!hasSaved && widgets.length < capacity) {
         setWidgets(padToCapacity(widgets));
       }
     } catch {}
-  }, [widgetsLoaded, widgets]);
+  }, [widgetsLoaded, widgets]); // Removed capacity from dep to avoid re-pad loops, or should we?
+  // If capacity changes, we might want to re-pad.
+  // But useEffect [widgets] covers it if we call setWidgets.
+  // Actually, we want to re-pad when capacity changes!
+  
+  useEffect(() => {
+     if (widgetsLoaded) {
+         setWidgets(prev => padToCapacity(prev));
+     }
+  }, [capacity, widgetsLoaded]);
+
 
   useEffect(() => {
     setCapacity(baseCapacity);
     const handler = (e: any) => {
       try {
         const cap = Number((e?.detail && (e.detail as any).capacity) || baseCapacity);
+        const c = Number((e?.detail && (e.detail as any).cols) || 3);
+        const r = Number((e?.detail && (e.detail as any).rows) || 3);
         setCapacity(Math.max(1, Math.min(9, cap)));
+        setGridCols(c);
+        setGridRows(r);
       } catch {}
     };
     window.addEventListener('responsive:capacity', handler as any);
@@ -173,9 +205,9 @@ export function useWidgets() {
         return prev;
       }
       
-      // Check if it fits in the 3x3 grid using robust layout simulation
+      // Check if it fits in the grid using robust layout simulation
       const checkGridFit = () => {
-        const grid = Array(3).fill(null).map(() => Array(3).fill(false));
+        const grid = Array(gridRows).fill(null).map(() => Array(gridCols).fill(false));
         const activeWidgets = prev.filter(w => w.type !== 'SPACER' && w.enabled);
         
         // Items to place: existing enabled widgets + new one
@@ -191,11 +223,11 @@ export function useWidgets() {
             
             let placed = false;
             // Scan for first fit (row-major)
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 3; c++) {
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
                     if (placed) break;
                     
-                    if (r + h > 3 || c + w > 3) continue; // Out of bounds
+                    if (r + h > gridRows || c + w > gridCols) continue; // Out of bounds
                     
                     let fits = true;
                     // Check collision
@@ -250,11 +282,11 @@ export function useWidgets() {
       }
       return padToCapacity([...prev, newWidget]);
     });
-  }, [setWidgets, capacity, tileW, tileH]);
+  }, [setWidgets, capacity, tileW, tileH, gridCols, gridRows]);
 
   useEffect(() => {
     if (!widgetsLoaded) return;
-    if (widgets.length < baseCapacity) {
+    if (widgets.length < capacity) {
       setWidgets(padToCapacity(widgets));
     }
   }, [widgetsLoaded]);
@@ -357,7 +389,7 @@ export function useWidgets() {
     setWidgets((prev) => padToCapacity(arrayMove(prev, oldIndex, newIndex)));
   }, [setWidgets]);
 
-  const moveWidgetToGrid = useCallback((sourceIndex: number, targetIndex: number, cols: number = 3) => {
+  const moveWidgetToGrid = useCallback((sourceIndex: number, targetIndex: number, cols: number = gridCols) => {
     setWidgets((prev) => {
       const next = [...prev];
       if (sourceIndex < 0 || sourceIndex >= next.length || targetIndex < 0 || targetIndex >= next.length) return prev;
@@ -376,7 +408,7 @@ export function useWidgets() {
 
       // Validate target bounds
       const targetRow = Math.floor(targetIndex / cols);
-      if (targetRow + rows > 3) {
+      if (targetRow + rows > gridRows) {
         // Cannot fit vertically
         return prev;
       }
@@ -403,7 +435,7 @@ export function useWidgets() {
 
       return padToCapacity(next);
     });
-  }, [setWidgets]);
+  }, [setWidgets, gridCols, gridRows]);
 
   return {
     widgets,

@@ -75,6 +75,21 @@ export default function StudioClient() {
     signIn('google', { callbackUrl: '/studio' })
   }; 
   const [currentBreakpoint, setCurrentBreakpoint] = useState<'lg' | 'md' | 'sm' | 'xs' | 'xxs'>('lg');
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width >= 1200) setCurrentBreakpoint('lg');
+      else if (width >= 996) setCurrentBreakpoint('md');
+      else if (width >= 768) setCurrentBreakpoint('sm');
+      else if (width >= 480) setCurrentBreakpoint('xs');
+      else setCurrentBreakpoint('xxs');
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const tileW = 1;
   const tileH = 1;
   const capacity = 9;
@@ -293,7 +308,7 @@ export default function StudioClient() {
       if (currentBreakpoint === 'md') return { cols: 3, rows: 3, cap: 9 };
       return { cols: 1, rows: 3, cap: 3 };
     })();
-    const ev = new CustomEvent('responsive:capacity', { detail: { capacity: target.cap } });
+    const ev = new CustomEvent('responsive:capacity', { detail: { capacity: target.cap, cols: target.cols, rows: target.rows } });
     window.dispatchEvent(ev);
     if (currentBreakpoint === 'lg' || currentBreakpoint === 'md') return;
     const enabled = widgets.filter(w => w.enabled);
@@ -1026,19 +1041,7 @@ export default function StudioClient() {
 
         {!isZenMode && !isEditingLayout && !anyModalOpenRender && (
           <div className="fixed bottom-3 right-3 z-[30]">
-            <div className="glass-button rounded-full border px-3 py-1.5 text-xs text-muted-foreground flex items-center gap-3">
-              <a href="/about" className="hover:text-foreground">About</a>
-              <span className="opacity-50">•</span>
-              <a href="/legal" className="hover:text-foreground">Legal</a>
-              <span className="opacity-50">•</span>
-              <a href="/terms" className="hover:text-foreground">Terms</a>
-              <span className="opacity-50">•</span>
-              <a href="/cookies" className="hover:text-foreground">Cookies Policy</a>
-            </div>
-            <div className="md:hidden mt-3 flex items-center justify-center gap-3">
-              <Button onClick={() => setShowWidgetManager(true)} variant="default" size="icon" className="h-10 w-10 rounded-full">
-                <Layout className="w-5 h-5" />
-              </Button>
+             <div className="md:hidden mt-3 flex items-center justify-center gap-3">
               <Button onClick={() => setShowSettings(true)} variant="secondary" size="icon" className="h-10 w-10 rounded-full">
                 <SettingsIcon className="w-5 h-5" />
               </Button>

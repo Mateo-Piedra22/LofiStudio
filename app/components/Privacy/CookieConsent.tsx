@@ -30,7 +30,7 @@ export default function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-3 left-3 z-[60]">
+    <div className="fixed bottom-3 left-3 z-[150]">
       <div className="glass-panel rounded-2xl border px-4 py-3 w-[320px]">
         <p className="text-sm font-medium text-foreground">{(cookiesConfig as any).texts.title}</p>
         <p className="text-xs text-muted-foreground mt-1">{(cookiesConfig as any).texts.description}</p>

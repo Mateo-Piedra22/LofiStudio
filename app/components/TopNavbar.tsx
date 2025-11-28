@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
 import ThemeSelector from '@/app/components/Settings/ThemeSelector';
-import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X, Sparkles } from 'lucide-react'
+import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X, Sparkles, Info, Scale, FileText, Cookie } from 'lucide-react'
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import UserAuth from '@/app/components/UserAuth';
 
@@ -86,11 +86,11 @@ export default function TopNavbar() {
   return (
     <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
       <div className="px-4 md:px-6">
-        <div className="h-16 flex items-center">
+        <div className="h-14 md:h-16 flex items-center">
           <div className="flex items-center gap-2 glass-panel rounded-full border px-2 py-1" style={{ pointerEvents: 'auto', ['--glass-opacity' as any]: String(minGlass) }}>
             <Link href="/" className="flex items-center gap-2">
-              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-9 w-auto rounded-md shadow-md" />
-              <span className="text-foreground text-lg font-bold tracking-wide">LofiStudio</span>
+              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 md:h-9 w-auto rounded-md shadow-md" />
+              <span className="text-foreground text-base md:text-lg font-bold tracking-wide">LofiStudio</span>
             </Link>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
@@ -196,8 +196,24 @@ export default function TopNavbar() {
                     </Link>
                     <button onClick={reauth} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
-                      <span>Complete permissions</span>
+                      <span>Permissions</span>
                     </button>
+                    <Link href="/about" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <Info className="w-5 h-5" />
+                      <span>About</span>
+                    </Link>
+                    <Link href="/legal" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <Scale className="w-5 h-5" />
+                      <span>Legal</span>
+                    </Link>
+                    <Link href="/terms" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <FileText className="w-5 h-5" />
+                      <span>Terms</span>
+                    </Link>
+                    <Link href="/cookies" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <Cookie className="w-5 h-5" />
+                      <span>Cookies</span>
+                    </Link>
                   </div>
                 </div>
               </div>
