@@ -1,53 +1,48 @@
+/**
+ * Background Component V2
+ * Refactored to use Zustand store
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import YouTube, { YouTubeProps } from 'react-youtube';
-import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import { useBackgroundStore, useBackgroundConfig, useBackgroundSelector } from '@/lib/stores/background.store';
 import BackgroundSelector from './BackgroundSelector';
 import { SCENES } from '@/lib/data/scenes';
 
-export type BackgroundType = 'gradient' | 'video' | 'image';
-
-export interface BackgroundConfig {
-  type: BackgroundType;
-  videoId?: string; // For YouTube video backgrounds
-  videoUrl?: string; // For direct video URLs
-  imageUrl?: string;
-  imageKey?: string;
-  videoKey?: string;
-}
-
 const DEFAULT_VIDEO_ID = 'jfKfPfyJRdk';
-const ALL_VARIANTS = SCENES.flatMap((s) => s.variants);
 
 export default function Background() {
-  const [config, setConfig] = useLocalStorage<BackgroundConfig>('backgroundConfig', { type: 'gradient' });
-  const [showSelector, setShowSelector] = useState(false);
+  // Store hooks
+  const [config, setConfig] = useBackgroundConfig();
+  const backgroundBlur = useBackgroundStore(s => s.blur);
+  const setCurrentScene = useBackgroundStore(s => s.setCurrentScene);
+  const { isOpen: showSelector, close: closeSelector } = useBackgroundSelector();
+
+  // Local state
   const [isLoaded, setIsLoaded] = useState(false);
   const [playerSize, setPlayerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [imgErrorCount, setImgErrorCount] = useState(0);
   const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
-  const [backgroundBlur] = useLocalStorage('backgroundBlur', 0);
-  const [currentSceneId, setCurrentSceneId] = useLocalStorage<string | null>('currentSceneId', null);
-  const [currentVariantId, setCurrentVariantId] = useLocalStorage<string | null>('currentVariantId', null);
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
 
+  // Track current scene based on videoId
   useEffect(() => {
     const id = config?.videoId;
     if (config.type === 'video' && id) {
       const scene = SCENES.find((s) => s.variants.some((v) => v.youtubeId === id)) || null;
       const variant = scene ? scene.variants.find((v) => v.youtubeId === id) || null : null;
-      setCurrentSceneId(scene ? scene.id : null);
-      setCurrentVariantId(variant ? variant.id : null);
+      setCurrentScene(scene?.id || null, variant?.id || null);
     } else {
-      setCurrentSceneId(null);
-      setCurrentVariantId(null);
+      setCurrentScene(null, null);
     }
-  }, [config.type, config.videoId]);
+  }, [config.type, config.videoId, setCurrentScene]);
 
+  // Resize handler for video player
   useEffect(() => {
     const ratio = 16 / 9;
     const compute = () => {
@@ -62,79 +57,81 @@ export default function Background() {
     return () => window.removeEventListener('resize', compute);
   }, []);
 
+  // Listen for global events to open/close selector
   useEffect(() => {
-    const open = () => setShowSelector(true)
-    const close = () => setShowSelector(false)
-    window.addEventListener('open-background-selector', open)
-    window.addEventListener('close-background-selector', close)
+    const open = () => useBackgroundStore.getState().openSelector();
+    const close = () => useBackgroundStore.getState().closeSelector();
+    window.addEventListener('open-background-selector', open);
+    window.addEventListener('close-background-selector', close);
     return () => {
-      window.removeEventListener('open-background-selector', open)
-      window.removeEventListener('close-background-selector', close)
-    }
-  }, [])
+      window.removeEventListener('open-background-selector', open);
+      window.removeEventListener('close-background-selector', close);
+    };
+  }, []);
 
+  // Image caching with IndexedDB
   useEffect(() => {
-    let active = true
+    let active = true;
     const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open('lofi-cache', 1)
+      const req = indexedDB.open('lofi-cache', 1);
       req.onupgradeneeded = () => {
-        const db = req.result
-        if (!db.objectStoreNames.contains('background')) db.createObjectStore('background')
-      }
-      req.onsuccess = () => resolve(req.result)
-      req.onerror = () => reject(req.error)
-    })
+        const db = req.result;
+        if (!db.objectStoreNames.contains('background')) db.createObjectStore('background');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
     const putBlob = async (key: string, blob: Blob) => {
-      const db = await openDB()
+      const db = await openDB();
       await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction('background', 'readwrite')
-        const store = tx.objectStore('background')
-        const r = store.put(blob, key)
-        r.onsuccess = () => resolve()
-        r.onerror = () => reject(r.error)
-      })
-      db.close()
-    }
+        const tx = db.transaction('background', 'readwrite');
+        const store = tx.objectStore('background');
+        const r = store.put(blob, key);
+        r.onsuccess = () => resolve();
+        r.onerror = () => reject(r.error);
+      });
+      db.close();
+    };
     const getBlob = async (key: string) => {
-      const db = await openDB()
+      const db = await openDB();
       const blob = await new Promise<Blob | null>((resolve, reject) => {
-        const tx = db.transaction('background')
-        const store = tx.objectStore('background')
-        const r = store.get(key)
-        r.onsuccess = () => resolve((r.result as Blob) || null)
-        r.onerror = () => reject(r.error)
-      })
-      db.close()
-      return blob
-    }
+        const tx = db.transaction('background');
+        const store = tx.objectStore('background');
+        const r = store.get(key);
+        r.onsuccess = () => resolve((r.result as Blob) || null);
+        r.onerror = () => reject(r.error);
+      });
+      db.close();
+      return blob;
+    };
     const cacheImage = async () => {
-      if (config.type !== 'image') return
-      const key = config.imageKey || 'background_image'
+      if (config.type !== 'image') return;
+      const key = config.imageKey || 'background_image';
       if (config.imageKey) {
-        const blob = await getBlob(key)
-        if (blob && active) setCachedImageUrl(URL.createObjectURL(blob))
-        return
+        const blob = await getBlob(key);
+        if (blob && active) setCachedImageUrl(URL.createObjectURL(blob));
+        return;
       }
-      const url = config.imageUrl
-      if (!url) return
+      const url = config.imageUrl;
+      if (!url) return;
       try {
-        const u = new URL(url, typeof window !== 'undefined' ? window.location.href : 'http://localhost')
+        const u = new URL(url, typeof window !== 'undefined' ? window.location.href : 'http://localhost');
         if (u.origin !== (typeof window !== 'undefined' ? window.location.origin : 'http://localhost')) {
-          return
+          return;
         }
-        const res = await fetch(url)
-        if (!res.ok) return
-        const blob = await res.blob()
-        await putBlob(key, blob)
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        await putBlob(key, blob);
         if (active) {
-          setCachedImageUrl(URL.createObjectURL(blob))
-          setConfig({ ...config, imageKey: key })
+          setCachedImageUrl(URL.createObjectURL(blob));
+          setConfig({ ...config, imageKey: key });
         }
-      } catch {}
-    }
-    cacheImage()
-    return () => { active = false }
-  }, [config])
+      } catch { }
+    };
+    cacheImage();
+    return () => { active = false; };
+  }, [config, setConfig]);
 
   if (!isLoaded) return null;
 
@@ -142,12 +139,15 @@ export default function Background() {
     <>
       <div className="fixed inset-0 -z-50 overflow-hidden">
         {config.type === 'gradient' && (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 animate-gradient-xy" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }} />
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 animate-gradient-xy"
+            style={{ filter: `blur(${backgroundBlur}px)` }}
+          />
         )}
 
         {config.type === 'video' && config.videoId && (
           <div className="yt-bg-container">
-            <div className="yt-bg-iframe opacity-60" style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }}>
+            <div className="yt-bg-iframe opacity-60" style={{ filter: `blur(${backgroundBlur}px)` }}>
               <div className="absolute inset-0">
                 <YouTube
                   videoId={config.videoId}
@@ -179,32 +179,35 @@ export default function Background() {
                       e.target.mute();
                       e.target.setPlaybackQuality('hd1080');
                       e.target.playVideo();
-                    } catch {}
+                    } catch { }
                   }}
-                  onError={() => { try { setConfig({ type: 'video', videoId: DEFAULT_VIDEO_ID }); } catch {} }}
+                  onError={() => {
+                    try {
+                      setConfig({ type: 'video', videoId: DEFAULT_VIDEO_ID });
+                    } catch { }
+                  }}
                 />
               </div>
             </div>
             <div className="absolute inset-0" style={{ backgroundColor: 'hsl(var(--background) / var(--glass-opacity))' }} />
           </div>
         )}
-
-        
       </div>
 
       {showSelector && (
         <BackgroundSelector
           current={config}
           onChange={setConfig}
-          onClose={() => setShowSelector(false)}
+          onClose={closeSelector}
         />
       )}
-      
+
       {config.type === 'image' && (cachedImageUrl || (config.imageUrl && !config.imageKey)) && (
         <img
           src={cachedImageUrl || config.imageUrl}
+          alt="Background"
           className="fixed inset-0 -z-50 w-full h-full object-cover"
-          style={{ filter: `blur(${Number(backgroundBlur) || 0}px)` }}
+          style={{ filter: `blur(${backgroundBlur}px)` }}
           onError={() => {
             try {
               if (imgErrorCount < 2) {
@@ -214,7 +217,7 @@ export default function Background() {
               } else {
                 setConfig({ type: 'gradient' });
               }
-            } catch {}
+            } catch { }
           }}
         />
       )}

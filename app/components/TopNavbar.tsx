@@ -6,18 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import AnimatedIcon from '@/app/components/ui/animated-icon';
-import ThemeSelector from '@/app/components/Settings/ThemeSelector';
-import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X, Sparkles, Info, Scale, FileText, Cookie } from 'lucide-react'
-import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import { Menu, Maximize2, Minimize2, Eye, EyeOff, Settings, Home, User, Waves, Image as ImageIcon, Palette, Layout, BarChart3, Keyboard, X, Sparkles, Info, Scale, FileText, Cookie, Sun, Moon, Monitor } from 'lucide-react'
+import { useSettingsStore, useTheme, useGlassOpacity } from '@/lib/stores/settings.store';
 import UserAuth from '@/app/components/UserAuth';
 
 export default function TopNavbar() {
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useLocalStorage<'light' | 'dark' | 'auto'>('theme', 'dark');
+  const [theme, setTheme] = useTheme();
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [glass] = useLocalStorage<number>('glassOpacity', 0.4);
+  const [glass] = useGlassOpacity();
   const [isEditing, setIsEditing] = useState(false);
-  const [showHeaders, setShowHeaders] = useLocalStorage('showWidgetHeaders', true);
+  const showHeaders = useSettingsStore(s => s.settings.appearance.showHeaders);
+  const setShowHeaders = useSettingsStore(s => s.setShowHeaders);
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -27,29 +27,29 @@ export default function TopNavbar() {
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
-      try { document.exitFullscreen(); } catch {}
+      try { document.exitFullscreen(); } catch { }
     } else {
-      try { document.documentElement.requestFullscreen(); } catch {}
+      try { document.documentElement.requestFullscreen(); } catch { }
     }
   };
 
   const toggleZen = () => {
-    try { window.dispatchEvent(new Event('toggle-zen-mode')); } catch {}
+    try { window.dispatchEvent(new Event('toggle-zen-mode')); } catch { }
     setOpen(false);
   };
 
   const openSettings = () => {
-    try { window.dispatchEvent(new Event('open-settings')); } catch {}
+    try { window.dispatchEvent(new Event('open-settings')); } catch { }
     setOpen(false);
   };
 
   const openAmbientMixer = () => {
-    try { window.dispatchEvent(new Event('open-ambient-mixer')); } catch {}
+    try { window.dispatchEvent(new Event('open-ambient-mixer')); } catch { }
     setOpen(false);
   };
 
   const openBackgroundSelector = () => {
-    try { window.dispatchEvent(new Event('open-background-selector')); } catch {}
+    try { window.dispatchEvent(new Event('open-background-selector')); } catch { }
     setOpen(false);
   };
 
@@ -57,29 +57,29 @@ export default function TopNavbar() {
 
   useEffect(() => {
     const onEditState = (e: any) => {
-      try { setIsEditing(!!(e?.detail ?? false)); } catch {}
+      try { setIsEditing(!!(e?.detail ?? false)); } catch { }
     };
     window.addEventListener('editing-layout-change', onEditState as any);
     return () => window.removeEventListener('editing-layout-change', onEditState as any);
   }, []);
 
   const toggleEditLayout = () => {
-    try { window.dispatchEvent(new Event('toggle-edit-layout')); } catch {}
+    try { window.dispatchEvent(new Event('toggle-edit-layout')); } catch { }
     setOpen(false);
   };
 
   const openWidgetManager = () => {
-    try { window.dispatchEvent(new Event('open-widget-manager')); } catch {}
+    try { window.dispatchEvent(new Event('open-widget-manager')); } catch { }
     setOpen(false);
   };
 
   const toggleHeaders = () => {
-    try { window.dispatchEvent(new Event('toggle-hide-headers')); } catch {}
+    try { window.dispatchEvent(new Event('toggle-hide-headers')); } catch { }
     setShowHeaders(!showHeaders);
   };
 
   const reauth = () => {
-    try { window.dispatchEvent(new Event('open-reauth')); } catch {}
+    try { window.dispatchEvent(new Event('open-reauth')); } catch { }
     setOpen(false);
   };
 
@@ -101,122 +101,148 @@ export default function TopNavbar() {
               </SheetTrigger>
               <SheetContent side="right" className="bg-black/90 backdrop-blur-md border-l border-white/10 text-white w-[520px] lg:w-[600px] xl:w-[640px] max-w-[92vw] overflow-y-auto overflow-x-hidden custom-scrollbar">
                 <div className="flex flex-col gap-6 py-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
-                    <span className="text-white text-base font-semibold">Control Center</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 w-auto rounded-md" />
+                      <span className="text-white text-base font-semibold">Control Center</span>
+                    </div>
+                    <div className="flex items-center">
+                      <UserAuth />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <UserAuth />
+                  <Separator className="bg-white/10" />
+
+                  <div className="space-y-3">
+                    <div className="text-sm uppercase tracking-wider text-white/60">Ambient Sounds</div>
+                    <div className="flex items-center gap-3">
+                      <Button onClick={openAmbientMixer} className="rounded-full">
+                        <AnimatedIcon animationSrc="/lottie/Waves.json" fallbackIcon={Waves} className="w-5 h-5" />
+                        <span className="ml-2">Open Mixer</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-white/10" />
+
+                  <div className="space-y-3">
+                    <div className="text-sm uppercase tracking-wider text-white/60">Visuals</div>
+                    <div className="flex items-center gap-3">
+                      <Button variant="secondary" onClick={openBackgroundSelector} className="rounded-full">
+                        <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
+                        <span className="ml-2">Background</span>
+                      </Button>
+                      <Button variant="outline" className="rounded-full border-white/20 text-white/90">
+                        <AnimatedIcon animationSrc="/lottie/Palette.json" fallbackIcon={Palette} className="w-5 h-5" />
+                        <span className="ml-2">Theme</span>
+                      </Button>
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        variant={theme === 'light' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTheme('light')}
+                        className="flex-1 rounded-lg border-white/20 text-white/90"
+                      >
+                        <Sun className="w-4 h-4 mr-2" />
+                        Light
+                      </Button>
+                      <Button
+                        variant={theme === 'dark' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTheme('dark')}
+                        className="flex-1 rounded-lg border-white/20 text-white/90"
+                      >
+                        <Moon className="w-4 h-4 mr-2" />
+                        Dark
+                      </Button>
+                      <Button
+                        variant={theme === 'auto' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTheme('auto')}
+                        className="flex-1 rounded-lg border-white/20 text-white/90"
+                      >
+                        <Monitor className="w-4 h-4 mr-2" />
+                        Auto
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-white/10" />
+
+                  <div className="space-y-3">
+                    <div className="text-sm uppercase tracking-wider text-white/60">Tools</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="ghost" onClick={toggleFullscreen} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc={isFullscreen ? '/lottie/Minimize2.json' : '/lottie/Maximize2.json'} fallbackIcon={isFullscreen ? Minimize2 : Maximize2} className="w-5 h-5" />
+                        <span className="ml-2">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
+                      </Button>
+                      <Button variant="ghost" onClick={toggleZen} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc="/lottie/EyeOff.json" fallbackIcon={EyeOff} className="w-5 h-5" />
+                        <span className="ml-2">Focus Mode</span>
+                      </Button>
+                      <Button variant="ghost" onClick={toggleEditLayout} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
+                        <span className="ml-2">Edit Layout</span>
+                      </Button>
+                      <Button variant="ghost" onClick={openWidgetManager} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
+                        <span className="ml-2">Add Widgets</span>
+                      </Button>
+                      <Button variant="ghost" onClick={toggleHeaders} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc={showHeaders ? '/lottie/EyeOff.json' : '/lottie/Eye.json'} fallbackIcon={showHeaders ? EyeOff : Eye} className="w-5 h-5" />
+                        <span className="ml-2">{showHeaders ? 'Hide Headers' : 'Show Headers'}</span>
+                      </Button>
+                      <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-stats')); } catch { } setOpen(false); }} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc="/lottie/BarChart3.json" fallbackIcon={BarChart3} className="w-5 h-5" />
+                        <span className="ml-2">Stats</span>
+                      </Button>
+                      <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-logs')); } catch { } setOpen(false); }} className="rounded-full text-white/90 justify-start">
+                        <AnimatedIcon animationSrc="/lottie/Keyboard.json" fallbackIcon={Keyboard} className="w-5 h-5" />
+                        <span className="ml-2">Activity Log</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-white/10" />
+
+                  <div className="space-y-3">
+                    <div className="text-sm uppercase tracking-wider text-white/60">Links</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Link href="/" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Home className="w-5 h-5" />
+                        <span>Home</span>
+                      </Link>
+                      <button onClick={openSettings} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Settings className="w-5 h-5" />
+                        <span>Settings</span>
+                      </button>
+                      <Link href="/changelog" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Sparkles className="w-5 h-5" />
+                        <span>Changelog</span>
+                      </Link>
+                      <button onClick={reauth} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
+                        <span>Permissions</span>
+                      </button>
+                      <Link href="/about" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Info className="w-5 h-5" />
+                        <span>About</span>
+                      </Link>
+                      <Link href="/legal" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Scale className="w-5 h-5" />
+                        <span>Legal</span>
+                      </Link>
+                      <Link href="/terms" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <FileText className="w-5 h-5" />
+                        <span>Terms</span>
+                      </Link>
+                      <Link href="/cookies" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <Cookie className="w-5 h-5" />
+                        <span>Cookies</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-                <Separator className="bg-white/10" />
-
-                <div className="space-y-3">
-                  <div className="text-sm uppercase tracking-wider text-white/60">Ambient Sounds</div>
-                  <div className="flex items-center gap-3">
-                    <Button onClick={openAmbientMixer} className="rounded-full">
-                      <AnimatedIcon animationSrc="/lottie/Waves.json" fallbackIcon={Waves} className="w-5 h-5" />
-                      <span className="ml-2">Open Mixer</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator className="bg-white/10" />
-
-                <div className="space-y-3">
-                  <div className="text-sm uppercase tracking-wider text-white/60">Visuals</div>
-                  <div className="flex items-center gap-3">
-                    <Button variant="secondary" onClick={openBackgroundSelector} className="rounded-full">
-                      <AnimatedIcon animationSrc="/lottie/Image.json" fallbackIcon={ImageIcon} className="w-5 h-5" />
-                      <span className="ml-2">Background</span>
-                    </Button>
-                    <Button variant="outline" className="rounded-full border-white/20 text-white/90">
-                      <AnimatedIcon animationSrc="/lottie/Palette.json" fallbackIcon={Palette} className="w-5 h-5" />
-                      <span className="ml-2">Theme</span>
-                    </Button>
-                  </div>
-                  <div className="mt-2">
-                    <ThemeSelector theme={theme} setTheme={setTheme} />
-                  </div>
-                </div>
-
-                <Separator className="bg-white/10" />
-
-                 <div className="space-y-3">
-                   <div className="text-sm uppercase tracking-wider text-white/60">Tools</div>
-                   <div className="grid grid-cols-2 gap-2">
-                     <Button variant="ghost" onClick={toggleFullscreen} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc={isFullscreen ? '/lottie/Minimize2.json' : '/lottie/Maximize2.json'} fallbackIcon={isFullscreen ? Minimize2 : Maximize2} className="w-5 h-5" />
-                       <span className="ml-2">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
-                     </Button>
-                     <Button variant="ghost" onClick={toggleZen} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc="/lottie/EyeOff.json" fallbackIcon={EyeOff} className="w-5 h-5" />
-                       <span className="ml-2">Focus Mode</span>
-                     </Button>
-                     <Button variant="ghost" onClick={toggleEditLayout} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
-                       <span className="ml-2">Edit Layout</span>
-                     </Button>
-                     <Button variant="ghost" onClick={openWidgetManager} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc="/lottie/Layout.json" fallbackIcon={Layout} className="w-5 h-5" />
-                       <span className="ml-2">Add Widgets</span>
-                     </Button>
-                     <Button variant="ghost" onClick={toggleHeaders} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc={showHeaders ? '/lottie/EyeOff.json' : '/lottie/Eye.json'} fallbackIcon={showHeaders ? EyeOff : Eye} className="w-5 h-5" />
-                       <span className="ml-2">{showHeaders ? 'Hide Headers' : 'Show Headers'}</span>
-                     </Button>
-                     <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-stats')); } catch {} setOpen(false); }} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc="/lottie/BarChart3.json" fallbackIcon={BarChart3} className="w-5 h-5" />
-                       <span className="ml-2">Stats</span>
-                     </Button>
-                     <Button variant="ghost" onClick={() => { try { window.dispatchEvent(new Event('open-logs')); } catch {} setOpen(false); }} className="rounded-full text-white/90 justify-start">
-                       <AnimatedIcon animationSrc="/lottie/Keyboard.json" fallbackIcon={Keyboard} className="w-5 h-5" />
-                       <span className="ml-2">Activity Log</span>
-                     </Button>
-                   </div>
-                 </div>
-
-                <Separator className="bg-white/10" />
-
-                <div className="space-y-3">
-                  <div className="text-sm uppercase tracking-wider text-white/60">Links</div>
-                  <div className="grid grid-cols-4 gap-3">
-                    <Link href="/" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Home className="w-5 h-5" />
-                      <span>Home</span>
-                    </Link>
-                    <button onClick={openSettings} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Settings className="w-5 h-5" />
-                      <span>Settings</span>
-                    </button>
-                    <Link href="/changelog" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Sparkles className="w-5 h-5" />
-                      <span>Changelog</span>
-                    </Link>
-                    <button onClick={reauth} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <AnimatedIcon animationSrc="/lottie/X.json" fallbackIcon={X} className="w-5 h-5" />
-                      <span>Permissions</span>
-                    </button>
-                    <Link href="/about" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Info className="w-5 h-5" />
-                      <span>About</span>
-                    </Link>
-                    <Link href="/legal" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Scale className="w-5 h-5" />
-                      <span>Legal</span>
-                    </Link>
-                    <Link href="/terms" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <FileText className="w-5 h-5" />
-                      <span>Terms</span>
-                    </Link>
-                    <Link href="/cookies" className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <Cookie className="w-5 h-5" />
-                      <span>Cookies</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
               </SheetContent>
             </Sheet>
           </div>

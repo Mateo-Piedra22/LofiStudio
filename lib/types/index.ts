@@ -1,3 +1,9 @@
+/**
+ * Type Definitions Index
+ * Central export for all type definitions
+ */
+
+// Original types (keeping for backward compatibility during migration)
 export interface Task {
   id: string;
   title: string;
@@ -5,7 +11,7 @@ export interface Task {
   completed: boolean;
   createdAt: number;
   completedAt?: number;
-  duration?: number; // Duration in seconds if completed during a pomodoro
+  duration?: number;
   tags?: string[];
   dueAt?: number;
   color?: string;
@@ -60,6 +66,13 @@ export interface UserSettings {
   background: string;
 }
 
+// V2 Types - New Widget System
+export * from './widget.types';
+export * from './layout.types';
+export * from './audio.types';
+
+// Legacy type for backward compatibility during migration
+// TODO: Remove after migration complete
 export interface WidgetConfig {
   id: string;
   type: 'clock' | 'worldtime' | 'weather' | 'gif' | 'tasks' | 'timer' | 'notes' | 'quote' | 'calendar' | 'breathing' | 'dictionary' | 'habit' | 'focus' | 'calculator' | 'quicklinks' | 'flashcard' | 'embed' | 'SPACER';
@@ -70,7 +83,7 @@ export interface WidgetConfig {
     h: number;
   };
   enabled: boolean;
-  settings?: any;
+  settings?: Record<string, unknown>;
   size?: '1x1' | '2x1' | '1x2' | '2x2' | '1x3' | '3x1';
 }
 

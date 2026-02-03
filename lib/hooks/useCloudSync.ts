@@ -3,11 +3,14 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useLocalStorage } from './useLocalStorage';
-import { useWidgets } from './useWidgets';
+import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
 
 export function useCloudSync() {
     const { data: session } = useSession();
-    const { widgets } = useWidgets();
+
+    // Use the new widget grid store
+    const widgets = useWidgetGridStore(state => state.widgets);
+    const layouts = useWidgetGridStore(state => state.layouts);
 
     // Track local state to sync
     const [theme] = useLocalStorage('theme', 'dark');
@@ -26,13 +29,7 @@ export function useCloudSync() {
                 .then(res => res.json())
                 .then(data => {
                     if (data) {
-                        // We need a way to update local storage from here.
-                        // Since useLocalStorage is a hook, we can't call its setter from outside easily without exposing it.
-                        // However, we can manually set localStorage and dispatch event if needed, 
-                        // OR we rely on the fact that the user might be on a fresh device.
-
-                        // For now, let's update localStorage directly for key items
-                        // This is a bit hacky but works for "sync on load"
+                        // Update localStorage directly for key items
                         if (data.theme) window.localStorage.setItem('theme', JSON.stringify(data.theme));
                         if (data.pomodoroWork) window.localStorage.setItem('pomodoroWork', JSON.stringify(data.pomodoroWork));
                         if (data.pomodoroBreak) window.localStorage.setItem('pomodoroBreak', JSON.stringify(data.pomodoroBreak));
@@ -40,7 +37,18 @@ export function useCloudSync() {
                         if (data.preferences) {
                             try {
                                 const prefs = JSON.parse(data.preferences);
-                                if (prefs.widgets) window.localStorage.setItem('widgets', JSON.stringify(prefs.widgets));
+                                // Sync widgets from cloud (v2 format)
+                                if (prefs.widgets && prefs.layouts) {
+                                    const storeData = {
+                                        widgets: prefs.widgets,
+                                        layouts: prefs.layouts,
+                                        showHeaders: prefs.showHeaders ?? true
+                                    };
+                                    window.localStorage.setItem('lofi-widget-grid-v2', JSON.stringify({
+                                        state: storeData,
+                                        version: 0
+                                    }));
+                                }
                                 if (prefs.background) {
                                     try {
                                         const current = JSON.parse(window.localStorage.getItem('backgroundConfig') || 'null');
@@ -56,17 +64,6 @@ export function useCloudSync() {
                                 console.error("Failed to parse preferences", e);
                             }
                         }
-
-                        // Force reload to apply changes if it's a fresh login? 
-                        // Or better, dispatch a storage event so hooks pick it up?
-                        // useLocalStorage listens to window events? No, usually only other tabs.
-                        // We might need to reload the page or use a context. 
-                        // For simplicity in this iteration, we'll assume this runs on mount and might need a refresh if data changed significantly,
-                        // but actually, if we update localStorage before the hooks initialize fully or if we trigger a reload, it works.
-                        // But since this is inside a useEffect, hooks have already initialized.
-
-                        // A better approach for a production app is a Context Provider that wraps everything and handles the source of truth.
-                        // Given our current architecture, we'll just log that we synced.
                         console.log("Settings synced from cloud");
                     }
                 })
@@ -87,6 +84,7 @@ export function useCloudSync() {
         timeoutRef.current = setTimeout(() => {
             const preferences = {
                 widgets,
+                layouts,
                 background: backgroundConfig
             };
 
@@ -105,5 +103,5 @@ export function useCloudSync() {
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [session?.user?.id, theme, pomodoroWork, pomodoroBreak, widgets, backgroundConfig]);
+    }, [session?.user?.id, theme, pomodoroWork, pomodoroBreak, widgets, layouts, backgroundConfig]);
 }

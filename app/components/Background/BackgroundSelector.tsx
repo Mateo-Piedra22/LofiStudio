@@ -3,9 +3,9 @@ import { createPortal } from 'react-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { X, Video, Box, Palette, Image } from 'lucide-react'
-import type { BackgroundConfig } from './index';
+import type { BackgroundConfig } from '@/lib/stores/background.store';
 import { SCENES } from '@/lib/data/scenes';
-import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
+import { useBackgroundStore } from '@/lib/stores/background.store';
 
 interface BackgroundSelectorProps {
   current: BackgroundConfig;
@@ -16,7 +16,9 @@ interface BackgroundSelectorProps {
 export default function BackgroundSelector({ current, onChange, onClose }: BackgroundSelectorProps) {
   const [unsplashQuery, setUnsplashQuery] = useState('')
   const [unsplashSeed, setUnsplashSeed] = useState(0)
-  const [selectedSceneId, setSelectedSceneId] = useLocalStorage<string>('selectedSceneId', SCENES[0]?.id || 'study')
+  const currentSceneId = useBackgroundStore(s => s.currentSceneId);
+  const setCurrentScene = useBackgroundStore(s => s.setCurrentScene);
+  const [selectedSceneId, setSelectedSceneId] = useState(currentSceneId || SCENES[0]?.id || 'study')
   if (typeof window === 'undefined') return null
   const buildUnsplashQuery = (q: string) => {
     const base = (q || 'lofi,study').trim()
@@ -40,9 +42,9 @@ export default function BackgroundSelector({ current, onChange, onClose }: Backg
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-          <h3 className="text-muted-foreground text-sm font-medium mb-3 flex items-center gap-2">
-            <Video className="w-4 h-4" /> Scenes & Animated Loops
-          </h3>
+            <h3 className="text-muted-foreground text-sm font-medium mb-3 flex items-center gap-2">
+              <Video className="w-4 h-4" /> Scenes & Animated Loops
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {SCENES.map((scene) => (
                 <button
