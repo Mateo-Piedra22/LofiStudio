@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
