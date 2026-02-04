@@ -296,6 +296,7 @@ export const useTimerStore = create<TimerStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 sessionsCompleted: state.sessionsCompleted,
                 currentTaskId: state.currentTaskId,

@@ -707,6 +707,7 @@ export const useTaskStore = create<TaskStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 tasks: state.tasks,
                 taskLists: state.taskLists,

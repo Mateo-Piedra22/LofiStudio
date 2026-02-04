@@ -324,6 +324,7 @@ export const useStatisticsStore = create<StatisticsStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 sessions: state.sessions,
             }),

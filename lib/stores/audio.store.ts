@@ -230,6 +230,7 @@ export const useAudioStore = create<AudioStore>()(
         {
             name: 'lofi-audio-v2',
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 masterVolume: state.masterVolume,
                 isMasterMuted: state.isMasterMuted,

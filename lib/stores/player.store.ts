@@ -727,6 +727,7 @@ export const usePlayerStore = create<PlayerStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state): PlayerPersistedState => ({
                 currentItem: state.currentItem,
                 playlist: state.playlist,

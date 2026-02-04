@@ -314,6 +314,7 @@ export const useCalendarStore = create<CalendarStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 events: state.events.filter(e => e.source === 'local').slice(0, 100),
                 googleCalendarEnabled: state.googleCalendarEnabled,
