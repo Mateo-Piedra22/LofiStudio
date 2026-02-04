@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -33,8 +33,14 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
 
 export function Settings({ onClose }: SettingsProps) {
     const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+    const [mounted, setMounted] = useState(false);
 
-    if (typeof window === 'undefined') return null;
+    // Wait for client-side mount to use createPortal
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
 
     const renderContent = () => {
         switch (activeTab) {

@@ -101,6 +101,7 @@ export default function StudioClient() {
     const [isZenMode, setIsZenMode] = useState(false);
     const [isTopbarHidden, setIsTopbarHidden] = useState(false);
     const [hideBackground, setHideBackground] = useState(false);
+    const [privacyNoticeAccepted, setPrivacyNoticeAccepted] = useState(true); // true initially to match server
 
     // Get editing state from store (correct property names)
     const isEditingLayout = useWidgetGridStore(state => state.isEditMode);
@@ -151,13 +152,16 @@ export default function StudioClient() {
 
     // Initial video now handled by PlayerV2 store initialization
 
-    // Welcome message
+    // Welcome message and privacy notice
     useEffect(() => {
         const hasVisited = localStorage.getItem('hasVisited');
         if (!hasVisited) {
             toast.success('Welcome to LofiStudio! Press Shift + ? for keyboard shortcuts', 6000);
             localStorage.setItem('hasVisited', 'true');
         }
+        // Load privacy notice state from localStorage
+        const accepted = localStorage.getItem('privacyNoticeAccepted');
+        setPrivacyNoticeAccepted(accepted === 'true');
     }, [toast]);
 
     // Glass opacity from settings store
@@ -492,7 +496,7 @@ export default function StudioClient() {
                 )}
 
                 {/* Privacy notice */}
-                {!!session?.user && !isZenMode && typeof window !== 'undefined' && !localStorage.getItem('privacyNoticeAccepted') && (
+                {!!session?.user && !isZenMode && !privacyNoticeAccepted && (
                     <div className="fixed top-20 right-4 z-[50]">
                         <div className="glass-panel rounded-2xl border px-4 py-3 w-[340px]">
                             <p className="text-sm font-medium text-foreground">Privacy</p>
@@ -504,13 +508,19 @@ export default function StudioClient() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}
+                                    onClick={() => {
+                                        localStorage.setItem('privacyNoticeAccepted', 'true');
+                                        setPrivacyNoticeAccepted(true);
+                                    }}
                                 >
                                     Close
                                 </Button>
                                 <Button
                                     size="sm"
-                                    onClick={() => localStorage.setItem('privacyNoticeAccepted', 'true')}
+                                    onClick={() => {
+                                        localStorage.setItem('privacyNoticeAccepted', 'true');
+                                        setPrivacyNoticeAccepted(true);
+                                    }}
                                 >
                                     Accept
                                 </Button>
