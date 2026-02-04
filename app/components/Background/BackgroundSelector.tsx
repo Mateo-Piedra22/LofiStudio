@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,12 +14,14 @@ interface BackgroundSelectorProps {
 }
 
 export default function BackgroundSelector({ current, onChange, onClose }: BackgroundSelectorProps) {
+  // All hooks must be called unconditionally BEFORE any early returns
   const [unsplashQuery, setUnsplashQuery] = useState('')
   const [unsplashSeed, setUnsplashSeed] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
   const currentSceneId = useBackgroundStore(s => s.currentSceneId);
   const setCurrentScene = useBackgroundStore(s => s.setCurrentScene);
   const [selectedSceneId, setSelectedSceneId] = useState(currentSceneId || SCENES[0]?.id || 'study')
-  if (typeof window === 'undefined') return null
+
   const buildUnsplashQuery = (q: string) => {
     const base = (q || 'lofi,study').trim()
     const parts = base.split(',').map((p) => p.trim().replace(/\s+/g, '+')).filter(Boolean)
@@ -29,6 +31,14 @@ export default function BackgroundSelector({ current, onChange, onClose }: Backg
   const unsplashResults = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => `https://source.unsplash.com/400x300/?${queryStr}&sig=${unsplashSeed * 100 + i + 1}`)
   }, [queryStr, unsplashSeed])
+
+  // Track mount state for client-side rendering
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // SSR guard - return null until mounted (after all hooks)
+  if (!isMounted) return null
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-md animate-in fade-in duration-200">
       <Card className="w-full max-w-3xl max-h-[80vh] overflow-y-auto">
