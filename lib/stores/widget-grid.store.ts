@@ -608,6 +608,7 @@ export const useWidgetGridStore = create<WidgetGridStore>()(
         {
             name: 'lofi-widget-grid-v2',
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 widgets: state.widgets,
                 layouts: state.layouts,

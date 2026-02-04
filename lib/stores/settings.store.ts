@@ -334,6 +334,7 @@ export const useSettingsStore = create<SettingsStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 settings: state.settings,
             }),
