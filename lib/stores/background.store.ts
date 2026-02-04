@@ -156,6 +156,7 @@ export const useBackgroundStore = create<BackgroundStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
+            skipHydration: true,
             partialize: (state) => ({
                 config: state.config,
                 blur: state.blur,

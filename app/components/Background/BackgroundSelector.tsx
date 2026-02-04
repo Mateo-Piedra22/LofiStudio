@@ -22,7 +22,15 @@ export default function BackgroundSelector({ current, onChange, onClose }: Backg
   const [isMounted, setIsMounted] = useState(false)
   const currentSceneId = useBackgroundStore(s => s.currentSceneId);
   const setCurrentScene = useBackgroundStore(s => s.setCurrentScene);
-  const [selectedSceneId, setSelectedSceneId] = useState(currentSceneId || SCENES[0]?.id || 'study')
+  // Use stable default to avoid hydration mismatch, sync with store after mount
+  const [selectedSceneId, setSelectedSceneId] = useState(SCENES[0]?.id || 'study')
+
+  // Sync selectedSceneId with store value after mount (avoids hydration mismatch)
+  useEffect(() => {
+    if (currentSceneId && currentSceneId !== selectedSceneId) {
+      setSelectedSceneId(currentSceneId);
+    }
+  }, [currentSceneId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const buildUnsplashQuery = (q: string) => {
     const base = (q || 'lofi,study').trim()

@@ -27,6 +27,8 @@ export default function Background() {
   const [cachedImageUrl, setCachedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    // Manually rehydrate the store after mount (skipHydration: true in store config)
+    useBackgroundStore.persist.rehydrate();
     setIsLoaded(true);
   }, []);
 
