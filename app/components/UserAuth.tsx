@@ -25,12 +25,7 @@ export default function UserAuth() {
     const [googleCalendarEnabled, setGoogleCalendarEnabled] = useLocalStorage('googleCalendarEnabled', false)
     const [googleTasksEnabled, setGoogleTasksEnabled] = useLocalStorage('googleTasksEnabled', false)
 
-    useEffect(() => {
-        if (session?.user) {
-            const asked = typeof window !== 'undefined' ? localStorage.getItem('consentAsked') : 'true'
-            if (!asked) setShowConsent(true)
-        }
-    }, [session])
+    // Auto-consent popup behavior removed per user request
 
     const grantedScopes = ((session as any)?.scope as string | undefined)?.split(' ') || []
     const requiredScopes: string[] = []
@@ -77,7 +72,11 @@ export default function UserAuth() {
                             <User className="mr-2 h-4 w-4" />
                             <span>Edit Profile</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className={`focus:bg-accent/10 focus:text-foreground cursor-pointer ${needsReauth ? 'text-amber-500' : ''}`}> 
+                        <DropdownMenuItem onClick={() => setShowConsent(true)} className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
+                            <Cloud className="mr-2 h-4 w-4" />
+                            <span>Integrations</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className={`focus:bg-accent/10 focus:text-foreground cursor-pointer ${needsReauth ? 'text-amber-500' : ''}`}>
                             <Cloud className={`mr-2 h-4 w-4 ${needsReauth ? 'text-amber-500' : 'text-green-400'}`} />
                             <span>{needsReauth ? 'Permissions incomplete' : 'Sync Active'}</span>
                         </DropdownMenuItem>
@@ -96,7 +95,7 @@ export default function UserAuth() {
                 </DropdownMenu>
 
                 <ProfileModal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} />
-                <Dialog open={showConsent} onOpenChange={(o) => { setShowConsent(o); if (!o && typeof window !== 'undefined') localStorage.setItem('consentAsked', 'true') }}>
+                <Dialog open={showConsent} onOpenChange={setShowConsent}>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle className="text-foreground">Google Integrations</DialogTitle>

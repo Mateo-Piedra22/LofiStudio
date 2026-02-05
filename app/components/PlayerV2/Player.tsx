@@ -16,7 +16,7 @@ import { PlayerVolume } from './PlayerVolume';
 import { PlayerSearch } from './PlayerSearch';
 import { PlayerPlaylist } from './PlayerPlaylist';
 import { RadioBrowser } from './RadioBrowser';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
     X,
@@ -158,6 +158,9 @@ export const Player = memo(function Player({ className, showMini = true }: Playe
                             <SourceIcon className="h-5 w-5" />
                             Now Playing
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Expanded player controls
+                        </DialogDescription>
                         <Button
                             variant="ghost"
                             size="icon"

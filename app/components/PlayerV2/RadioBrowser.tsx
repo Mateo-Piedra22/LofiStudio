@@ -6,7 +6,7 @@
 'use client';
 
 import { memo, useState, useCallback, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,6 +39,7 @@ export const RadioBrowser = memo(function RadioBrowser() {
     const isLoading = usePlayerStore(s => s.isLoadingRadio);
     const currentItem = usePlayerStore(s => s.currentItem);
     const state = usePlayerStore(s => s.state);
+    const error = usePlayerStore(s => s.error);
 
     const setRadioBrowserOpen = usePlayerStore(s => s.setRadioBrowserOpen);
     const searchRadio = usePlayerStore(s => s.searchRadio);
@@ -114,6 +115,9 @@ export const RadioBrowser = memo(function RadioBrowser() {
                         <Radio className="h-5 w-5 text-primary" />
                         Radio Browser
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Search and play radio stations from around the world
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
@@ -152,11 +156,22 @@ export const RadioBrowser = memo(function RadioBrowser() {
 
                     {/* Results */}
                     <ScrollArea className="flex-1 -mx-6 px-6">
-                        {radioStations.length === 0 && !isLoading && (
+                        {radioStations.length === 0 && !isLoading && !error && (
                             <div className="text-center py-8 text-muted-foreground">
                                 <Radio className="h-12 w-12 mx-auto mb-4 opacity-50" />
                                 <p className="text-sm">No stations found</p>
                                 <p className="text-xs mt-1">Try a different search term</p>
+                            </div>
+                        )}
+
+                        {error && !isLoading && (
+                            <div className="text-center py-8 text-destructive">
+                                <Signal className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                <p className="text-sm font-medium">Failed to load stations</p>
+                                <p className="text-xs mt-1 mb-3 opacity-80">{error}</p>
+                                <Button size="sm" variant="outline" onClick={() => loadTopRadioStations()}>
+                                    Retry
+                                </Button>
                             </div>
                         )}
 
@@ -246,6 +261,6 @@ export const RadioBrowser = memo(function RadioBrowser() {
                     </ScrollArea>
                 </div>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 });

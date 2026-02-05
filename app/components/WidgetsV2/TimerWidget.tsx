@@ -1,42 +1,19 @@
 /**
  * TimerWidget v2
- * Pomodoro timer with work/break intervals
+ * Pomodoro timer connected to global TimerStore
  */
 
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Coffee, Laptop } from 'lucide-react';
+import { Play, Pause, RotateCcw, Coffee, Laptop, SkipForward } from 'lucide-react';
 import { WidgetWrapper } from '@/app/components/WidgetBase';
 import { Button } from '@/components/ui/button';
 import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
-import type { WidgetAction } from '@/lib/types/widget.types';
-
-type TimerMode = 'work' | 'break' | 'longBreak';
-
-interface TimerSettings {
-    workDuration: number;      // minutes
-    breakDuration: number;     // minutes
-    longBreakDuration: number; // minutes
-    sessionsBeforeLongBreak: number;
-    autoStartBreaks: boolean;
-    autoStartWork: boolean;
-}
-
-interface TimerWidgetProps {
-    id: string;
-    settings?: Partial<TimerSettings>;
-}
-
-const DEFAULT_SETTINGS: TimerSettings = {
-    workDuration: 25,
-    breakDuration: 5,
-    longBreakDuration: 15,
-    sessionsBeforeLongBreak: 4,
-    autoStartBreaks: false,
-    autoStartWork: false,
-};
+import { useTimerStore, useTimerMode, useTimerActive, useTimerProgress, useSessionsCompleted } from '@/lib/stores/timer.store';
+import { formatTime } from '@/lib/utils';
+import type { TimerMode } from '@/lib/stores/timer.store';
 
 const MODE_LABELS: Record<TimerMode, string> = {
     work: 'Focus',
@@ -50,106 +27,68 @@ const MODE_ICONS: Record<TimerMode, typeof Laptop> = {
     longBreak: Coffee,
 };
 
-/**
- * Pomodoro timer widget
- */
-export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) {
+export function TimerWidget({ id }: { id: string }) {
     const showHeaders = useWidgetGridStore(state => state.showHeaders);
 
-    // Merge settings with defaults
-    const settings = { ...DEFAULT_SETTINGS, ...customSettings };
+    // Store hooks
+    const mode = useTimerMode();
+    const isActive = useTimerActive(); // Returns true if running and not paused
+    const progress = useTimerProgress();
+    const sessions = useSessionsCompleted();
+    const secondsRemaining = useTimerStore(s => s.secondsRemaining);
+    const isPaused = useTimerStore(s => s.isPaused);
 
-    // Timer state
-    const [mode, setMode] = useState<TimerMode>('work');
-    const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
-    const [isRunning, setIsRunning] = useState(false);
-    const [completedSessions, setCompletedSessions] = useState(0);
+    // Actions
+    const start = useTimerStore(s => s.start);
+    const pause = useTimerStore(s => s.pause);
+    const resume = useTimerStore(s => s.resume);
+    const reset = useTimerStore(s => s.reset);
+    const skip = useTimerStore(s => s.skip);
+    const switchToWork = useTimerStore(s => s.switchToWork);
+    const switchToBreak = useTimerStore(s => s.switchToBreak);
+    const tick = useTimerStore(s => s.tick);
 
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    // Global ticker effect - Only one component should probably drive the tick, 
+    // but typically the store might rely on a global interval or specific active component.
+    // Since we deleted the "Zombie" component which likely held the interval, we must ensure
+    // SOMETHING is ticking.
+    // 
+    // Ideally, the global layout (StudioClient) or a dedicated Provider handles the tick,
+    // but placing it here works if we assume the widget is always present. 
+    // However, if the widget is removed, the timer stops.
+    // For V2 Migration, we'll place the ticker here. 
+    // *Better Architecture*: Move ticker to a Global Context, but for now, 
+    // this aligns with "Migrate Widget Logic".
 
-    // Get duration for current mode
-    const getDuration = useCallback((m: TimerMode) => {
-        switch (m) {
-            case 'work': return settings.workDuration * 60;
-            case 'break': return settings.breakDuration * 60;
-            case 'longBreak': return settings.longBreakDuration * 60;
-        }
-    }, [settings]);
-
-    // Format time as MM:SS
-    const formatTime = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    // Calculate progress percentage
-    const progress = ((getDuration(mode) - timeLeft) / getDuration(mode)) * 100;
-
-    // Timer tick
     useEffect(() => {
-        if (isRunning && timeLeft > 0) {
-            intervalRef.current = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
+        let interval: NodeJS.Timeout;
+        if (isActive) {
+            interval = setInterval(() => {
+                tick();
             }, 1000);
         }
+        return () => clearInterval(interval);
+    }, [isActive, tick]);
 
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [isRunning, timeLeft]);
-
-    // Handle timer completion
-    useEffect(() => {
-        if (timeLeft === 0 && isRunning) {
-            setIsRunning(false);
-
-            // Play notification sound (if available)
-            try {
-                const audio = new Audio('/sounds/notification.mp3');
-                audio.volume = 0.5;
-                audio.play().catch(() => { });
-            } catch (e) { }
-
-            // Transition to next mode
-            if (mode === 'work') {
-                const newSessions = completedSessions + 1;
-                setCompletedSessions(newSessions);
-
-                if (newSessions % settings.sessionsBeforeLongBreak === 0) {
-                    setMode('longBreak');
-                    setTimeLeft(settings.longBreakDuration * 60);
-                    if (settings.autoStartBreaks) setIsRunning(true);
-                } else {
-                    setMode('break');
-                    setTimeLeft(settings.breakDuration * 60);
-                    if (settings.autoStartBreaks) setIsRunning(true);
-                }
-            } else {
-                setMode('work');
-                setTimeLeft(settings.workDuration * 60);
-                if (settings.autoStartWork) setIsRunning(true);
-            }
+    // Handle toggle
+    const toggleTimer = () => {
+        if (isActive) {
+            pause();
+        } else if (isPaused) {
+            resume();
+        } else {
+            start();
         }
-    }, [timeLeft, isRunning, mode, completedSessions, settings]);
+    };
 
-    // Controls
-    const toggleTimer = useCallback(() => {
-        setIsRunning(prev => !prev);
-    }, []);
+    // Mode switching
+    const handleModeSwitch = (m: TimerMode) => {
+        if (m === 'work') switchToWork();
+        else switchToBreak(); // Simplification: Manual switch usually acts as skip/force
+    };
 
-    const resetTimer = useCallback(() => {
-        setIsRunning(false);
-        setTimeLeft(getDuration(mode));
-    }, [mode, getDuration]);
-
-    const switchMode = useCallback((newMode: TimerMode) => {
-        setIsRunning(false);
-        setMode(newMode);
-        setTimeLeft(getDuration(newMode));
-    }, [getDuration]);
+    // Display mode logic (treat longBreak as break for simple UI if needed, but we have 3 tabs)
+    // We'll keep the 3 tabs UI from the previous widget but make them functional.
 
     // Get mode colors
     const getModeColor = (m: TimerMode) => {
@@ -176,7 +115,13 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                 {(['work', 'break', 'longBreak'] as TimerMode[]).map((m) => (
                     <button
                         key={m}
-                        onClick={() => switchMode(m)}
+                        onClick={() => {
+                            if (m === 'work') switchToWork();
+                            // For manual break selection, we might need a specific action or just force it.
+                            // The store has `switchToBreak` which calculates short/long automatically.
+                            // To force specific break type, we might need `setMode`.
+                            else useTimerStore.getState().setMode(m);
+                        }}
                         className={`px-2 py-1 text-xs rounded-md transition-all ${mode === m
                             ? 'bg-background shadow text-foreground'
                             : 'text-muted-foreground hover:text-foreground'
@@ -191,7 +136,6 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
             <div className="relative">
                 {/* Progress circle */}
                 <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
-                    {/* Background circle */}
                     <circle
                         cx="50"
                         cy="50"
@@ -201,7 +145,6 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                         strokeWidth="6"
                         className="text-muted/30"
                     />
-                    {/* Progress circle */}
                     <motion.circle
                         cx="50"
                         cy="50"
@@ -223,7 +166,7 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <ModeIcon className={`w-4 h-4 mb-1 ${getModeColor(mode)}`} />
                     <span className="text-2xl font-bold font-mono text-foreground">
-                        {formatTime(timeLeft)}
+                        {formatTime(secondsRemaining)}
                     </span>
                 </div>
             </div>
@@ -234,8 +177,8 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                     variant="outline"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={resetTimer}
-                    aria-label="Reset timer"
+                    onClick={reset}
+                    title="Reset"
                 >
                     <RotateCcw className="w-4 h-4" />
                 </Button>
@@ -245,10 +188,10 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                     size="icon"
                     className="h-10 w-10 rounded-full"
                     onClick={toggleTimer}
-                    aria-label={isRunning ? 'Pause' : 'Start'}
+                    title={isActive ? 'Pause' : 'Start'}
                 >
                     <AnimatePresence mode="wait">
-                        {isRunning ? (
+                        {isActive ? (
                             <motion.div
                                 key="pause"
                                 initial={{ scale: 0 }}
@@ -269,11 +212,21 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                         )}
                     </AnimatePresence>
                 </Button>
+
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={skip}
+                    title="Skip"
+                >
+                    <SkipForward className="w-4 h-4" />
+                </Button>
             </div>
 
             {/* Session counter */}
             <div className="text-xs text-muted-foreground">
-                Sessions: {completedSessions}
+                Sessions: {sessions}
             </div>
         </WidgetWrapper>
     );

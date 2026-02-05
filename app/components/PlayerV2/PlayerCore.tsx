@@ -175,7 +175,8 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
 
             if (!audioRef.current) {
                 audioRef.current = new Audio();
-                audioRef.current.addEventListener('play', handleAudioPlay);
+                audioRef.current.addEventListener('playing', handleAudioPlay);
+                audioRef.current.addEventListener('canplay', handleAudioPlay);
                 audioRef.current.addEventListener('pause', handleAudioPause);
                 audioRef.current.addEventListener('error', handleAudioError);
                 audioRef.current.addEventListener('waiting', handleAudioWaiting);
@@ -195,11 +196,21 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     useEffect(() => {
         if (!currentItem) return;
 
-        if (state === 'loading') {
+        if (state === 'loading' || state === 'playing') {
             if (isYouTubeItem(currentItem) && youtubePlayerRef.current) {
-                youtubePlayerRef.current.playVideo();
+                // For YouTube, 'playing' status is handled by internal player, but we can force it if needed
+                if (state === 'loading') youtubePlayerRef.current.playVideo();
             } else if (isRadioItem(currentItem) && audioRef.current) {
-                audioRef.current.play().catch(console.error);
+                // Ensure audio is playing if state is supposed to be active
+                if (audioRef.current.paused) {
+                    audioRef.current.play().catch(console.error);
+                }
+            }
+        } else if (state === 'paused') {
+            if (isYouTubeItem(currentItem) && youtubePlayerRef.current) {
+                youtubePlayerRef.current.pauseVideo();
+            } else if (isRadioItem(currentItem) && audioRef.current) {
+                audioRef.current.pause();
             }
         }
     }, [state, currentItem]);
@@ -212,7 +223,8 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
         return () => {
             if (audioRef.current) {
                 audioRef.current.pause();
-                audioRef.current.removeEventListener('play', handleAudioPlay);
+                audioRef.current.removeEventListener('playing', handleAudioPlay);
+                audioRef.current.removeEventListener('canplay', handleAudioPlay);
                 audioRef.current.removeEventListener('pause', handleAudioPause);
                 audioRef.current.removeEventListener('error', handleAudioError);
                 audioRef.current.removeEventListener('waiting', handleAudioWaiting);
@@ -238,6 +250,7 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
             modestbranding: 1,
             rel: 0,
             showinfo: 0,
+            origin: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
         },
     };
 

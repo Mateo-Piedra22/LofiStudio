@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 
 // Dynamic imports for UI components to test isolation
-const Background = dynamic(() => import('@/app/components/Background'), { ssr: false });
+// Dynamic imports for UI components to test isolation
+const Background = dynamic(() => import('@/app/components/BackgroundV2'), { ssr: false });
 const Player = dynamic(() => import('@/app/components/PlayerV2').then(m => m.Player), { ssr: false });
 const WidgetGridWrapper = dynamic(() => import('@/app/components/WidgetGrid').then(m => {
     // Basic wrapper to mock props

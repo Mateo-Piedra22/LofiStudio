@@ -56,15 +56,15 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
         setError(null);
 
         try {
-            // Try external API first
-            const response = await fetch('https://api.quotable.io/random?tags=motivation|success|happiness', {
+            // Try reliable alternative API
+            const response = await fetch('https://dummyjson.com/quotes/random', {
                 signal: AbortSignal.timeout(3000),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 setQuote({
-                    text: data.content,
+                    text: data.quote,
                     author: data.author,
                 });
             } else {

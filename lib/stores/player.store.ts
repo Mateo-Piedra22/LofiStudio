@@ -27,6 +27,7 @@ const STORAGE_KEY = 'lofi-player-v2';
 const MAX_HISTORY_ITEMS = 50;
 const MAX_PLAYLIST_ITEMS = 200;
 
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Initial State
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -165,14 +166,18 @@ export const usePlayerStore = create<PlayerStore>()(
                 const state = get();
                 if (state.isInitialized) return;
 
-                // Restore currentItem from playlist if available
+                // Restore currentItem from playlist if available, but Force IDLE state
                 if (state.playlist.length > 0 && state.currentIndex >= 0) {
                     set({
                         isInitialized: true,
                         currentItem: state.playlist[state.currentIndex] || null,
+                        state: 'idle', // Ensure we don't autoplay
                     });
                 } else {
-                    set({ isInitialized: true });
+                    set({
+                        isInitialized: true,
+                        state: 'idle'
+                    });
                 }
             },
 
@@ -233,7 +238,8 @@ export const usePlayerStore = create<PlayerStore>()(
 
             togglePlay: () => {
                 const state = get();
-                if (state.state === 'playing') {
+                // Treat buffering/loading as "active" so we can pause/cancel it
+                if (state.state === 'playing' || state.state === 'buffering' || state.state === 'loading') {
                     get().pause();
                 } else {
                     get().play();
