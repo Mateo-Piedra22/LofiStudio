@@ -105,7 +105,8 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
             isLoading={isLoading}
             error={error}
             onRefresh={fetchQuote}
-            contentClassName="flex items-center justify-center p-4"
+            allowAlignment={true}
+            contentClassName="p-4"
         >
             <AnimatePresence mode="wait">
                 {quote && (
@@ -115,7 +116,7 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.3 }}
-                        className="text-center space-y-3"
+                        className="space-y-3"
                     >
                         {/* Quote text */}
                         <p className="text-sm sm:text-base text-foreground leading-relaxed italic">

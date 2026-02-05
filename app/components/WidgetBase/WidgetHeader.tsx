@@ -11,7 +11,8 @@ import { Settings, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { WidgetIcon } from './WidgetIcon';
-import type { WidgetAction } from '@/lib/types/widget.types';
+import { WidgetAlignmentControl } from './WidgetAlignmentControl';
+import type { WidgetAction, WidgetStyle } from '@/lib/types/widget.types';
 
 interface WidgetHeaderProps {
     /** Widget title */
@@ -26,6 +27,12 @@ interface WidgetHeaderProps {
     onRefresh?: () => void;
     /** Loading state */
     isLoading?: boolean;
+    /** Whether to show alignment controls */
+    allowAlignment?: boolean;
+    /** Current widget style */
+    currentStyle?: WidgetStyle;
+    /** Handler for style updates */
+    onStyleUpdate?: (style: WidgetStyle) => void;
     /** Additional className */
     className?: string;
 }
@@ -44,6 +51,9 @@ export function WidgetHeader({
     onSettings,
     onRefresh,
     isLoading = false,
+    allowAlignment,
+    currentStyle,
+    onStyleUpdate,
     className,
 }: WidgetHeaderProps) {
     return (
@@ -103,6 +113,15 @@ export function WidgetHeader({
                             <RefreshCw className="w-3.5 h-3.5" />
                         )}
                     </Button>
+                )}
+
+                {/* Alignment Control */}
+                {allowAlignment && onStyleUpdate && (
+                    <WidgetAlignmentControl
+                        currentStyle={currentStyle}
+                        onUpdate={onStyleUpdate}
+                        isLoading={isLoading}
+                    />
                 )}
 
                 {/* Settings button */}

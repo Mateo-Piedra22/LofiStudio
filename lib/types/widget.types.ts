@@ -67,6 +67,7 @@ export interface WidgetInstance {
   type: WidgetType;
   layout: WidgetLayout;
   settings: Record<string, unknown>;
+  style?: WidgetStyle;
   isVisible: boolean;
 }
 
@@ -83,6 +84,19 @@ export interface WidgetDefinition {
   maxSize: WidgetSize;
   category: WidgetCategory;
   defaultSettings: Record<string, unknown>;
+  allowAlignment?: boolean;
+}
+
+/**
+ * Visual styling configuration for widgets
+ */
+export interface WidgetStyle {
+  // Content alignment (for visual widgets)
+  justifyContent?: 'start' | 'center' | 'end';
+  alignItems?: 'start' | 'center' | 'end';
+
+  // Optional scaling
+  scale?: number;
 }
 
 /**

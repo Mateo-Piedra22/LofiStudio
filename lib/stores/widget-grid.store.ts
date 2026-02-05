@@ -11,7 +11,8 @@ import type {
     WidgetType,
     WidgetLayout,
     GridPosition,
-    GridDimensions
+    GridDimensions,
+    WidgetStyle
 } from '../types/widget.types';
 import type {
     BreakpointId,
@@ -56,11 +57,13 @@ interface WidgetGridState {
 interface WidgetGridActions {
     // Initialization
     initialize: () => void;
+    validateLayouts: () => void;
 
     // Widget CRUD
     addWidget: (type: WidgetType, position?: GridPosition) => string | null;
     removeWidget: (id: string) => void;
     updateWidgetSettings: (id: string, settings: Record<string, unknown>) => void;
+    updateWidgetStyle: (id: string, style: WidgetStyle) => void;
     toggleWidgetVisibility: (id: string) => void;
 
     // Layout operations
@@ -173,11 +176,81 @@ export const useWidgetGridStore = create<WidgetGridStore>()(
             // Initialization
             // ============================================
 
+            validateLayouts: () => {
+                set((state) => {
+                    for (const bp of Object.keys(state.layouts) as BreakpointId[]) {
+                        const originalLayouts = state.layouts[bp];
+                        const validLayouts: WidgetLayoutEntry[] = [];
+                        const config = getBreakpointConfig(bp);
+
+                        for (const layout of originalLayouts) {
+                            // 1. Clamp dimensions to grid size (sanity check)
+                            const safeRows = Math.min(layout.dimensions.rows, config.gridRows);
+                            const safeCols = Math.min(layout.dimensions.cols, config.gridCols);
+                            const safeDimensions = { rows: safeRows, cols: safeCols };
+
+                            // 2. Clamp position to bounds
+                            const clampedRow = Math.max(0, Math.min(layout.position.row, config.gridRows - safeRows));
+                            const clampedCol = Math.max(0, Math.min(layout.position.col, config.gridCols - safeCols));
+                            let proposedPos = { col: clampedCol, row: clampedRow };
+
+                            // 3. Check for collisions with already validated widgets
+                            let hasCollision = false;
+                            for (const valid of validLayouts) {
+                                const overlap = !(
+                                    proposedPos.col + safeDimensions.cols <= valid.position.col ||
+                                    valid.position.col + valid.dimensions.cols <= proposedPos.col ||
+                                    proposedPos.row + safeDimensions.rows <= valid.position.row ||
+                                    valid.position.row + valid.dimensions.rows <= proposedPos.row
+                                );
+                                if (overlap) {
+                                    hasCollision = true;
+                                    break;
+                                }
+                            }
+
+                            // 4. If collision or invalid, find new spot
+                            if (hasCollision) {
+                                const newPos = findAvailablePositionInLayout(
+                                    validLayouts,
+                                    safeDimensions,
+                                    bp
+                                );
+                                if (newPos) {
+                                    proposedPos = newPos;
+                                    hasCollision = false;
+                                }
+                            }
+
+                            // 5. If valid and safe, add to list
+                            if (!hasCollision) {
+                                validLayouts.push({
+                                    ...layout,
+                                    position: proposedPos,
+                                    dimensions: safeDimensions
+                                });
+                            } else {
+                                console.warn(`Widget ${layout.widgetId} removed during validation (no space/collision).`);
+                            }
+                        }
+
+                        state.layouts[bp] = validLayouts;
+                    }
+                });
+            },
+
+            // ============================================
+            // Initialization
+            // ============================================
+
             initialize: () => {
                 if (typeof window === 'undefined') return;
 
                 const width = window.innerWidth;
                 const breakpoint = getCurrentBreakpoint(width);
+
+                // Run validation first to clean up any bad persisted state
+                get().validateLayouts();
 
                 set((state) => {
                     state.currentBreakpoint = breakpoint;
@@ -277,6 +350,15 @@ export const useWidgetGridStore = create<WidgetGridStore>()(
                     const widget = state.widgets.find(w => w.id === id);
                     if (widget) {
                         widget.settings = { ...widget.settings, ...settings };
+                    }
+                });
+            },
+
+            updateWidgetStyle: (id, style) => {
+                set((state) => {
+                    const widget = state.widgets.find(w => w.id === id);
+                    if (widget) {
+                        widget.style = { ...widget.style, ...style };
                     }
                 });
             },

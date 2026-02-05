@@ -12,6 +12,7 @@ import { useCloudSync } from '@/lib/hooks/useCloudSync';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useBreakpoint } from '@/lib/hooks/useBreakpoint';
 import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
+import { useAudioStore } from '@/lib/stores/audio.store';
 import { getBreakpointConfig } from '@/lib/constants/breakpoints';
 import { useToast, ToastContainer } from '@/app/components/Toast';
 import { Player } from '@/app/components/PlayerV2';
@@ -256,6 +257,7 @@ export default function StudioClient() {
         window.addEventListener('open-logs', openLogs as EventListener);
         window.addEventListener('open-settings', openSettingsEv as EventListener);
         window.addEventListener('open-widget-manager', openWM as EventListener);
+        window.addEventListener('open-ambient-mixer', () => useAudioStore.getState().setMixerOpen(true));
 
         return () => {
             window.removeEventListener('toggle-edit-layout', toggleEdit as EventListener);
@@ -265,6 +267,7 @@ export default function StudioClient() {
             window.removeEventListener('open-logs', openLogs as EventListener);
             window.removeEventListener('open-settings', openSettingsEv as EventListener);
             window.removeEventListener('open-widget-manager', openWM as EventListener);
+            window.removeEventListener('open-ambient-mixer', () => useAudioStore.getState().setMixerOpen(true));
         };
     }, [isEditingLayout, showWidgetHeaders, handleReauth, setIsEditingLayout, setShowWidgetHeaders]);
 
@@ -371,9 +374,22 @@ export default function StudioClient() {
                     <WidgetGrid renderWidget={renderWidget} />
                 </div>
 
-                {/* Floating Player V2 */}
+                {/* Floating Player V2 (Hidden by default, reveal on hover) */}
                 {!isEditingLayout && !isZenMode && (
-                    <Player showMini={true} />
+                    <div className="group fixed bottom-0 left-0 right-0 z-40 hover:h-auto transition-all duration-300 isolate">
+                        {/* Trigger Area - Invisible strip at bottom with visual hint */}
+                        <div className="absolute bottom-0 left-0 right-0 h-6 bg-transparent z-[60] cursor-pointer flex justify-center items-end pb-1">
+                            <div className="w-24 h-1 bg-foreground/20 rounded-t-full shadow-sm backdrop-blur-sm transition-opacity duration-300 opacity-50 group-hover:opacity-0" />
+                        </div>
+
+                        {/* Player Container */}
+                        <div className="translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-in-out">
+                            <Player
+                                showMini={true}
+                                className="relative !bottom-auto !left-auto !right-auto border-t bg-background/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.2)]"
+                            />
+                        </div>
+                    </div>
                 )}
 
                 {/* Modals */}
@@ -529,7 +545,9 @@ export default function StudioClient() {
                     </div>
                 )}
 
-                <AmbientMixer />
+                <AmbientMixer
+                    className="fixed bottom-24 right-4 z-40 max-h-[60vh] w-80 shadow-2xl rounded-2xl border"
+                />
             </main>
         </>
     );

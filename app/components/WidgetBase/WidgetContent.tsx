@@ -55,8 +55,7 @@ export function WidgetContent({
             className={cn(
                 'flex-1 min-h-0 overflow-hidden',
                 paddingClasses[padding],
-                centered && 'flex items-center justify-center',
-                className
+                centered && 'flex items-center justify-center'
             )}
         >
             <AnimatePresence mode="wait">
@@ -114,7 +113,7 @@ export function WidgetContent({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="h-full w-full"
+                        className={cn("h-full w-full", className)}
                     >
                         {children}
                     </motion.div>

@@ -9,23 +9,63 @@ import { useEffect, useCallback, useMemo } from 'react';
 import { useWidgetGridStore, selectWidgets, selectCurrentBreakpoint, selectCurrentLayout, selectIsEditMode, selectShowHeaders, selectDragState, selectVisibleWidgets } from '../stores/widget-grid.store';
 import { getCurrentBreakpoint, getBreakpointConfig, isMobileBreakpoint, isDesktopBreakpoint } from '../constants/breakpoints';
 import type { WidgetType, GridPosition, GridDimensions } from '../types/widget.types';
-import type { BreakpointId, BreakpointState } from '../types/layout.types';
+import type { BreakpointState } from '../types/layout.types';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Main hook for the widget grid system
  * Provides all necessary state and actions for managing widgets
  */
 export function useWidgetGrid() {
-    const store = useWidgetGridStore();
-
-    // Selectors for optimized renders
+    // Select state atomically using useShallow where appropriate to prevent unnecessary re-renders
     const widgets = useWidgetGridStore(selectWidgets);
     const currentBreakpoint = useWidgetGridStore(selectCurrentBreakpoint);
     const currentLayout = useWidgetGridStore(selectCurrentLayout);
     const isEditMode = useWidgetGridStore(selectIsEditMode);
     const showHeaders = useWidgetGridStore(selectShowHeaders);
     const dragState = useWidgetGridStore(selectDragState);
-    const visibleWidgets = useWidgetGridStore(selectVisibleWidgets);
+    // selectVisibleWidgets returns a .filter() result (new array), so we MUST use useShallow
+    const visibleWidgets = useWidgetGridStore(useShallow(selectVisibleWidgets));
+    const isInitialized = useWidgetGridStore(state => state.isInitialized);
+
+    // Get actions (stable references, no need to select)
+    const initialize = useWidgetGridStore(state => state.initialize);
+    const setBreakpoint = useWidgetGridStore(state => state.setBreakpoint);
+    const addWidgetAction = useWidgetGridStore(state => state.addWidget);
+    const removeWidgetAction = useWidgetGridStore(state => state.removeWidget);
+    const updateWidgetSettingsAction = useWidgetGridStore(state => state.updateWidgetSettings);
+    const moveWidgetAction = useWidgetGridStore(state => state.moveWidget);
+    const resizeWidgetAction = useWidgetGridStore(state => state.resizeWidget);
+    const swapWidgetsAction = useWidgetGridStore(state => state.swapWidgets);
+    const toggleEditModeAction = useWidgetGridStore(state => state.toggleEditMode);
+    const setEditModeAction = useWidgetGridStore(state => state.setEditMode);
+    const toggleShowHeadersAction = useWidgetGridStore(state => state.toggleShowHeaders);
+    const applyPresetAction = useWidgetGridStore(state => state.applyPreset);
+    const clearAllWidgetsAction = useWidgetGridStore(state => state.clearAllWidgets);
+
+    // Drag actions
+    const startDragAction = useWidgetGridStore(state => state.startDrag);
+    const updateDragPositionAction = useWidgetGridStore(state => state.updateDragPosition);
+    const endDragAction = useWidgetGridStore(state => state.endDrag);
+    const cancelDragAction = useWidgetGridStore(state => state.cancelDrag);
+
+    // Helper accessors via getState() to avoid subscription loops for calculated values
+    // that don't need to be reactive state in the render cycle themselves unless their dependencies change
+    const getWidgetById = useCallback((id: string) => {
+        return useWidgetGridStore.getState().getWidgetById(id);
+    }, []);
+
+    const getWidgetAtPosition = useCallback((position: GridPosition) => {
+        return useWidgetGridStore.getState().getWidgetAtPosition(position);
+    }, []);
+
+    const canPlaceWidget = useCallback((dimensions: GridDimensions, position: GridPosition, excludeId?: string) => {
+        return useWidgetGridStore.getState().canPlaceWidget(dimensions, position, excludeId);
+    }, []);
+
+    const findAvailablePosition = useCallback((dimensions: GridDimensions) => {
+        return useWidgetGridStore.getState().findAvailablePosition(dimensions);
+    }, []);
 
     // Get breakpoint config
     const breakpointConfig = useMemo(() =>
@@ -48,16 +88,21 @@ export function useWidgetGrid() {
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
-        // Initialize
-        store.initialize();
+        // Initialize and rehydrate
+        useWidgetGridStore.persist.rehydrate();
+        initialize();
 
         // Handle resize
         const handleResize = () => {
             const newBreakpoint = getCurrentBreakpoint(window.innerWidth);
-            if (newBreakpoint !== store.currentBreakpoint) {
-                store.setBreakpoint(newBreakpoint);
+            // We use getState() here to check current value without dependency
+            if (newBreakpoint !== useWidgetGridStore.getState().currentBreakpoint) {
+                setBreakpoint(newBreakpoint);
             }
         };
+
+        // Check immediately
+        handleResize();
 
         // Debounced resize handler
         let timeoutId: NodeJS.Timeout;
@@ -72,101 +117,31 @@ export function useWidgetGrid() {
             window.removeEventListener('resize', debouncedResize);
             clearTimeout(timeoutId);
         };
-    }, []);
+    }, [initialize, setBreakpoint]);
 
-    // ============================================
-    // Actions with callbacks for stability
-    // ============================================
+    // Derived values calculation using memoization to avoid loop
+    const { gridCapacity, usedCapacity, availableCapacity, isAtCapacity } = useMemo(() => {
+        // We recalculate these when relevant state changes
+        const config = getBreakpointConfig(currentBreakpoint);
+        const capacity = config.gridCols * config.gridRows;
 
-    const addWidget = useCallback((type: WidgetType, position?: GridPosition) => {
-        return store.addWidget(type, position);
-    }, [store]);
+        let used = 0;
+        // Access layout directly from store state for calculation
+        // but we need the specific layout for this breakpoint
+        const layoutsInStore = useWidgetGridStore.getState().layouts;
+        const layoutForBp = layoutsInStore[currentBreakpoint] || [];
 
-    const removeWidget = useCallback((id: string) => {
-        store.removeWidget(id);
-    }, [store]);
+        layoutForBp.forEach(l => {
+            used += l.dimensions.cols * l.dimensions.rows;
+        });
 
-    const updateWidgetSettings = useCallback((id: string, settings: Record<string, unknown>) => {
-        store.updateWidgetSettings(id, settings);
-    }, [store]);
-
-    const moveWidget = useCallback((id: string, position: GridPosition) => {
-        return store.moveWidget(id, position);
-    }, [store]);
-
-    const resizeWidget = useCallback((id: string, dimensions: GridDimensions) => {
-        return store.resizeWidget(id, dimensions);
-    }, [store]);
-
-    const swapWidgets = useCallback((id1: string, id2: string) => {
-        store.swapWidgets(id1, id2);
-    }, [store]);
-
-    const toggleEditMode = useCallback(() => {
-        store.toggleEditMode();
-    }, [store]);
-
-    const setEditMode = useCallback((enabled: boolean) => {
-        store.setEditMode(enabled);
-    }, [store]);
-
-    const toggleShowHeaders = useCallback(() => {
-        store.toggleShowHeaders();
-    }, [store]);
-
-    const applyPreset = useCallback((widgets: Parameters<typeof store.applyPreset>[0]) => {
-        store.applyPreset(widgets);
-    }, [store]);
-
-    const clearAllWidgets = useCallback(() => {
-        store.clearAllWidgets();
-    }, [store]);
-
-    // ============================================
-    // Drag & Drop
-    // ============================================
-
-    const startDrag = useCallback((widgetId: string) => {
-        store.startDrag(widgetId);
-    }, [store]);
-
-    const updateDragPosition = useCallback((position: GridPosition) => {
-        store.updateDragPosition(position);
-    }, [store]);
-
-    const endDrag = useCallback((targetPosition: GridPosition | null) => {
-        store.endDrag(targetPosition);
-    }, [store]);
-
-    const cancelDrag = useCallback(() => {
-        store.cancelDrag();
-    }, [store]);
-
-    // ============================================
-    // Helpers
-    // ============================================
-
-    const getWidgetById = useCallback((id: string) => {
-        return store.getWidgetById(id);
-    }, [store]);
-
-    const getWidgetAtPosition = useCallback((position: GridPosition) => {
-        return store.getWidgetAtPosition(position);
-    }, [store]);
-
-    const canPlaceWidget = useCallback((dimensions: GridDimensions, position: GridPosition, excludeId?: string) => {
-        return store.canPlaceWidget(dimensions, position, excludeId);
-    }, [store]);
-
-    const findAvailablePosition = useCallback((dimensions: GridDimensions) => {
-        return store.findAvailablePosition(dimensions);
-    }, [store]);
-
-    // Capacity info
-    const gridCapacity = store.getGridCapacity();
-    const usedCapacity = store.getUsedCapacity();
-    const availableCapacity = gridCapacity - usedCapacity;
-    const isAtCapacity = availableCapacity <= 0;
+        return {
+            gridCapacity: capacity,
+            usedCapacity: used,
+            availableCapacity: capacity - used,
+            isAtCapacity: capacity - used <= 0
+        };
+    }, [currentBreakpoint, widgets, currentLayout]); // Recalculate when layout/widgets change
 
     return {
         // State
@@ -178,7 +153,7 @@ export function useWidgetGrid() {
         isEditMode,
         showHeaders,
         dragState,
-        isInitialized: store.isInitialized,
+        isInitialized,
 
         // Capacity
         gridCapacity,
@@ -187,27 +162,27 @@ export function useWidgetGrid() {
         isAtCapacity,
 
         // Widget actions
-        addWidget,
-        removeWidget,
-        updateWidgetSettings,
-        moveWidget,
-        resizeWidget,
-        swapWidgets,
+        addWidget: addWidgetAction,
+        removeWidget: removeWidgetAction,
+        updateWidgetSettings: updateWidgetSettingsAction,
+        moveWidget: moveWidgetAction,
+        resizeWidget: resizeWidgetAction,
+        swapWidgets: swapWidgetsAction,
 
         // Mode actions
-        toggleEditMode,
-        setEditMode,
-        toggleShowHeaders,
+        toggleEditMode: toggleEditModeAction,
+        setEditMode: setEditModeAction,
+        toggleShowHeaders: toggleShowHeadersAction,
 
         // Preset actions
-        applyPreset,
-        clearAllWidgets,
+        applyPreset: applyPresetAction,
+        clearAllWidgets: clearAllWidgetsAction,
 
         // Drag & Drop
-        startDrag,
-        updateDragPosition,
-        endDrag,
-        cancelDrag,
+        startDrag: startDragAction,
+        updateDragPosition: updateDragPositionAction,
+        endDrag: endDragAction,
+        cancelDrag: cancelDragAction,
 
         // Helpers
         getWidgetById,

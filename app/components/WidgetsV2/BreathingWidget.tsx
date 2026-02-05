@@ -216,9 +216,10 @@ export function BreathingWidget({ id, settings }: BreathingWidgetProps) {
             title="Breathing"
             icon="Wind"
             showHeader={showHeaders}
-            contentClassName="p-3 flex flex-col items-center justify-center"
+            allowAlignment={true}
+            contentClassName="p-3"
         >
-            <div className="h-full w-full flex flex-col items-center justify-center gap-3">
+            <div className="flex flex-col items-center gap-3">
                 {/* Pattern selector */}
                 {!isRunning && (
                     <div className="relative">

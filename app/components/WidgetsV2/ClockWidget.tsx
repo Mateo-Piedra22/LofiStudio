@@ -74,9 +74,10 @@ export function ClockWidget({ id, settings }: ClockWidgetProps) {
             icon="Clock"
             showHeader={showHeaders}
             actions={actions}
-            contentClassName="flex items-center justify-center"
+            allowAlignment={true}
+            contentClassName=""
         >
-            <div className="text-center space-y-2 px-4">
+            <div className="space-y-2 px-4">
                 {/* Time */}
                 <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground font-mono tracking-tight leading-none">
                     {format(time, timeFormat)}

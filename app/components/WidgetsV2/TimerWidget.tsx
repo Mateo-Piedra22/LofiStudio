@@ -168,7 +168,8 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
             title="Pomodoro"
             icon="Timer"
             showHeader={showHeaders}
-            contentClassName="flex flex-col items-center justify-center gap-3 p-4"
+            allowAlignment={true}
+            contentClassName="gap-3 p-4"
         >
             {/* Mode tabs */}
             <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
@@ -177,8 +178,8 @@ export function TimerWidget({ id, settings: customSettings }: TimerWidgetProps) 
                         key={m}
                         onClick={() => switchMode(m)}
                         className={`px-2 py-1 text-xs rounded-md transition-all ${mode === m
-                                ? 'bg-background shadow text-foreground'
-                                : 'text-muted-foreground hover:text-foreground'
+                            ? 'bg-background shadow text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         {MODE_LABELS[m]}

@@ -10,6 +10,8 @@ import { useAudioStore, selectIsAnyPlaying, selectMasterVolume, selectActiveSoun
 import { AMBIENT_SOUNDS, AUDIO_PRESETS, getSoundById, getSoundsGroupedByCategory, SOUND_CATEGORY_LABELS } from '../constants/audio';
 import type { AmbientSoundDefinition, AudioPreset, SoundCategory } from '../types/audio.types';
 
+import { useShallow } from 'zustand/react/shallow';
+
 /**
  * Main hook for the ambient audio system
  */
@@ -20,7 +22,8 @@ export function useAmbientAudio() {
     const isAnyPlaying = useAudioStore(selectIsAnyPlaying);
     const masterVolume = useAudioStore(selectMasterVolume);
     const activeSounds = useAudioStore(selectActiveSounds);
-    const activeSoundsList = useAudioStore(selectActiveSoundsList);
+    // Use useShallow for array/object selectors that return new references
+    const activeSoundsList = useAudioStore(useShallow(selectActiveSoundsList));
     const isMixerOpen = useAudioStore(selectIsMixerOpen);
 
     // Initialize on mount
@@ -149,10 +152,11 @@ export function useIsAudioPlaying() {
  * Hook for a specific sound's state
  */
 export function useSoundState(soundId: string) {
-    const activeSounds = useAudioStore(selectActiveSounds);
+    // Select ONLY the specific sound state to prevent re-renders when other sounds change
+    const state = useAudioStore(useShallow(s => s.activeSounds[soundId]));
     const store = useAudioStore();
 
-    const state = activeSounds[soundId] ?? null;
+    // Memoize static info
     const soundInfo = useMemo(() => getSoundById(soundId), [soundId]);
 
     const toggle = useCallback(() => {
