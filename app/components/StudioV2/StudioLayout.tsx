@@ -55,9 +55,7 @@ export function StudioLayout() {
                 </div>
             )}
 
-            <AmbientMixer
-                className="fixed bottom-24 right-4 z-40 max-h-[60vh] w-80 shadow-2xl rounded-2xl border"
-            />
+            <AmbientMixer />
         </main>
     );
 }

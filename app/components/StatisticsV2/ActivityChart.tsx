@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStatisticsStore } from '@/lib/stores/statistics.store';
 import { cn } from '@/lib/utils';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ActivityChartProps {
     days?: number;
@@ -16,9 +17,16 @@ interface ActivityChartProps {
 }
 
 export function ActivityChart({ days = 7, className }: ActivityChartProps) {
-    const getActivityChartData = useStatisticsStore(s => s.getActivityChartData);
+    const { sessions, activityLog } = useStatisticsStore(
+        useShallow(state => ({
+            sessions: state.sessions,
+            activityLog: state.activityLog
+        }))
+    );
 
-    const data = useMemo(() => getActivityChartData(days), [getActivityChartData, days]);
+    const data = useMemo(() =>
+        useStatisticsStore.getState().getActivityChartData(days),
+        [sessions, activityLog, days]);
 
     const maxValue = Math.max(...data.map(d => d.workSessions), 1);
 

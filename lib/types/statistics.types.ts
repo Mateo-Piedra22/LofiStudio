@@ -23,6 +23,16 @@ export interface PomodoroSessionV2 {
     notes?: string;
 }
 
+export type ActivityLogType = 'session_start' | 'session_end' | 'task_complete' | 'task_create' | 'goal_met' | 'note_added';
+
+export interface ActivityLogEntry {
+    id: string;
+    type: ActivityLogType;
+    timestamp: number;
+    description: string;
+    metadata?: Record<string, any>;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Statistics Types
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -88,6 +98,7 @@ export interface HourlyDistribution {
 
 export interface StatisticsState {
     sessions: PomodoroSessionV2[];
+    activityLog: ActivityLogEntry[];
     isLoading: boolean;
 }
 
@@ -96,6 +107,10 @@ export interface StatisticsActions {
     logSession: (session: Omit<PomodoroSessionV2, 'id' | 'completedAt'>) => void;
     deleteSession: (id: string) => void;
     clearAllSessions: () => void;
+
+    // Activity Log
+    logActivity: (type: ActivityLogType, description: string, metadata?: Record<string, any>) => void;
+    getRecentActivity: (limit?: number) => ActivityLogEntry[];
 
     // Queries
     getSessionsByDateRange: (startDate: number, endDate: number) => PomodoroSessionV2[];

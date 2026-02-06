@@ -7,6 +7,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useMemo } from 'react'; // Added for hook optimization
 import { syncEngine } from '@/lib/services/sync-engine';
+import { useStatisticsStore } from '@/lib/stores/statistics.store';
+import { useShallow } from 'zustand/react/shallow';
+import { StateStorage } from 'zustand/middleware';
 import type {
     TaskV2,
     TaskList,
@@ -249,6 +252,9 @@ export const useTaskStore = create<TaskStore>()(
                     get().queueSyncOperation(newTask.id, 'create', newTask);
                 }
 
+                // Log to global stats
+                useStatisticsStore.getState().logActivity('task_create', `Created task "${newTask.title}"`, { taskId: newTask.id });
+
                 return newTask;
             },
 
@@ -363,6 +369,9 @@ export const useTaskStore = create<TaskStore>()(
                 if (state.googleTasksEnabled && task.syncInfo?.googleTaskId) {
                     get().queueSyncOperation(id, 'update', { completed: true });
                 }
+
+                // Log to global stats
+                useStatisticsStore.getState().logActivity('task_complete', `Completed task "${task.title}"`, { taskId: id });
             },
 
             reopenTask: (id) => {
@@ -707,7 +716,17 @@ export const useTaskStore = create<TaskStore>()(
         }),
         {
             name: STORAGE_KEY,
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => {
+                if (typeof window === 'undefined') {
+                    const dummyStorage: StateStorage = {
+                        getItem: () => null,
+                        setItem: () => { },
+                        removeItem: () => { },
+                    };
+                    return dummyStorage;
+                }
+                return localStorage;
+            }),
             skipHydration: true,
             partialize: (state) => ({
                 tasks: state.tasks,
@@ -760,11 +779,11 @@ export function useTaskLists(): TaskList[] {
 }
 
 export function useSyncStatus() {
-    return useTaskStore(state => ({
+    return useTaskStore(useShallow(state => ({
         isSyncing: state.isSyncing,
         syncError: state.syncError,
         lastSync: state.lastSyncTimestamp,
         pendingCount: state.syncQueue.length,
         conflictCount: state.syncConflicts.filter(c => !c.resolved).length,
-    }));
+    })));
 }

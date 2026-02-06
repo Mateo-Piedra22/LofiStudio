@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStatisticsStore } from '@/lib/stores/statistics.store';
 import { cn } from '@/lib/utils';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ProductivityHeatmapProps {
     weeks?: number;
@@ -24,9 +25,16 @@ const LEVEL_COLORS = [
 ];
 
 export function ProductivityHeatmap({ weeks = 12, className }: ProductivityHeatmapProps) {
-    const getHeatmapData = useStatisticsStore(s => s.getHeatmapData);
+    const { sessions, activityLog } = useStatisticsStore(
+        useShallow(state => ({
+            sessions: state.sessions,
+            activityLog: state.activityLog
+        }))
+    );
 
-    const cells = useMemo(() => getHeatmapData(weeks), [getHeatmapData, weeks]);
+    const cells = useMemo(() =>
+        useStatisticsStore.getState().getHeatmapData(weeks),
+        [sessions, activityLog, weeks]);
 
     // Group by weeks
     const weekGroups = useMemo(() => {

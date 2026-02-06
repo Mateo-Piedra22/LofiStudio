@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react'
+import { Menu, Volume2 } from 'lucide-react'
 import { useTheme, useGlassOpacity, useSettingsStore } from '@/lib/stores/settings.store';
 import { useAudioStore } from '@/lib/stores/audio.store';
 import UserAuth from '@/app/components/UserAuth';
@@ -132,6 +132,44 @@ export default function TopNavbar() {
 
       <div className="pointer-events-auto">
         <StudioSidebar isOpen={open} onClose={() => setOpen(false)} />
+      </div>
+
+      {/* Right Vertical Trigger Rail (Ambient Mixer) */}
+      <div className={`fixed inset-y-0 right-0 z-[50] ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
+        <div className="group relative h-full flex flex-col justify-center pointer-events-none pr-0">
+
+          {/* Vertical Trigger Zone (Right) */}
+          <div className="absolute inset-y-0 right-0 w-[8px] bg-transparent z-[60] pointer-events-auto cursor-w-resize" />
+
+          {/* Visual Hint */}
+          <div className="absolute inset-y-0 right-0 w-1 md:w-1.5 z-[59] flex items-center pointer-events-none">
+            <div className="h-24 w-full bg-foreground/30 rounded-l-full shadow-sm backdrop-blur-md transition-opacity duration-300 opacity-60 group-hover:opacity-0" />
+          </div>
+
+          {/* Content Slide-out */}
+          <div className="absolute right-1 top-4 bottom-4 w-auto flex flex-col justify-center pointer-events-none">
+            <div
+              className="glass-panel rounded-2xl border border-white/10 p-2 shadow-2xl flex flex-col items-center gap-6 opacity-0 translate-x-full group-hover:opacity-100 group-hover:translate-x-0 group-hover:pointer-events-auto transition-all duration-500 ease-out backdrop-blur-xl bg-black/40"
+              style={{ ['--glass-opacity' as any]: String(minGlass) }}
+            >
+              {/* Mixer Toggle Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-12 w-12 rounded-xl text-foreground hover:bg-white/10 hover:scale-110 transition-all bg-white/5"
+                onClick={openAmbientMixer}
+                title="Open Ambient Sounds"
+              >
+                <Volume2 className="w-6 h-6" />
+              </Button>
+
+              {/* Decorative Vertical Text */}
+              <div className="writing-vertical-lr text-[10px] font-bold tracking-[0.2em] text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 select-none py-6" style={{ writingMode: 'vertical-rl' }}>
+                AMBIENT SOUNDS
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Overlay to catch clicks if needed */}

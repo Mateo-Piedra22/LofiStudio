@@ -67,172 +67,192 @@ export function AmbientMixer({ className, isOpen, onClose }: AmbientMixerProps) 
     return (
         <AnimatePresence>
             {showMixer && (
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className={cn(
-                        'flex flex-col h-full w-full max-w-md',
-                        'bg-background/95 backdrop-blur-xl',
-                        'border-l border-border',
-                        'shadow-2xl',
-                        className
-                    )}
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-border">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                                <Volume2 className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold text-foreground">Ambient Mixer</h2>
-                                <p className="text-xs text-muted-foreground">
-                                    {activeCount > 0 ? `${activeCount} sound${activeCount > 1 ? 's' : ''} playing` : 'No sounds playing'}
-                                </p>
-                            </div>
-                        </div>
+                <>
+                    {/* Backdrop for mobile */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={handleClose}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] md:hidden"
+                    />
 
-                        <Button variant="ghost" size="icon" onClick={handleClose}>
-                            <X className="w-5 h-5" />
-                        </Button>
-                    </div>
+                    <motion.div
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className={cn(
+                            'fixed top-0 right-0 h-full w-full md:w-[400px]',
+                            'bg-[#09090b]/90 backdrop-blur-2xl',
+                            'border-l border-white/10',
+                            'shadow-2xl z-[60]',
+                            'flex flex-col',
+                            className
+                        )}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+                                    <Volume2 className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white tracking-tight">Ambient Mixer</h2>
+                                    <p className="text-xs text-muted-foreground font-medium">
+                                        {activeCount > 0 ? `${activeCount} active sound${activeCount > 1 ? 's' : ''}` : 'Create your atmosphere'}
+                                    </p>
+                                </div>
+                            </div>
 
-                    {/* Master controls */}
-                    <div className="p-4 border-b border-border space-y-4">
-                        {/* Master volume */}
-                        <div className="flex items-center gap-3">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8"
-                                onClick={toggleMasterMute}
+                                onClick={handleClose}
+                                className="h-9 w-9 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
                             >
-                                {isMasterMuted ? (
-                                    <VolumeX className="w-4 h-4 text-muted-foreground" />
-                                ) : (
-                                    <Volume2 className="w-4 h-4" />
-                                )}
+                                <X className="w-5 h-5" />
                             </Button>
-
-                            <Slider
-                                value={[isMasterMuted ? 0 : masterVolume]}
-                                onValueChange={([value]) => setMasterVolume(value)}
-                                max={100}
-                                step={1}
-                                className="flex-1"
-                                aria-label="Master volume"
-                            />
-
-                            <span className="text-xs text-muted-foreground w-8 text-right">
-                                {isMasterMuted ? '0' : masterVolume}%
-                            </span>
                         </div>
 
-                        {/* Quick actions */}
-                        <div className="flex gap-2">
+                        {/* Master controls */}
+                        <div className="p-6 border-b border-white/5 space-y-5 bg-black/20">
+                            {/* Master volume */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                                    <span>Master Volume</span>
+                                    <span>{isMasterMuted ? 'Muted' : `${masterVolume}%`}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-white"
+                                        onClick={toggleMasterMute}
+                                    >
+                                        {isMasterMuted ? (
+                                            <VolumeX className="w-5 h-5" />
+                                        ) : (
+                                            <Volume2 className="w-5 h-5" />
+                                        )}
+                                    </Button>
+
+                                    <Slider
+                                        value={[isMasterMuted ? 0 : masterVolume]}
+                                        onValueChange={([value]) => setMasterVolume(value)}
+                                        max={100}
+                                        step={1}
+                                        className="flex-1 [&>.absolute]:bg-primary"
+                                        aria-label="Master volume"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Quick actions */}
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1"
+                                className="w-full h-9 border-white/10 hover:bg-white/5 hover:text-white text-muted-foreground transition-all"
                                 onClick={isAnyPlaying ? stopAll : undefined}
                                 disabled={!isAnyPlaying}
                             >
                                 {isAnyPlaying ? (
                                     <>
-                                        <Pause className="w-3 h-3 mr-1" />
-                                        Stop All
+                                        <Pause className="w-3 h-3 mr-2" />
+                                        Stop All Sounds
                                     </>
                                 ) : (
-                                    'No sounds'
+                                    <span className="opacity-50">No sounds playing</span>
                                 )}
                             </Button>
                         </div>
-                    </div>
 
-                    {/* Category tabs */}
-                    <div className="flex gap-1 p-3 border-b border-border overflow-x-auto">
-                        <button
-                            onClick={() => setSelectedCategory(null)}
-                            className={cn(
-                                'px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
-                                !categoryToShow
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                            )}
-                        >
-                            All
-                        </button>
-                        {categories.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={cn(
-                                    'px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
-                                    categoryToShow === cat
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-muted-foreground hover:text-foreground'
-                                )}
-                            >
-                                {categoryLabels[cat]}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Presets */}
-                    {!categoryToShow && (
-                        <div className="p-3 border-b border-border">
-                            <p className="text-xs font-medium text-muted-foreground mb-2">Quick Presets</p>
-                            <div className="flex gap-2 overflow-x-auto pb-1">
-                                {presets.map((preset) => (
+                        {/* Category tabs */}
+                        <div className="p-2 border-b border-white/5">
+                            <div className="flex bg-black/20 p-1 rounded-xl overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                                <button
+                                    onClick={() => setSelectedCategory(null)}
+                                    className={cn(
+                                        'px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0',
+                                        !categoryToShow
+                                            ? 'bg-white/10 text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                    )}
+                                >
+                                    All
+                                </button>
+                                {categories.map((cat) => (
                                     <button
-                                        key={preset.id}
-                                        onClick={() => applyPreset(preset.id)}
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
                                         className={cn(
-                                            'flex items-center gap-2 px-3 py-2 rounded-lg',
-                                            'bg-muted/50 hover:bg-muted',
-                                            'text-sm text-foreground whitespace-nowrap',
-                                            'transition-colors'
+                                            'px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0',
+                                            categoryToShow === cat
+                                                ? 'bg-white/10 text-white shadow-sm'
+                                                : 'text-muted-foreground hover:text-white hover:bg-white/5'
                                         )}
                                     >
-                                        <WidgetIcon name={preset.icon} className="w-4 h-4" />
-                                        <span>{preset.name}</span>
+                                        {categoryLabels[cat]}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                    )}
 
-                    {/* Sound list */}
-                    <div className="flex-1 overflow-y-auto p-3">
-                        <div className="grid grid-cols-2 gap-2">
-                            {displaySounds.map((sound) => (
-                                <AmbientSoundCard key={sound.id} soundId={sound.id} />
-                            ))}
-                        </div>
-                    </div>
+                        {/* Presets - Only show on 'All' */}
+                        {!categoryToShow && (
+                            <div className="p-4 border-b border-white/5">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 px-1">Quick Presets</p>
+                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                                    {presets.map((preset) => (
+                                        <button
+                                            key={preset.id}
+                                            onClick={() => applyPreset(preset.id)}
+                                            className={cn(
+                                                'flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5',
+                                                'bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10',
+                                                'text-xs font-medium text-muted-foreground hover:text-white',
+                                                'transition-all whitespace-nowrap shrink-0'
+                                            )}
+                                        >
+                                            <WidgetIcon name={preset.icon} className="w-4 h-4 opacity-70" />
+                                            <span>{preset.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Active sounds indicator */}
-                    {activeSoundsList.length > 0 && (
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="p-3 border-t border-border bg-muted/30"
-                        >
-                            <p className="text-xs font-medium text-muted-foreground mb-2">Now Playing</p>
-                            <div className="flex flex-wrap gap-1">
-                                {activeSoundsList.map((sound) => (
-                                    <span
-                                        key={sound.id}
-                                        className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
-                                    >
-                                        {sound.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                                    </span>
+                        {/* Sound list */}
+                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-3 pb-8">
+                                {displaySounds.map((sound) => (
+                                    <AmbientSoundCard key={sound.id} soundId={sound.id} />
                                 ))}
                             </div>
-                        </motion.div>
-                    )}
-                </motion.div>
+                        </div>
+
+                        {/* Active sounds footer (if any playing) */}
+                        {activeSoundsList.length > 0 && (
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md sticky bottom-0"
+                            >
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Now Playing</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {activeSoundsList.map((sound) => (
+                                        <span
+                                            key={sound.id}
+                                            className="px-2.5 py-1 text-[10px] uppercase tracking-wide font-bold rounded-md bg-primary/20 text-primary border border-primary/20"
+                                        >
+                                            {sound.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                                        </span>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </motion.div>
+                </>
             )}
         </AnimatePresence>
     );

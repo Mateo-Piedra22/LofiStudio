@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import type {
     StatisticsStore,
     StatisticsState,
@@ -16,8 +17,11 @@ import type {
     HeatmapCell,
     HourlyDistribution,
     StreakInfo,
+    ActivityLogEntry,
+    ActivityLogType,
 } from '@/lib/types/statistics.types';
-import { getDateString, getWeekStart, getDayName } from '@/lib/types/statistics.types';
+import { getDateString, getWeekStart, getDayName, formatDurationShort } from '@/lib/types/statistics.types';
+import { StateStorage } from 'zustand/middleware';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Constants
@@ -32,6 +36,7 @@ const MAX_SESSIONS = 1000;
 
 const initialState: StatisticsState = {
     sessions: [],
+    activityLog: [],
     isLoading: false,
 };
 
@@ -69,9 +74,22 @@ export const useStatisticsStore = create<StatisticsStore>()(
                     completedAt: Date.now(),
                 };
 
-                set(prev => ({
-                    sessions: [session, ...prev.sessions].slice(0, MAX_SESSIONS),
-                }));
+                const description = `Completed ${formatDurationShort(session.duration)} ${session.mode} session`;
+
+                set(prev => {
+                    const newLog: ActivityLogEntry = {
+                        id: crypto.randomUUID(),
+                        type: 'session_end',
+                        timestamp: Date.now(),
+                        description,
+                        metadata: { sessionId: session.id, mode: session.mode }
+                    };
+
+                    return {
+                        sessions: [session, ...prev.sessions].slice(0, MAX_SESSIONS),
+                        activityLog: [newLog, ...prev.activityLog].slice(0, MAX_SESSIONS),
+                    };
+                });
             },
 
             deleteSession: (id: string) => {
@@ -81,7 +99,28 @@ export const useStatisticsStore = create<StatisticsStore>()(
             },
 
             clearAllSessions: () => {
-                set({ sessions: [] });
+                set({ sessions: [], activityLog: [] });
+            },
+
+            // ─────────────────────────────────────────────────────────────────────────
+            // Activity Log
+            // ─────────────────────────────────────────────────────────────────────────
+
+            logActivity: (type, description, metadata) => {
+                const entry: ActivityLogEntry = {
+                    id: crypto.randomUUID(),
+                    type,
+                    description,
+                    timestamp: Date.now(),
+                    metadata,
+                };
+                set(prev => ({
+                    activityLog: [entry, ...prev.activityLog].slice(0, MAX_SESSIONS),
+                }));
+            },
+
+            getRecentActivity: (limit = 50) => {
+                return get().activityLog.slice(0, limit);
             },
 
             // ─────────────────────────────────────────────────────────────────────────
@@ -163,13 +202,22 @@ export const useStatisticsStore = create<StatisticsStore>()(
                 const workSessions = daySessions.filter(s => s.mode === 'work');
                 const breakSessions = daySessions.filter(s => s.mode !== 'work');
 
+                // Calculate tasks completed from Activity Log
+                const startMs = dayStart.getTime();
+                const endMs = dayEnd.getTime();
+                const tasksCompleted = get().activityLog.filter(log =>
+                    log.type === 'task_complete' &&
+                    log.timestamp >= startMs &&
+                    log.timestamp <= endMs
+                ).length;
+
                 return {
                     date: dateStr,
                     workSessions: workSessions.length,
                     breakSessions: breakSessions.length,
                     totalWorkTime: workSessions.reduce((acc, s) => acc + s.duration, 0),
                     totalBreakTime: breakSessions.reduce((acc, s) => acc + s.duration, 0),
-                    tasksCompleted: 0, // Filled from task store if needed
+                    tasksCompleted,
                 };
             },
 
@@ -323,10 +371,21 @@ export const useStatisticsStore = create<StatisticsStore>()(
         }),
         {
             name: STORAGE_KEY,
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => {
+                if (typeof window === 'undefined') {
+                    const dummyStorage: StateStorage = {
+                        getItem: () => null,
+                        setItem: () => { },
+                        removeItem: () => { },
+                    };
+                    return dummyStorage;
+                }
+                return localStorage;
+            }),
             skipHydration: true,
             partialize: (state) => ({
                 sessions: state.sessions,
+                activityLog: state.activityLog,
             }),
         }
     )
@@ -341,9 +400,13 @@ export function useTodaySessionCount(): number {
 }
 
 export function useProductivitySummary(): ProductivitySummary {
-    return useStatisticsStore(state => state.getSummary());
+    return useStatisticsStore(useShallow(state => state.getSummary()));
 }
 
 export function useStreak(): StreakInfo {
-    return useStatisticsStore(state => state.getStreakInfo());
+    return useStatisticsStore(useShallow(state => state.getStreakInfo()));
+}
+
+export function useRecentActivity(limit?: number): ActivityLogEntry[] {
+    return useStatisticsStore(useShallow(state => state.getRecentActivity(limit)));
 }
