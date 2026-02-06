@@ -349,7 +349,7 @@ export interface TaskStoreActions {
     initialize: () => void;
 
     // Task CRUD
-    addTask: (task: Omit<TaskV2, 'id' | 'createdAt' | 'updatedAt' | 'version'>) => TaskV2;
+    addTask: (task: CreateTaskInput) => TaskV2;
     updateTask: (id: string, updates: Partial<TaskV2>) => void;
     deleteTask: (id: string) => void;
     completeTask: (id: string, duration?: number) => void;

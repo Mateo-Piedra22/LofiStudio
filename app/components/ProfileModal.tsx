@@ -45,6 +45,7 @@ interface ProfileModalProps {
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const { data: session, update } = useSession();
     const [selectedStyle, setSelectedStyle] = useState('notionists');
+    const [name, setName] = useState(session?.user?.name || '');
     const [seed, setSeed] = useState(session?.user?.name || 'lofi');
     const [customUrl, setCustomUrl] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -55,14 +56,19 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            const payload: { image: string; name?: string } = { image: currentAvatarUrl };
+            if (name.trim() && name.trim() !== session?.user?.name) {
+                payload.name = name.trim();
+            }
+
             const res = await fetch('/api/user/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: currentAvatarUrl }),
+                body: JSON.stringify(payload),
             });
 
             if (res.ok) {
-                await update({ image: currentAvatarUrl });
+                await update(payload);
                 router.refresh();
                 onClose();
             } else {
@@ -103,6 +109,16 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
                     <div className="space-y-4">
                         <div>
+                            <label className="text-sm font-medium mb-2 block">Display Name</label>
+                            <Input
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Your name"
+                                className="bg-background/50 border-border"
+                            />
+                        </div>
+
+                        <div>
                             <label className="text-sm font-medium mb-2 block">Avatar Style</label>
                             <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                                 {AVATAR_STYLES.map((style) => (
@@ -113,8 +129,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                             setCustomUrl('');
                                         }}
                                         className={`text-xs p-2 rounded border ${selectedStyle === style && !customUrl
-                                                ? 'bg-primary/20 border-primary text-primary'
-                                                : 'border-border hover:bg-accent/10'
+                                            ? 'bg-primary/20 border-primary text-primary'
+                                            : 'border-border hover:bg-accent/10'
                                             }`}
                                     >
                                         {style}

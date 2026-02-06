@@ -63,13 +63,17 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
 
             if (response.ok) {
                 const data = await response.json();
-                setQuote({
-                    text: data.quote,
-                    author: data.author,
-                });
-                return;
+                // console.log('[QuoteWidget] DummyJSON response:', data); 
+                if (data && (data.quote || data.content)) {
+                    setQuote({
+                        text: data.quote || data.content,
+                        author: data.author || 'Unknown',
+                    });
+                    return;
+                }
             }
         } catch (e) {
+            console.error('[QuoteWidget] DummyJSON failed:', e);
             // Continue to next provider
         }
 

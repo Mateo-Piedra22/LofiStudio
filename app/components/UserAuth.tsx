@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { signIn, signOut, useSession } from "next-auth/react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -56,16 +57,16 @@ export default function UserAuth() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator className="bg-border" />
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/about">About</a>
+                            <Link href="/about">About</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/legal">Legal</a>
+                            <Link href="/legal">Legal</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/terms">Terms & Conditions</a>
+                            <Link href="/terms">Terms & Conditions</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                            <a href="/cookies">Cookies Policy</a>
+                            <Link href="/cookies">Cookies Policy</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border" />
                         <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
@@ -153,16 +154,16 @@ export default function UserAuth() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/about">About</a>
+                    <Link href="/about">About</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/legal">Legal</a>
+                    <Link href="/legal">Legal</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/terms">Terms & Conditions</a>
+                    <Link href="/terms">Terms & Conditions</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-accent/10 focus:text-foreground cursor-pointer">
-                    <a href="/cookies">Cookies Policy</a>
+                    <Link href="/cookies">Cookies Policy</Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

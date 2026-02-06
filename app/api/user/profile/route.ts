@@ -13,14 +13,18 @@ export async function PATCH(req: Request) {
 
     try {
         const body = await req.json()
-        const { image } = body
+        const { image, name } = body
 
-        if (!image) {
-            return new NextResponse("Missing image URL", { status: 400 })
+        if (!image && !name) {
+            return new NextResponse("Missing fields", { status: 400 })
         }
 
+        const updates: { image?: string; name?: string } = {}
+        if (image) updates.image = image
+        if (name) updates.name = name
+
         await db.update(users)
-            .set({ image })
+            .set(updates)
             .where(eq(users.id, session.user.id))
 
         return NextResponse.json({ success: true })

@@ -5,23 +5,17 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { CheckCircle2, Circle, Plus, Trash2, GripVertical, ListTodo, Filter } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Trash2, GripVertical, ListTodo } from 'lucide-react';
 import { WidgetWrapper } from '@/app/components/WidgetBase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
+import { useTaskStore, useTasks } from '@/lib/stores/task.store';
 import { cn } from '@/lib/utils';
 import type { WidgetAction } from '@/lib/types/widget.types';
-
-interface Task {
-    id: string;
-    text: string;
-    completed: boolean;
-    createdAt: string;
-    priority: 'low' | 'medium' | 'high';
-}
+import type { TaskV2 } from '@/lib/types/task.types';
 
 interface TasksWidgetProps {
     id: string;
@@ -31,98 +25,81 @@ interface TasksWidgetProps {
     };
 }
 
-const STORAGE_KEY = 'lofi-tasks-v2';
-
 const PRIORITY_COLORS = {
     low: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
     medium: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
     high: 'bg-red-500/20 text-red-600 dark:text-red-400',
+    urgent: 'bg-red-500/20 text-red-600 dark:text-red-400',
 };
 
 /**
  * Task manager widget
  */
 export function TasksWidget({ id, settings }: TasksWidgetProps) {
-    const [tasks, setTasks] = useState<Task[]>([]);
+    // Store Connection
+    const {
+        addTask: storeAddTask,
+        deleteTask: storeDeleteTask,
+        completeTask: storeCompleteTask,
+        reopenTask: storeReopenTask,
+        updateTask: storeUpdateTask
+    } = useTaskStore();
+
+    // Local UI State
     const [newTaskText, setNewTaskText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-    const [selectedPriority, setSelectedPriority] = useState<Task['priority']>('medium');
+    const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('medium');
 
+    // Settings
     const showHeaders = useWidgetGridStore(state => state.showHeaders);
     const showCompleted = settings?.showCompleted ?? true;
-    const maxTasks = settings?.maxTasks ?? 10;
+    const maxTasks = settings?.maxTasks ?? 50; // Increased default since we have robust storage
 
-    // Load tasks
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
+    // Derived Filters
+    const filterConfig = React.useMemo(() => ({
+        status: filter === 'all'
+            ? (!showCompleted ? 'pending' : undefined)
+            : (filter === 'completed' ? 'completed' : 'pending')
+    }), [filter, showCompleted]);
 
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                setTasks(JSON.parse(saved));
-            }
-        } catch (e) {
-            console.error('Failed to load tasks:', e);
-        }
-    }, []);
+    const tasks = useTasks(filterConfig as any);
 
-    // Save tasks
-    const saveTasks = useCallback((newTasks: Task[]) => {
-        setTasks(newTasks);
-        if (typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(newTasks));
-        }
-    }, []);
+    // Initial Load
+    // Store automagically handles hydration
 
-    // Add task
-    const addTask = useCallback(() => {
+    // Handlers
+    const handleAddTask = useCallback(() => {
         if (!newTaskText.trim()) return;
-        if (tasks.length >= maxTasks) return;
 
-        const task: Task = {
-            id: Date.now().toString(),
-            text: newTaskText.trim(),
-            completed: false,
-            createdAt: new Date().toISOString(),
+        storeAddTask({
+            title: newTaskText.trim(),
             priority: selectedPriority,
-        };
+        });
 
-        saveTasks([task, ...tasks]);
         setNewTaskText('');
         setIsAdding(false);
-    }, [newTaskText, tasks, maxTasks, selectedPriority, saveTasks]);
+    }, [newTaskText, selectedPriority, storeAddTask]);
 
-    // Toggle task
-    const toggleTask = useCallback((taskId: string) => {
-        saveTasks(tasks.map(task =>
-            task.id === taskId ? { ...task, completed: !task.completed } : task
-        ));
-    }, [tasks, saveTasks]);
+    const handleToggleTask = useCallback((task: TaskV2) => {
+        if (task.completed) {
+            storeReopenTask(task.id);
+        } else {
+            storeCompleteTask(task.id);
+        }
+    }, [storeReopenTask, storeCompleteTask]);
 
-    // Remove task
-    const removeTask = useCallback((taskId: string) => {
-        saveTasks(tasks.filter(task => task.id !== taskId));
-    }, [tasks, saveTasks]);
+    const handleClearCompleted = useCallback(() => {
+        // We probably don't want to bulk delete in the real store without confirmation,
+        // but for now, we'll iterate and remove completed tasks visible here.
+        tasks.filter(t => t.completed).forEach(t => storeDeleteTask(t.id));
+    }, [tasks, storeDeleteTask]);
 
-    // Clear completed
-    const clearCompleted = useCallback(() => {
-        saveTasks(tasks.filter(task => !task.completed));
-    }, [tasks, saveTasks]);
+    // Reorder isn't natively supported in the generic store yet (usually requires an 'order' field).
+    // For now we will disable the drag-to-reorder purely to avoid UI confusion until store supports it, 
+    // OR we just perform a dummy reorder locally. The store sorts by sort options.
+    // Let's rely on the store's sort (default: createdAt desc) for now.
 
-    // Reorder tasks
-    const handleReorder = useCallback((reordered: Task[]) => {
-        saveTasks(reordered);
-    }, [saveTasks]);
-
-    // Filter tasks
-    const filteredTasks = tasks.filter(task => {
-        if (filter === 'active') return !task.completed;
-        if (filter === 'completed') return task.completed;
-        return showCompleted || !task.completed;
-    });
-
-    // Stats
     const completedCount = tasks.filter(t => t.completed).length;
     const totalCount = tasks.length;
 
@@ -132,7 +109,7 @@ export function TasksWidget({ id, settings }: TasksWidgetProps) {
             id: 'clear',
             icon: 'Trash2',
             label: 'Clear completed',
-            onClick: clearCompleted,
+            onClick: handleClearCompleted,
             disabled: completedCount === 0,
         },
     ];
@@ -163,7 +140,7 @@ export function TasksWidget({ id, settings }: TasksWidgetProps) {
                                 className="h-8 text-sm"
                                 autoFocus
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') addTask();
+                                    if (e.key === 'Enter') handleAddTask();
                                     if (e.key === 'Escape') {
                                         setIsAdding(false);
                                         setNewTaskText('');
@@ -202,7 +179,7 @@ export function TasksWidget({ id, settings }: TasksWidgetProps) {
                                 <Button
                                     size="sm"
                                     className="flex-1 h-7 text-xs"
-                                    onClick={addTask}
+                                    onClick={handleAddTask}
                                     disabled={!newTaskText.trim()}
                                 >
                                     Add
@@ -228,46 +205,36 @@ export function TasksWidget({ id, settings }: TasksWidgetProps) {
                 </AnimatePresence>
 
                 {/* Filter tabs */}
-                {tasks.length > 0 && (
-                    <div className="flex gap-1 p-0.5 bg-muted/30 rounded text-xs">
-                        {(['all', 'active', 'completed'] as const).map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={cn(
-                                    'flex-1 py-1 rounded capitalize transition-colors',
-                                    filter === f
-                                        ? 'bg-background shadow text-foreground'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                )}
-                            >
-                                {f}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="flex gap-1 p-0.5 bg-muted/30 rounded text-xs">
+                    {(['all', 'active', 'completed'] as const).map((f) => (
+                        <button
+                            key={f}
+                            onClick={() => setFilter(f)}
+                            className={cn(
+                                'flex-1 py-1 rounded capitalize transition-colors',
+                                filter === f
+                                    ? 'bg-background shadow text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Task list */}
-                <div className="flex-1 overflow-y-auto">
-                    {filteredTasks.length > 0 ? (
-                        <Reorder.Group
-                            axis="y"
-                            values={filteredTasks}
-                            onReorder={handleReorder}
-                            className="space-y-1"
-                        >
-                            {filteredTasks.map((task) => (
-                                <Reorder.Item
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {tasks.length > 0 ? (
+                        <div className="space-y-1">
+                            {tasks.map((task) => (
+                                <motion.div
                                     key={task.id}
-                                    value={task}
-                                    className="group flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors cursor-grab active:cursor-grabbing"
+                                    layout
+                                    className="group flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors"
                                 >
-                                    {/* Drag handle */}
-                                    <GripVertical className="w-3 h-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-
                                     {/* Checkbox */}
                                     <button
-                                        onClick={() => toggleTask(task.id)}
+                                        onClick={() => handleToggleTask(task)}
                                         className="flex-shrink-0"
                                     >
                                         {task.completed ? (
@@ -282,27 +249,27 @@ export function TasksWidget({ id, settings }: TasksWidgetProps) {
                                         'flex-1 text-xs truncate',
                                         task.completed && 'line-through text-muted-foreground'
                                     )}>
-                                        {task.text}
+                                        {task.title}
                                     </span>
 
                                     {/* Priority indicator */}
                                     <span className={cn(
                                         'px-1.5 py-0.5 text-[10px] rounded',
-                                        PRIORITY_COLORS[task.priority]
+                                        PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.medium
                                     )}>
                                         {task.priority.charAt(0).toUpperCase()}
                                     </span>
 
                                     {/* Delete button */}
                                     <button
-                                        onClick={() => removeTask(task.id)}
+                                        onClick={() => storeDeleteTask(task.id)}
                                         className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                     </button>
-                                </Reorder.Item>
+                                </motion.div>
                             ))}
-                        </Reorder.Group>
+                        </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center">
                             <ListTodo className="w-8 h-8 text-muted-foreground/50 mb-2" />

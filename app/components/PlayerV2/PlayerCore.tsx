@@ -203,7 +203,10 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
             } else if (isRadioItem(currentItem) && audioRef.current) {
                 // Ensure audio is playing if state is supposed to be active
                 if (audioRef.current.paused) {
-                    audioRef.current.play().catch(console.error);
+                    audioRef.current.play().catch(e => {
+                        console.warn('Autoplay prevented:', e);
+                        // Don't log as error to avoid clutter, it's expected browser behavior
+                    });
                 }
             }
         } else if (state === 'paused') {
