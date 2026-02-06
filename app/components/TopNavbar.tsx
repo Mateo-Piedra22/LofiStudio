@@ -84,40 +84,57 @@ export default function TopNavbar() {
   };
 
   return (
-    <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
-      <div className="group relative w-full h-16 pt-2 pointer-events-none">
-        {/* Hover trigger area with visual hint */}
-        <div className="absolute top-0 inset-x-0 h-[6px] bg-transparent z-[60] flex justify-center pointer-events-auto cursor-pointer" />
+    <div className={`fixed inset-y-0 left-0 z-[50] ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
 
-        {/* Visual Pill Hint (Passive) */}
-        <div className="absolute top-0 inset-x-0 h-2 z-[59] flex justify-center pointer-events-none">
-          <div className="w-24 h-1 bg-foreground/20 rounded-b-full shadow-sm backdrop-blur-sm transition-opacity duration-300 opacity-50 group-hover:opacity-0" />
+      {/* Left Vertical Trigger Rail */}
+      <div className="group relative h-full flex flex-col justify-center pointer-events-none pl-0">
+
+        {/* Vertical Trigger Zone (Always interactive) */}
+        <div className="absolute inset-y-0 left-0 w-[8px] bg-transparent z-[60] pointer-events-auto cursor-e-resize" />
+
+        {/* Visual Hint: Thin vertical pill on the left edge */}
+        <div className="absolute inset-y-0 left-0 w-1 md:w-1.5 z-[59] flex items-center pointer-events-none">
+          <div className="h-24 w-full bg-foreground/30 rounded-r-full shadow-sm backdrop-blur-md transition-opacity duration-300 opacity-60 group-hover:opacity-0" />
         </div>
 
-        {/* Navbar Content - ONLY interactive when visible */}
-        <div className="px-4 md:px-6 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none transition-all duration-300 ease-in-out">
-          <div className="h-14 md:h-16 flex items-center">
-            <div className="flex items-center gap-2 glass-panel rounded-full border px-2 py-1 shadow-lg" style={{ ['--glass-opacity' as any]: String(minGlass) }}>
-              <Link href="/" className="flex items-center gap-2">
-                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-8 md:h-9 w-auto rounded-md shadow-md" />
-                <span className="text-foreground text-base md:text-lg font-bold tracking-wide">LofiStudio</span>
-              </Link>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="h-10 rounded-full text-foreground hover:bg-black/5 dark:hover:bg-white/10"
-                onClick={() => setOpen(true)}
-              >
-                <Menu className="w-6 h-6" />
-                <span className="ml-2">Menu</span>
-              </Button>
+        {/* Content: Slides out from left on hover */}
+        <div className="absolute left-1 top-4 bottom-4 w-auto flex flex-col justify-center pointer-events-none">
+          <div
+            className="glass-panel rounded-2xl border border-white/10 p-2 shadow-2xl flex flex-col items-center gap-6 opacity-0 -translate-x-full group-hover:opacity-100 group-hover:translate-x-0 group-hover:pointer-events-auto transition-all duration-500 ease-out backdrop-blur-xl bg-black/40"
+            style={{ ['--glass-opacity' as any]: String(minGlass) }}
+          >
+            {/* Logo (Home) */}
+            <Link href="/" className="p-2 hover:bg-white/10 rounded-xl transition-all hover:scale-105" title="Home">
+              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-10 w-10 rounded-lg shadow-md object-cover" />
+            </Link>
+
+            {/* Divider */}
+            <div className="w-8 h-[1px] bg-white/10" />
+
+            {/* Sidebar Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-xl text-foreground hover:bg-white/10 hover:scale-110 transition-all bg-white/5"
+              onClick={() => setOpen(true)}
+              title="Open Sidebar"
+            >
+              <Menu className="w-6 h-6" />
+            </Button>
+
+            {/* Decorative Vertical Text */}
+            <div className="writing-vertical-lr text-[10px] font-bold tracking-[0.2em] text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 select-none py-6 rotate-180" style={{ writingMode: 'vertical-rl' }}>
+              LOFI STUDIO
             </div>
           </div>
         </div>
       </div>
+
       <div className="pointer-events-auto">
         <StudioSidebar isOpen={open} onClose={() => setOpen(false)} />
       </div>
+
+      {/* Overlay to catch clicks if needed */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 40 }} />
     </div>
   );
