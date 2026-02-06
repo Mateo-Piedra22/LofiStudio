@@ -38,49 +38,54 @@ export function StudioDock() {
         );
     }
 
-    // Full Dock
+    // Full Dock (Vertical Left)
     return (
-        <div data-ui="edit-dock" className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
-            <div className="flex items-center gap-4 glass border px-6 py-3 rounded-full shadow-2xl">
-                <span className="font-medium text-sm text-foreground">Editing Layout</span>
-                <div className="h-4 w-px bg-border" />
+        <div data-ui="edit-dock" className="fixed left-4 top-1/2 -translate-y-1/2 z-[100] animate-in slide-in-from-left-4 fade-in duration-300">
+            <div className="flex flex-col items-center gap-4 glass border p-3 rounded-2xl shadow-2xl">
+                <span className="font-medium text-xs text-muted-foreground uppercase tracking-wider bg-muted/50 px-2 py-1 rounded-full whitespace-nowrap writing-vertical-lr" style={{ writingMode: 'vertical-rl' }}>
+                    Editing
+                </span>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground mr-1">Grid</span>
-                    <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
-                        {breakpointConfig.gridCols}x{breakpointConfig.gridRows}
+                <div className="w-8 h-px bg-border" />
+
+                <div className="flex flex-col items-center gap-1" title="Grid Size">
+                    <span className="text-[10px] text-muted-foreground">Grid</span>
+                    <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded border border-white/10">
+                        {breakpointConfig.gridCols}×{breakpointConfig.gridRows}
                     </span>
                 </div>
 
-                <div className="h-4 w-px bg-border" />
+                <div className="w-8 h-px bg-border" />
 
                 <Button
                     onClick={() => setShowWidgetManager(!showWidgetManager)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-foreground hover:bg-accent hover:text-accent-foreground h-8"
+                    variant={showWidgetManager ? "secondary" : "ghost"}
+                    size="icon"
+                    className="h-10 w-10 rounded-xl"
+                    title={showWidgetManager ? 'Hide Widgets' : 'Add Widgets'}
                 >
-                    <Layout className="w-4 h-4 mr-2" />
-                    {showWidgetManager ? 'Hide Widgets' : 'Add Widgets'}
+                    <Layout className="w-5 h-5" />
                 </Button>
 
                 <Button
                     onClick={() => setIsTopbarHidden(!isTopbarHidden)}
                     variant="ghost"
-                    size="sm"
-                    className="text-foreground hover:bg-accent hover:text-accent-foreground h-8"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
+                    title={isTopbarHidden ? 'Show Interface' : 'Hide Interface'}
                 >
-                    {isTopbarHidden ? 'Show Topbar' : 'Hide Topbar'}
+                    <Eye className="w-5 h-5" />
                 </Button>
+
+                <div className="w-8 h-px bg-border" />
 
                 <Button
                     onClick={() => setIsEditingLayout(false)}
-                    size="sm"
-                    variant="secondary"
-                    className="h-8 rounded-full px-4"
+                    size="icon"
+                    className="h-12 w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
+                    title="Done Editing"
                 >
-                    <Check className="w-4 h-4 mr-2" />
-                    Done
+                    <Check className="w-6 h-6" />
                 </Button>
             </div>
         </div>

@@ -197,6 +197,7 @@ export function WeatherWidget({ id, settings }: WeatherWidgetProps) {
             isLoading={isLoading}
             error={error}
             onRefresh={() => weather && fetchWeather(weather.city)}
+            allowAlignment={true}
             contentClassName="p-3"
         >
             <AnimatePresence mode="wait">
