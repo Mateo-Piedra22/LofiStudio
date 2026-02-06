@@ -87,7 +87,7 @@ export default function TopNavbar() {
     <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
       <div className="group relative w-full h-16 pt-2 pointer-events-none">
         {/* Hover trigger area with visual hint */}
-        <div className="absolute top-0 inset-x-0 h-6 bg-transparent z-[60] flex justify-center pointer-events-auto cursor-pointer" />
+        <div className="absolute top-0 inset-x-0 h-2 bg-transparent z-[60] flex justify-center pointer-events-auto cursor-pointer" />
         <div className="absolute top-0 inset-x-0 h-2 z-[59] flex justify-center pointer-events-none">
           <div className="w-24 h-1 bg-foreground/20 rounded-b-full shadow-sm backdrop-blur-sm transition-opacity duration-300 opacity-50 group-hover:opacity-0" />
         </div>
@@ -112,6 +112,8 @@ export default function TopNavbar() {
             </div>
           </div>
         </div>
+      </div>
+      <div className="pointer-events-auto">
         <StudioSidebar isOpen={open} onClose={() => setOpen(false)} />
       </div>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 40 }} />

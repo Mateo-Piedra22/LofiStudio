@@ -100,7 +100,7 @@ export function StudioSidebar({ isOpen, onClose }: StudioSidebarProps) {
                         animate="open"
                         exit="closed"
                         variants={sidebarVariants}
-                        className="fixed top-0 left-0 bottom-0 w-[85vw] md:w-[360px] bg-[#09090b] border-r border-white/5 z-[100] shadow-[10px_0_50px_-10px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden"
+                        className="fixed top-0 left-0 bottom-0 w-[85vw] md:w-[360px] bg-[#09090b] border-r border-white/5 z-[100] shadow-[10px_0_50px_-10px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden pointer-events-auto"
                     >
                         {/* Decorative Gradient Blob */}
                         <div className="absolute top-[-10%] left-[-20%] w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
