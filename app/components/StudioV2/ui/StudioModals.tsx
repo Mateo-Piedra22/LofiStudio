@@ -7,6 +7,7 @@ import { Settings } from '@/app/components/SettingsV2';
 import { StatsOverview } from '@/app/components/StatisticsV2';
 import { TaskList } from '@/app/components/TasksV2';
 import { WidgetManager } from '@/app/components/WidgetManagerV2';
+import ProfileModal from '@/app/components/ProfileModal';
 import KeyboardShortcutsHelp from '@/app/components/KeyboardShortcutsHelp'; // V1 component, keeping for now
 
 export function StudioModals() {
@@ -16,6 +17,7 @@ export function StudioModals() {
         showLogs, setShowLogs,
         showWidgetManager, setShowWidgetManager,
         showKeyboardHelp, setShowKeyboardHelp,
+        showProfile, setShowProfile,
         isZenMode
     } = useStudio();
 
@@ -29,6 +31,12 @@ export function StudioModals() {
             <Settings
                 open={showSettings}
                 onOpenChange={setShowSettings}
+            />
+
+            {/* Profile */}
+            <ProfileModal
+                isOpen={showProfile}
+                onClose={() => setShowProfile(false)}
             />
 
             {/* Statistics */}

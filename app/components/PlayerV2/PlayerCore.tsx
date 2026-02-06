@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useRef, useCallback, memo } from 'react';
+import { useEffect, useRef, useCallback, memo, useState } from 'react';
 import YouTube, { YouTubeProps, YouTubePlayer } from 'react-youtube';
 import { usePlayerStore } from '@/lib/stores/player.store';
 import { isYouTubeItem, isRadioItem } from '@/lib/types/player.types';
@@ -30,12 +30,21 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     const youtubePlayerRef = useRef<YouTubePlayer | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const isUnmountedRef = useRef(false);
 
     // Clean up interval on unmount
     useEffect(() => {
+        isUnmountedRef.current = false;
         return () => {
+            isUnmountedRef.current = true;
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
+            }
+            // Cleanup audio
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = '';
+                audioRef.current = null;
             }
         };
     }, []);
@@ -45,19 +54,27 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     // ═══════════════════════════════════════════════════════════════
 
     const handleYouTubeReady = useCallback((event: { target: YouTubePlayer }) => {
+        if (isUnmountedRef.current) return;
+
         youtubePlayerRef.current = event.target;
         event.target.setVolume(volume);
         if (muted) event.target.mute();
 
         onPlayerReady?.(event.target);
 
-        // Start playing
-        if (state === 'loading') {
-            event.target.playVideo();
+        // Start playing if state demands it
+        if (state === 'loading' || state === 'playing') {
+            try {
+                event.target.playVideo();
+            } catch (e) {
+                console.warn('[PlayerCore] Safe play failed on ready', e);
+            }
         }
     }, [volume, muted, state, onPlayerReady]);
 
     const handleYouTubeStateChange = useCallback((event: { data: number }) => {
+        if (isUnmountedRef.current) return;
+
         const YT_STATES = {
             UNSTARTED: -1,
             ENDED: 0,
@@ -77,11 +94,17 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
                     clearInterval(progressIntervalRef.current);
                 }
                 progressIntervalRef.current = setInterval(() => {
-                    if (youtubePlayerRef.current) {
-                        const currentTime = youtubePlayerRef.current.getCurrentTime() || 0;
-                        const duration = youtubePlayerRef.current.getDuration() || 0;
-                        const buffered = youtubePlayerRef.current.getVideoLoadedFraction() * duration;
-                        updateProgress(currentTime, duration, buffered);
+                    if (isUnmountedRef.current) return;
+                    if (youtubePlayerRef.current && typeof youtubePlayerRef.current.getCurrentTime === 'function') {
+                        try {
+                            const currentTime = youtubePlayerRef.current.getCurrentTime() || 0;
+                            const duration = youtubePlayerRef.current.getDuration() || 0;
+                            const fraction = youtubePlayerRef.current.getVideoLoadedFraction ? youtubePlayerRef.current.getVideoLoadedFraction() : 0;
+                            const buffered = fraction * duration;
+                            updateProgress(currentTime, duration, buffered);
+                        } catch (e) {
+                            // Ignore API errors during seek/unload
+                        }
                     }
                 }, 250);
                 break;
@@ -109,6 +132,7 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     }, [setState, setError, updateProgress, next]);
 
     const handleYouTubeError = useCallback((event: { data: number }) => {
+        if (isUnmountedRef.current) return;
         console.error('YouTube error:', event.data);
         setError(`YouTube error: ${event.data}`);
         setState('error');
@@ -119,21 +143,25 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     // ═══════════════════════════════════════════════════════════════
 
     const handleAudioPlay = useCallback(() => {
+        if (isUnmountedRef.current) return;
         setState('playing');
         setError(null);
     }, [setState, setError]);
 
     const handleAudioPause = useCallback(() => {
+        if (isUnmountedRef.current) return;
         setState('paused');
     }, [setState]);
 
-    const handleAudioError = useCallback((e: Event) => {
+    const handleAudioError = useCallback((e: Event | string) => {
+        if (isUnmountedRef.current) return;
         console.error('Audio error:', e);
         setError('Failed to load radio stream');
         setState('error');
     }, [setError, setState]);
 
     const handleAudioWaiting = useCallback(() => {
+        if (isUnmountedRef.current) return;
         setState('buffering');
     }, [setState]);
 
@@ -142,12 +170,16 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     // ═══════════════════════════════════════════════════════════════
 
     useEffect(() => {
-        if (youtubePlayerRef.current) {
-            youtubePlayerRef.current.setVolume(volume);
-            if (muted) {
-                youtubePlayerRef.current.mute();
-            } else {
-                youtubePlayerRef.current.unMute();
+        if (youtubePlayerRef.current && typeof youtubePlayerRef.current.setVolume === 'function') {
+            try {
+                youtubePlayerRef.current.setVolume(volume);
+                if (muted) {
+                    youtubePlayerRef.current.mute();
+                } else {
+                    youtubePlayerRef.current.unMute();
+                }
+            } catch (e) {
+                // Ignore
             }
         }
         if (audioRef.current) {
@@ -157,108 +189,108 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
     }, [volume, muted]);
 
     // ═══════════════════════════════════════════════════════════════
-    // Handle item changes
+    // Handle item changes (Switching Sources)
     // ═══════════════════════════════════════════════════════════════
 
     useEffect(() => {
-        // Stop audio when switching to YouTube
-        if (currentItem && isYouTubeItem(currentItem) && audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = '';
+        // Safe cleanup when switching modes
+        if (currentItem && isYouTubeItem(currentItem)) {
+            // STOP Audio if playing
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = '';
+                // Don't nullify ref, just clear src
+            }
         }
 
-        // Handle radio playback
         if (currentItem && isRadioItem(currentItem)) {
-            if (youtubePlayerRef.current) {
-                youtubePlayerRef.current.stopVideo();
+            // PAUSE YouTube if playing (don't stop/destroy to avoid iframe errors)
+            if (youtubePlayerRef.current && typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                try {
+                    youtubePlayerRef.current.pauseVideo();
+                } catch (e) {
+                    console.warn('[PlayerCore] Failed to pause YouTube on switch', e);
+                }
             }
 
+            // Initialize Audio if needed
             if (!audioRef.current) {
                 audioRef.current = new Audio();
+                // Attach listeners
                 audioRef.current.addEventListener('playing', handleAudioPlay);
-                audioRef.current.addEventListener('canplay', handleAudioPlay);
                 audioRef.current.addEventListener('pause', handleAudioPause);
                 audioRef.current.addEventListener('error', handleAudioError);
                 audioRef.current.addEventListener('waiting', handleAudioWaiting);
             }
 
-            audioRef.current.src = currentItem.streamUrl;
-            audioRef.current.volume = volume / 100;
-            audioRef.current.muted = muted;
+            // If new stream or not set
+            if (audioRef.current.src !== currentItem.streamUrl) {
+                audioRef.current.src = currentItem.streamUrl;
+                audioRef.current.volume = volume / 100;
+                audioRef.current.muted = muted;
 
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    if (error.name === 'NotAllowedError') {
-                        console.debug('[PlayerCore] Autoplay prevented by browser policy (Audio) - Waiting for user interaction');
-                        setState('paused');
-                    } else {
-                        console.error('[PlayerCore] Stream play failed', error);
-                        // Don't fail completely, user can try play again
-                    }
-                });
+                const playPromise = audioRef.current.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        if (error.name === 'NotAllowedError') {
+                            console.debug('[PlayerCore] Autoplay prevented (Audio)');
+                            setState('paused');
+                        } else {
+                            console.error('[PlayerCore] Stream play failed', error);
+                            // handleAudioError(error); // Optional
+                        }
+                    });
+                }
             }
         }
     }, [currentItem, volume, muted, handleAudioPlay, handleAudioPause, handleAudioError, handleAudioWaiting]);
 
     // ═══════════════════════════════════════════════════════════════
-    // Handle play/pause from store
+    // Handle play/pause commands from store
     // ═══════════════════════════════════════════════════════════════
 
     useEffect(() => {
-        if (!currentItem) return;
+        if (!currentItem || isUnmountedRef.current) return;
 
-        if (state === 'loading' || state === 'playing') {
+        if (state === 'playing') {
             if (isYouTubeItem(currentItem) && youtubePlayerRef.current) {
-                // For YouTube, 'playing' status is handled by internal player, but we can force it if needed
-                if (state === 'loading') youtubePlayerRef.current.playVideo();
-            } else if (isRadioItem(currentItem) && audioRef.current) {
-                // Ensure audio is playing if state is supposed to be active
-                if (audioRef.current.paused) {
-                    const playPromise = audioRef.current.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            if (error.name === 'NotAllowedError') {
-                                console.debug('[PlayerCore] Autoplay prevented by browser policy (Resume) - Waiting for user interaction');
-                                setState('paused');
-                            } else {
-                                console.warn('[PlayerCore] Resume failed:', error);
-                            }
-                        });
+                try {
+                    // Check if actually playing to avoid loop
+                    const state = youtubePlayerRef.current.getPlayerState();
+                    if (state !== 1 && state !== 3) {
+                        youtubePlayerRef.current.playVideo();
                     }
+                } catch (e) { }
+            } else if (isRadioItem(currentItem) && audioRef.current) {
+                if (audioRef.current.paused) {
+                    audioRef.current.play().catch(() => setState('paused'));
                 }
             }
         } else if (state === 'paused') {
             if (isYouTubeItem(currentItem) && youtubePlayerRef.current) {
-                youtubePlayerRef.current.pauseVideo();
+                try {
+                    youtubePlayerRef.current.pauseVideo();
+                } catch (e) { }
             } else if (isRadioItem(currentItem) && audioRef.current) {
                 audioRef.current.pause();
             }
         }
-    }, [state, currentItem]);
+    }, [state, currentItem, setState]);
 
-    // ═══════════════════════════════════════════════════════════════
-    // Cleanup on unmount
-    // ═══════════════════════════════════════════════════════════════
-
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.removeEventListener('playing', handleAudioPlay);
-                audioRef.current.removeEventListener('canplay', handleAudioPlay);
-                audioRef.current.removeEventListener('pause', handleAudioPause);
-                audioRef.current.removeEventListener('error', handleAudioError);
-                audioRef.current.removeEventListener('waiting', handleAudioWaiting);
-            }
-        };
-    }, [handleAudioPlay, handleAudioPause, handleAudioError, handleAudioWaiting]);
 
     // ═══════════════════════════════════════════════════════════════
     // Render
     // ═══════════════════════════════════════════════════════════════
 
     const youtubeId = currentItem && isYouTubeItem(currentItem) ? currentItem.youtubeId : null;
+
+    // We can ALWAYS render the YouTube component but hide it when unnecessary.
+    // This keeps the iframe alive and prevents "this.g is null" errors on remount/unmount.
+    // However, if we change ID, it reloads.
+
+    // OPTION: Only render if we have an ID.
+    // React-YouTube handles ID changes well.
+    // The issue is likely unmounting the component while it's active.
 
     const opts: YouTubeProps['opts'] = {
         height: '100%',
@@ -276,7 +308,19 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
         },
     };
 
+    // If no YouTube ID ever, we can return null, but best to keep structure stable if possible.
+    if (!youtubeId && state === 'idle') return null;
+
+    // If radio is active, we still want to keep YouTube mounted but hidden IF we were just watching it?
+    // No, if we switch to radio, currentItem is Radio. youtubeId is null.
+    // So YouTube component UNMOUNTS.
+    // This is where "this.g is null" happens if we called a method on it right before unmount.
+
+    // To solve this, we can check `youtubeId`.
+
     if (!youtubeId) {
+        // If unmounting, ensure we don't have pending calls.
+        // returns null unmounts it.
         return null;
     }
 

@@ -20,6 +20,8 @@ interface StudioContextType {
     setShowWidgetManager: (v: boolean) => void;
     showKeyboardHelp: boolean;
     setShowKeyboardHelp: (v: boolean) => void;
+    showProfile: boolean;
+    setShowProfile: (v: boolean) => void;
 
     // States
     isZenMode: boolean;
@@ -55,6 +57,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
     const [showStats, setShowStats] = useState(false);
     const [showWidgetManager, setShowWidgetManager] = useState(false);
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
 
     // UI states
     const [isZenMode, setIsZenMode] = useState(false);
@@ -125,6 +128,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         const handleOpenStats = () => setShowStats(true);
         const handleOpenLogs = () => setShowLogs(true);
         const handleOpenSettings = () => setShowSettings(true);
+        const handleOpenProfile = () => setShowProfile(true);
         const handleOpenWM = () => setShowWidgetManager(true);
         const handleOpenMixer = () => useAudioStore.getState().setMixerOpen(true);
         const handleReauthEvent = () => handleReauth();
@@ -134,6 +138,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
                 else if (showSettings) setShowSettings(false);
                 else if (showStats) setShowStats(false);
                 else if (showLogs) setShowLogs(false);
+                else if (showProfile) setShowProfile(false);
                 else if (showWidgetManager) setShowWidgetManager(false);
                 else if (isEditingLayout) setIsEditingLayout(false);
                 else if (isZenMode) setIsZenMode(false);
@@ -150,6 +155,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         window.addEventListener('open-stats', handleOpenStats);
         window.addEventListener('open-logs', handleOpenLogs);
         window.addEventListener('open-settings', handleOpenSettings);
+        window.addEventListener('open-profile', handleOpenProfile);
         window.addEventListener('open-widget-manager', handleOpenWM);
         window.addEventListener('open-ambient-mixer', handleOpenMixer);
         window.addEventListener('open-reauth', handleReauthEvent);
@@ -164,13 +170,14 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
             window.removeEventListener('open-stats', handleOpenStats);
             window.removeEventListener('open-logs', handleOpenLogs);
             window.removeEventListener('open-settings', handleOpenSettings);
+            window.removeEventListener('open-profile', handleOpenProfile);
             window.removeEventListener('open-widget-manager', handleOpenWM);
             window.removeEventListener('open-ambient-mixer', handleOpenMixer);
             window.removeEventListener('open-reauth', handleReauthEvent);
             window.removeEventListener('keydown', handleEscape);
             window.removeEventListener('keydown', handleAltZ);
         };
-    }, [isEditingLayout, setIsEditingLayout, showWidgetHeaders, setShowWidgetHeaders, showKeyboardHelp, showSettings, showStats, showLogs, showWidgetManager, isZenMode, toggleZenMode, handleReauth]);
+    }, [isEditingLayout, setIsEditingLayout, showWidgetHeaders, setShowWidgetHeaders, showKeyboardHelp, showSettings, showStats, showLogs, showWidgetManager, showProfile, isZenMode, toggleZenMode, handleReauth]);
 
     // 6. Sync Edit Mode Change Event
     useEffect(() => {
@@ -186,6 +193,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
             showStats, setShowStats,
             showWidgetManager, setShowWidgetManager,
             showKeyboardHelp, setShowKeyboardHelp,
+            showProfile, setShowProfile,
             isZenMode, toggleZenMode,
             isTopbarHidden, setIsTopbarHidden,
             hideBackground,

@@ -128,10 +128,13 @@ export function StudioSidebar({ isOpen, onClose }: StudioSidebarProps) {
                         {/* User Profile Card */}
                         <div className="px-6 mb-6 z-10">
                             {session ? (
-                                <div className="group relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/5 p-4 transition-all hover:bg-white/[0.05]">
+                                <button
+                                    onClick={() => dispatch('open-profile')}
+                                    className="w-full text-left group relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/5 p-4 transition-all hover:bg-white/[0.05] hover:border-white/10 active:scale-[0.98]"
+                                >
                                     <div className="flex items-center gap-4">
                                         <div className="relative">
-                                            <Avatar className="h-12 w-12 border-2 border-white/10 shadow-md">
+                                            <Avatar className="h-12 w-12 border-2 border-white/10 shadow-md group-hover:border-primary/50 transition-colors">
                                                 <AvatarImage src={session.user?.image || ''} />
                                                 <AvatarFallback className="bg-primary/20 text-primary font-bold">
                                                     {session.user?.name?.[0] || 'U'}
@@ -140,13 +143,14 @@ export function StudioSidebar({ isOpen, onClose }: StudioSidebarProps) {
                                             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#18181b]" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-white truncate w-full">
+                                            <p className="text-sm font-semibold text-white truncate w-full group-hover:text-primary transition-colors">
                                                 {session.user?.name || "User"}
                                             </p>
                                             <p className="text-xs text-muted-foreground truncate w-full">
                                                 {session.user?.email}
                                             </p>
                                         </div>
+                                        <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                     {/* Subtle Premium Badge */}
                                     <div className="mt-3 flex items-center gap-2">
@@ -154,7 +158,7 @@ export function StudioSidebar({ isOpen, onClose }: StudioSidebarProps) {
                                             Free Plan
                                         </span>
                                     </div>
-                                </div>
+                                </button>
                             ) : (
                                 <Button
                                     onClick={() => dispatch('open-reauth')}

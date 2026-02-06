@@ -461,6 +461,25 @@ export const usePlayerStore = create<PlayerStore>()(
                 set({ playlist: newPlaylist, currentIndex: newCurrentIndex });
             },
 
+            setPlaylist: (playlist: PlayableItem[]) => {
+                const state = get();
+                const currentItem = state.currentItem;
+                let newIndex = state.currentIndex;
+
+                // Attempt to find the playing item in the new order
+                if (currentItem) {
+                    const foundIndex = playlist.findIndex(item => item.id === currentItem.id);
+                    if (foundIndex !== -1) {
+                        newIndex = foundIndex;
+                    } else {
+                        // If current item is no longer in the playlist, reset index
+                        newIndex = -1;
+                    }
+                }
+
+                set({ playlist, currentIndex: newIndex });
+            },
+
             clearPlaylist: () => {
                 set({
                     playlist: [],

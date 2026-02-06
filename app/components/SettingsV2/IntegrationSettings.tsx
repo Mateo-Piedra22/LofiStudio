@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, CheckSquare, RefreshCw, LogIn } from 'lucide-react';
+import { Calendar, CheckSquare, RefreshCw, LogIn, CheckCircle2 } from 'lucide-react';
 import { useSettingsStore, useIntegrationSettings } from '@/lib/stores/settings.store';
 
 interface CalendarOption {
@@ -125,6 +125,11 @@ export function IntegrationSettings() {
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
                             <Label className="text-sm font-medium">Google Calendar</Label>
+                            {integrations.googleCalendar.enabled && session && (
+                                <span className="flex items-center text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full border border-green-400/20 font-medium">
+                                    Connected <CheckCircle2 className="w-3 h-3 ml-1" />
+                                </span>
+                            )}
                         </div>
                         <Switch
                             checked={integrations.googleCalendar.enabled}
@@ -180,6 +185,11 @@ export function IntegrationSettings() {
                         <div className="flex items-center gap-2">
                             <CheckSquare className="h-4 w-4" />
                             <Label className="text-sm font-medium">Google Tasks</Label>
+                            {integrations.googleTasks.enabled && session && (
+                                <span className="flex items-center text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full border border-green-400/20 font-medium">
+                                    Connected <CheckCircle2 className="w-3 h-3 ml-1" />
+                                </span>
+                            )}
                         </div>
                         <Switch
                             checked={integrations.googleTasks.enabled}
