@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useMemo } from 'react'; // Added for hook optimization
 import { syncEngine } from '@/lib/services/sync-engine';
 import type {
     TaskV2,
@@ -734,13 +735,16 @@ export function useTask(id: string): TaskV2 | undefined {
 }
 
 export function useTasks(filter?: TaskFilter): TaskV2[] {
-    return useTaskStore(state => {
-        let result = state.tasks;
+    const tasks = useTaskStore(state => state.tasks);
+    const sort = useTaskStore(state => state.sort);
+
+    return useMemo(() => {
+        let result = tasks;
         if (filter) {
             result = applyFilter(result, filter);
         }
-        return applySort(result, state.sort);
-    });
+        return applySort(result, sort);
+    }, [tasks, sort, filter ? JSON.stringify(filter) : null]);
 }
 
 export function usePendingTasks(): TaskV2[] {

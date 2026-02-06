@@ -190,7 +190,7 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
                     if (error.name === 'NotAllowedError') {
-                        console.log('[PlayerCore] Autoplay prevented by browser policy (Audio)');
+                        console.debug('[PlayerCore] Autoplay prevented by browser policy (Audio) - Waiting for user interaction');
                         setState('paused');
                     } else {
                         console.error('[PlayerCore] Stream play failed', error);
@@ -219,7 +219,7 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
                     if (playPromise !== undefined) {
                         playPromise.catch(error => {
                             if (error.name === 'NotAllowedError') {
-                                console.log('[PlayerCore] Autoplay prevented by browser policy (Resume)');
+                                console.debug('[PlayerCore] Autoplay prevented by browser policy (Resume) - Waiting for user interaction');
                                 setState('paused');
                             } else {
                                 console.warn('[PlayerCore] Resume failed:', error);
