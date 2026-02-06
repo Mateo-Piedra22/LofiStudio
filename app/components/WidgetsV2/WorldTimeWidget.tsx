@@ -53,8 +53,6 @@ const DEFAULT_TIMEZONES: TimezoneEntry[] = [
     { id: '3', timezone: 'Asia/Tokyo', label: 'Tokyo' },
 ];
 
-const STORAGE_KEY = 'lofi-world-time-v2';
-
 /**
  * Format time for a specific timezone using Intl.DateTimeFormat
  */
@@ -90,42 +88,19 @@ function getTimezoneOffset(date: Date, timezone: string): number {
     }
 }
 
-/**
- * World time zones widget
- */
 export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
     const [time, setTime] = useState(new Date());
-    const [timezones, setTimezones] = useState<TimezoneEntry[]>([]);
-    const [showAdd, setShowAdd] = useState(false);
+    const showAddState = useState(false);
+    const [showAdd, setShowAdd] = showAddState;
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<{ id: string, label: string, timezone: string, country: string }[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    const updateWidgetSettings = useWidgetGridStore(state => state.updateWidgetSettings);
     const showHeaders = useWidgetGridStore(state => state.showHeaders);
 
-    // Load timezones
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                setTimezones(JSON.parse(saved));
-            } else if (settings?.timezones) {
-                setTimezones(settings.timezones);
-            } else {
-                setTimezones(DEFAULT_TIMEZONES);
-            }
-        } catch (e) {
-            setTimezones(DEFAULT_TIMEZONES);
-        }
-    }, [settings?.timezones]);
-
-    // Save timezones
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(timezones));
-    }, [timezones]);
+    // Derive timezones from settings (Store is source of truth)
+    const timezones = useMemo(() => settings?.timezones || DEFAULT_TIMEZONES, [settings?.timezones]);
 
     // Update time every second
     useEffect(() => {
@@ -178,18 +153,19 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
         const newEntry: TimezoneEntry = {
             id: Date.now().toString(),
             timezone: entry.timezone,
-            label: entry.label, // + (entry.country ? `, ${entry.country}` : '')
+            label: entry.label,
         };
-        setTimezones(prev => [...prev, newEntry]);
+        updateWidgetSettings(id, { timezones: [...timezones, newEntry] });
         setShowAdd(false);
         setSearchQuery('');
         setSearchResults([]);
-    }, []);
+    }, [id, timezones, updateWidgetSettings]);
 
     // Remove timezone
     const removeTimezone = useCallback((tzId: string) => {
-        setTimezones(prev => prev.filter(t => t.id !== tzId));
-    }, []);
+        const newTimezones = timezones.filter(t => t.id !== tzId);
+        updateWidgetSettings(id, { timezones: newTimezones });
+    }, [id, timezones, updateWidgetSettings]);
 
     // Get time difference string
     const getTimeDiff = useCallback((timezone: string): string => {

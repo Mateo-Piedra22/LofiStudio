@@ -85,14 +85,15 @@ export default function TopNavbar() {
 
   return (
     <div className={`fixed top-0 z-50 w-full ${isEditing ? 'opacity-0 pointer-events-none' : ''}`} style={{ pointerEvents: 'none' }}>
-      <div className="group relative w-full h-16 pt-2 pointer-events-auto">
+      <div className="group relative w-full h-16 pt-2 pointer-events-none">
         {/* Hover trigger area with visual hint */}
-        <div className="absolute top-0 inset-x-0 h-2 bg-transparent z-[60] flex justify-center">
+        <div className="absolute top-0 inset-x-0 h-6 bg-transparent z-[60] flex justify-center pointer-events-auto cursor-pointer" />
+        <div className="absolute top-0 inset-x-0 h-2 z-[59] flex justify-center pointer-events-none">
           <div className="w-24 h-1 bg-foreground/20 rounded-b-full shadow-sm backdrop-blur-sm transition-opacity duration-300 opacity-50 group-hover:opacity-0" />
         </div>
 
         {/* Navbar Content */}
-        <div className="px-4 md:px-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+        <div className="px-4 md:px-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out pointer-events-auto">
           <div className="h-14 md:h-16 flex items-center">
             <div className="flex items-center gap-2 glass-panel rounded-full border px-2 py-1 shadow-lg" style={{ ['--glass-opacity' as any]: String(minGlass) }}>
               <Link href="/" className="flex items-center gap-2">

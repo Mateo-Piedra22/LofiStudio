@@ -29,8 +29,8 @@ export function StudioSidebar({ isOpen, onClose }: StudioSidebarProps) {
     const { setMixerOpen } = useAudioStore();
     const isEditMode = useWidgetGridStore(s => s.isEditMode);
     const toggleEditMode = useWidgetGridStore(s => s.toggleEditMode);
-    const showHeaders = useSettingsStore(s => s.settings.appearance.showHeaders);
-    const setShowHeaders = useSettingsStore(s => s.setShowHeaders);
+    const showHeaders = useWidgetGridStore(s => s.showHeaders);
+    const setShowHeaders = useWidgetGridStore(s => s.setShowHeaders);
     const [glass, setGlass] = useGlassOpacity();
 
     const {
