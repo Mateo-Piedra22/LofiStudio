@@ -77,15 +77,15 @@ export function ClockWidget({ id, settings }: ClockWidgetProps) {
             allowAlignment={true}
             contentClassName=""
         >
-            <div className="space-y-2 px-4">
+            <div className="space-y-1 px-4 flex flex-col justify-center">
                 {/* Time */}
-                <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground font-mono tracking-tight leading-none">
+                <p className="text-3xl sm:text-4xl md:text-5xl font-bold font-mono tracking-tight leading-none tabular-nums bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent drop-shadow-md select-none">
                     {format(time, timeFormat)}
                 </p>
 
                 {/* Date */}
                 {showDate && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide uppercase opacity-80 select-none">
                         {format(time, dateFormat)}
                     </p>
                 )}

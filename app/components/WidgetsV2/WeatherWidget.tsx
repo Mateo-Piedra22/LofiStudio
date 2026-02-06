@@ -241,13 +241,20 @@ export function WeatherWidget({ id, settings }: WeatherWidgetProps) {
                         </div>
 
                         {/* Main weather */}
-                        <div className="flex items-center gap-3">
-                            <WeatherIcon className="w-10 h-10 text-primary" />
-                            <div>
-                                <p className="text-3xl font-bold text-foreground">
-                                    {weather.temperature}°{units === 'metric' ? 'C' : 'F'}
+                        <div className="flex items-center gap-4">
+                            <motion.div
+                                animate={{ y: [0, -6, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                className="relative z-10"
+                            >
+                                <WeatherIcon className="w-12 h-12 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+                            </motion.div>
+
+                            <div className="flex flex-col">
+                                <p className="text-4xl font-bold font-mono tracking-tighter tabular-nums bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent drop-shadow-sm leading-none">
+                                    {weather.temperature}°
                                 </p>
-                                <p className="text-sm text-muted-foreground capitalize">
+                                <p className="text-xs font-medium text-muted-foreground/80 tracking-wide uppercase mt-1">
                                     {weather.description}
                                 </p>
                             </div>

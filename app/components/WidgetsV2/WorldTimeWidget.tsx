@@ -255,39 +255,38 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
                         <motion.div
                             key={tz.id}
                             layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="group flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50"
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ delay: index * 0.05, duration: 0.2 }}
+                            className="group relative flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/15 hover:shadow-md"
                         >
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <Globe className="w-3 h-3 text-primary/70 flex-shrink-0" />
-                                    <span className="text-sm font-medium text-foreground truncate">
+                            <div className="flex-1 min-w-0 pr-8">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Globe className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+                                    <span className="text-sm font-semibold text-foreground truncate tracking-tight">
                                         {tz.label}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>{getTimeDiff(tz.timezone)}</span>
-                                    <span>•</span>
-                                    <span className="opacity-75">{tz.timezone?.split('/')[0] || 'Unknown'}</span>
+                                <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground/80 font-medium uppercase tracking-wider">
+                                    <span className="bg-white/5 px-1.5 py-0.5 rounded text-sky-200/80">{getTimeDiff(tz.timezone)}</span>
+                                    <span>{tz.timezone?.split('/')[0] || 'World'}</span>
                                 </div>
                             </div>
 
-                            <div className="text-right">
-                                <p className="text-xl font-bold font-mono text-foreground tracking-tight">
+                            <div className="text-right relative z-10">
+                                <p className="text-xl font-bold font-mono tracking-tight tabular-nums bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent drop-shadow-sm">
                                     {formatTimeInTimezone(time, tz.timezone, 'time')}
                                 </p>
                             </div>
 
-                            {/* Remove button (absolute to not break layout flow but positioned nicely) */}
+                            {/* Remove button */}
                             <button
-                                onClick={() => removeTimezone(tz.id)}
-                                className="absolute right-2 top-2 p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                                onClick={(e) => { e.stopPropagation(); removeTimezone(tz.id); }}
+                                className="absolute top-2 right-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all z-20"
                                 aria-label={`Remove ${tz.label}`}
                             >
-                                <X className="w-3 h-3" />
+                                <X className="w-3.5 h-3.5" />
                             </button>
                         </motion.div>
                     ))}

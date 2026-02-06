@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Quote as QuoteIcon } from 'lucide-react';
 import { WidgetWrapper } from '@/app/components/WidgetBase';
 import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
 import type { WidgetAction } from '@/lib/types/widget.types';
@@ -127,25 +127,33 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
             allowAlignment={true}
             contentClassName="p-4"
         >
+            {/* Decorative Background */}
+            <div className="absolute top-0 left-0 p-4 opacity-[0.03] pointer-events-none select-none">
+                <QuoteIcon className="w-24 h-24 rotate-180" />
+            </div>
+
             <AnimatePresence mode="wait">
                 {quote && (
                     <motion.div
                         key={quote.text}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-3"
+                        initial={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, scale: 1.05, filter: 'blur(4px)' }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="space-y-4 relative z-10"
                     >
                         {/* Quote text */}
-                        <p className="text-sm sm:text-base text-foreground leading-relaxed italic">
+                        <p className="text-sm sm:text-base md:text-lg font-serif text-foreground/90 leading-relaxed italic tracking-wide drop-shadow-sm">
                             "{quote.text}"
                         </p>
 
                         {/* Author */}
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                            — {quote.author}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <div className="h-px w-8 bg-primary/30" />
+                            <p className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                                {quote.author}
+                            </p>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

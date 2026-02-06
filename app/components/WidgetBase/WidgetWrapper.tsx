@@ -105,12 +105,15 @@ export function WidgetWrapper({
             className={cn(
                 // Base styles
                 'h-full w-full flex flex-col',
-                'rounded-xl overflow-hidden',
-                // Glass effect
-                'glass border',
+                'rounded-2xl overflow-hidden', // Increased rounding for modern feel
+                // Animation
+                'transition-all duration-300 ease-out', // Smooth state changes
+                // Glass effect & visual depth
+                'glass border border-white/5',
+                'bg-gradient-to-br from-white/5 to-transparent', // Subtle internal gradient
                 'text-card-foreground',
-                // Shadows
-                'shadow-sm',
+                // Interactive states
+                'hover:border-white/20 hover:shadow-lg hover:shadow-black/20', // "Lift" effect on hover
                 className
             )}
         >
