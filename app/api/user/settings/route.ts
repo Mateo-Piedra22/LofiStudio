@@ -8,7 +8,7 @@ export async function GET() {
     const session = await auth()
 
     if (!session?.user?.id) {
-        return new NextResponse("Unauthorized", { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     try {
@@ -37,7 +37,7 @@ export async function GET() {
         return NextResponse.json(userSettings)
     } catch (error) {
         console.error("[SETTINGS_GET]", error)
-        return new NextResponse("Internal Error", { status: 500 })
+        return NextResponse.json({ error: "Internal Error" }, { status: 500 })
     }
 }
 

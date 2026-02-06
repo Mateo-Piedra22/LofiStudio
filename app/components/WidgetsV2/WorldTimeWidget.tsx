@@ -295,7 +295,7 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <span>{getTimeDiff(tz.timezone)}</span>
                                     <span>•</span>
-                                    <span className="opacity-75">{tz.timezone.split('/')[0]}</span>
+                                    <span className="opacity-75">{tz.timezone?.split('/')[0] || 'Unknown'}</span>
                                 </div>
                             </div>
 
