@@ -3,15 +3,15 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, FileText, Scale, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react'
+import PageBackground from '@/app/components/PageBackground'
 
 export default function TermsPage() {
   return (
     <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+      <PageBackground />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-10 py-10 md:py-12 max-w-4xl w-full">
+        <div className="glass-panel rounded-3xl border border-white/10 px-6 md:px-12 py-12 md:py-16 max-w-4xl w-full bg-black/40 backdrop-blur-xl shadow-2xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-white/10 pb-8">
             <div className="flex items-center gap-4">
@@ -33,13 +33,13 @@ export default function TermsPage() {
 
           {/* Content */}
           <div className="space-y-10 text-foreground/90 leading-relaxed">
-            
+
             <section className="space-y-4">
               <p className="text-lg text-muted-foreground">
                 Welcome to <strong>LofiStudio</strong>. These Terms of Service ("Terms") govern your access to and use of our website, application, and services (collectively, the "Service").
               </p>
               <p className="text-muted-foreground">
-                By accessing or using LofiStudio, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service. 
+                By accessing or using LofiStudio, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.
                 LofiStudio is owned and operated by <strong>MotionA</strong>.
               </p>
             </section>
@@ -74,11 +74,11 @@ export default function TermsPage() {
                 2. Intellectual Property
               </h2>
               <p className="text-muted-foreground">
-                The Service and its original content (excluding user-provided content), features, and functionality are and will remain the exclusive property of MotionA and its licensors. 
+                The Service and its original content (excluding user-provided content), features, and functionality are and will remain the exclusive property of MotionA and its licensors.
                 The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries.
               </p>
               <p className="text-muted-foreground">
-                <strong>Third-Party Content:</strong> LofiStudio integrates content from third-party platforms (e.g., YouTube, Giphy). 
+                <strong>Third-Party Content:</strong> LofiStudio integrates content from third-party platforms (e.g., YouTube, Giphy).
                 We do not claim ownership of this content. All rights remain with their respective owners and are used in accordance with their API terms of service.
               </p>
             </section>
@@ -92,7 +92,7 @@ export default function TermsPage() {
                 The Service is provided on an "AS IS" and "AS AVAILABLE" basis. MotionA makes no representations or warranties of any kind, express or implied, as to the operation of the Service.
               </p>
               <p className="text-muted-foreground">
-                In no event shall MotionA, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, 
+                In no event shall MotionA, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages,
                 including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
               </p>
               <ul className="list-disc ml-5 space-y-1 text-muted-foreground">
@@ -109,7 +109,7 @@ export default function TermsPage() {
                 4. Changes to Terms
               </h2>
               <p className="text-muted-foreground">
-                We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. 
+                We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect.
                 What constitutes a material change will be determined at our sole discretion.
               </p>
               <p className="text-muted-foreground">

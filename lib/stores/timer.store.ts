@@ -22,6 +22,7 @@ export interface TimerState {
     sessionsCompleted: number;
     currentTaskId: string | null;
     currentTaskTitle: string | null;
+    lastUpdated: number;
 }
 
 export interface TimerActions {
@@ -42,6 +43,9 @@ export interface TimerActions {
 
     // Timer tick (called every second)
     tick: () => void;
+
+    // Sync function to catch up time after reload
+    sync: () => void;
 
     // Session complete
     completeSession: () => void;
@@ -127,6 +131,7 @@ const initialState: TimerState = {
     sessionsCompleted: 0,
     currentTaskId: null,
     currentTaskTitle: null,
+    lastUpdated: Date.now(),
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -151,15 +156,16 @@ export const useTimerStore = create<TimerStore>()(
                     isActive: true,
                     isPaused: false,
                     secondsRemaining: state.secondsRemaining || getModeDuration(state.mode),
+                    lastUpdated: Date.now(),
                 });
             },
 
             pause: () => {
-                set({ isPaused: true });
+                set({ isPaused: true, lastUpdated: Date.now() });
             },
 
             resume: () => {
-                set({ isPaused: false });
+                set({ isPaused: false, lastUpdated: Date.now() });
             },
 
             reset: () => {
@@ -168,6 +174,7 @@ export const useTimerStore = create<TimerStore>()(
                     isActive: false,
                     isPaused: false,
                     secondsRemaining: getModeDuration(mode),
+                    lastUpdated: Date.now(),
                 });
             },
 
@@ -181,6 +188,7 @@ export const useTimerStore = create<TimerStore>()(
                         secondsRemaining: getModeDuration(nextMode),
                         isActive: false,
                         isPaused: false,
+                        lastUpdated: Date.now(),
                     });
                 } else {
                     // Skip break - go to work
@@ -189,6 +197,7 @@ export const useTimerStore = create<TimerStore>()(
                         secondsRemaining: getModeDuration('work'),
                         isActive: false,
                         isPaused: false,
+                        lastUpdated: Date.now(),
                     });
                 }
             },
@@ -199,6 +208,7 @@ export const useTimerStore = create<TimerStore>()(
                     secondsRemaining: getModeDuration(mode),
                     isActive: false,
                     isPaused: false,
+                    lastUpdated: Date.now(),
                 });
             },
 
@@ -208,6 +218,7 @@ export const useTimerStore = create<TimerStore>()(
                     secondsRemaining: getModeDuration('work'),
                     isActive: false,
                     isPaused: false,
+                    lastUpdated: Date.now(),
                 });
             },
 
@@ -219,6 +230,7 @@ export const useTimerStore = create<TimerStore>()(
                     secondsRemaining: getModeDuration(nextMode),
                     isActive: false,
                     isPaused: false,
+                    lastUpdated: Date.now(),
                 });
             },
 
@@ -230,21 +242,49 @@ export const useTimerStore = create<TimerStore>()(
                 const state = get();
                 if (!state.isActive || state.isPaused) return;
 
+                const now = Date.now();
+                // If we drifted significantly (e.g. tab background throttling), calculate delta provided it's reasonable
+                // But for simple tick called by interval, just -1 is fine.
+                // However, to support "Offline catchup" inside tick or via sync:
+
                 const newSeconds = state.secondsRemaining - 1;
 
                 if (newSeconds <= 0) {
                     get().completeSession();
                 } else {
-                    set({ secondsRemaining: newSeconds });
+                    set({ secondsRemaining: newSeconds, lastUpdated: now });
+                }
+            },
+
+            sync: () => {
+                const state = get();
+                if (state.isActive && !state.isPaused) {
+                    const now = Date.now();
+                    const elapsedSeconds = Math.floor((now - state.lastUpdated) / 1000);
+
+                    if (elapsedSeconds > 0) {
+                        const newSeconds = state.secondsRemaining - elapsedSeconds;
+                        if (newSeconds <= 0) {
+                            // If time passed completely, trigger complete (or just stop at 0)
+                            // For simplicity, just reset to 0 and let next tick handle complete or handle it here
+                            set({ secondsRemaining: 0, lastUpdated: now });
+                            // Optionally trigger complete immediately if desirable
+                            // get().completeSession(); 
+                        } else {
+                            set({ secondsRemaining: newSeconds, lastUpdated: now });
+                        }
+                    } else {
+                        // Just update lastUpdated to now to avoid huge jumps if clock skewed
+                        set({ lastUpdated: now });
+                    }
                 }
             },
 
             completeSession: () => {
                 const state = get();
                 const settings = useSettingsStore.getState().settings.timer;
-
-                // Log session to statistics
                 const duration = getModeDuration(state.mode);
+
                 useStatisticsStore.getState().logSession({
                     mode: timerModeToSessionMode(state.mode),
                     duration,
@@ -253,15 +293,13 @@ export const useTimerStore = create<TimerStore>()(
                     taskTitle: state.currentTaskTitle || undefined,
                 });
 
-                // Play sound and show notification
                 playNotificationSound();
 
                 if (state.mode === 'work') {
                     const newSessionsCompleted = state.sessionsCompleted + 1;
                     const nextMode = shouldTakeLongBreak(newSessionsCompleted) ? 'longBreak' : 'break';
-
                     showBrowserNotification(
-                        'Work Session Complete! 🎉',
+                        'Work Session Complete!',
                         nextMode === 'longBreak'
                             ? 'Great job! Time for a long break.'
                             : 'Great work! Time for a short break.'
@@ -273,18 +311,19 @@ export const useTimerStore = create<TimerStore>()(
                         sessionsCompleted: newSessionsCompleted,
                         isActive: settings.autoStartBreaks,
                         isPaused: false,
+                        lastUpdated: Date.now(),
                     });
                 } else {
                     showBrowserNotification(
-                        'Break Complete! ☕',
+                        'Break Complete!',
                         'Ready to focus again?'
                     );
-
                     set({
                         mode: 'work',
                         secondsRemaining: getModeDuration('work'),
                         isActive: settings.autoStartWork,
                         isPaused: false,
+                        lastUpdated: Date.now(),
                     });
                 }
             },
@@ -296,12 +335,12 @@ export const useTimerStore = create<TimerStore>()(
         {
             name: STORAGE_KEY,
             storage: createJSONStorage(() => localStorage),
-            skipHydration: true,
-            partialize: (state) => ({
-                sessionsCompleted: state.sessionsCompleted,
-                currentTaskId: state.currentTaskId,
-                currentTaskTitle: state.currentTaskTitle,
-            }),
+            skipHydration: false,
+            // Persist EVERYTHING except non-state if any
+            // We remove partialize to persist all fields
+            onRehydrateStorage: () => (state) => {
+                state?.sync();
+            },
         }
     )
 );

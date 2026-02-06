@@ -26,9 +26,10 @@ export function StudioModals() {
     return (
         <>
             {/* Settings */}
-            {showSettings && (
-                <Settings onClose={() => setShowSettings(false)} />
-            )}
+            <Settings
+                open={showSettings}
+                onOpenChange={setShowSettings}
+            />
 
             {/* Statistics */}
             <SwipeableModal

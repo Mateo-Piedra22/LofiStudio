@@ -6,6 +6,7 @@ import { signIn, useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import VersionBadge from '@/app/components/VersionBadge'
+import PageBackground from '@/app/components/PageBackground'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -17,14 +18,22 @@ type PublicReview = { userName: string | null; userImage: string | null; rating:
 
 function FeatureCard({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
   return (
-    <motion.div whileInView={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 20 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="rounded-xl border glass-panel bg-white/5 backdrop-blur-md shadow-lg">
-      <div className="p-6 flex items-start gap-4">
-        <div className="h-12 w-12 rounded-lg bg-primary/20 text-primary flex items-center justify-center shadow">
-          <Icon className="h-6 w-6" />
+    <motion.div
+      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.5, ease: "backOut" }}
+      viewport={{ once: true, margin: "-100px" }}
+      className="group relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="p-8 flex flex-col items-start gap-4 relative z-10">
+        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center shadow-inner ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-300">
+          <Icon className="h-7 w-7" />
         </div>
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-white drop-shadow-sm">{title}</h3>
-          <p className="mt-1 text-gray-300">{description}</p>
+        <div>
+          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">{title}</h3>
+          <p className="text-gray-400 leading-relaxed text-sm">{description}</p>
         </div>
       </div>
     </motion.div>
@@ -72,25 +81,25 @@ export default function LandingPage() {
   }, [])
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         const res = await fetch('/api/reviews?sort=rating&limit=25')
         if (!res.ok) return
         const data = await res.json()
         setReviews(Array.isArray(data?.reviews) ? data.reviews : [])
-      } catch {}
+      } catch { }
     })()
   }, [])
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         if (!openReviews || allReviews.length) return
         const res = await fetch('/api/reviews?sort=date')
         if (!res.ok) return
         const data = await res.json()
         setAllReviews(Array.isArray(data?.reviews) ? data.reviews : [])
-      } catch {}
+      } catch { }
     })()
   }, [openReviews, allReviews.length])
 
@@ -99,7 +108,7 @@ export default function LandingPage() {
     const id = setInterval(() => {
       try {
         carouselApi.scrollNext()
-      } catch {}
+      } catch { }
     }, 4000)
     return () => clearInterval(id)
   }, [carouselApi, hovered])
@@ -123,23 +132,25 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen w-full relative font-sans">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+    <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
+      <PageBackground />
 
-      <header className="fixed top-0 left-0 right-0 z-30 px-6 pt-4">
-        <div className={`max-w-7xl mx-auto px-4 py-3 rounded-2xl border transition-all duration-300 backdrop-blur-md ${scrolled ? 'bg-black/80 border-gray-800 shadow-lg' : 'bg-black/10 border-transparent'}`}>
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 pt-6 transition-all duration-300">
+        <div className={`max-w-7xl mx-auto px-6 py-4 rounded-full border transition-all duration-500 ${scrolled ? 'bg-black/60 border-white/10 backdrop-blur-xl shadow-2xl translate-y-0' : 'bg-transparent border-transparent -translate-y-2'}`}>
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-9 w-auto rounded-md shadow-md" />
-              <span className="text-white text-xl font-bold uppercase tracking-wider">LofiStudio</span>
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-10 w-auto rounded-xl shadow-lg relative z-10" />
+              </div>
+              <span className="text-white text-xl font-bold tracking-tight group-hover:text-primary transition-colors">LofiStudio</span>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {session?.user ? (
-                <span className="text-white text-sm md:text-base font-semibold">Welcome, {session.user.name || ''}</span>
+                <span className="text-white text-sm font-medium bg-white/5 px-4 py-2 rounded-full border border-white/5">Example User{/* session.user.name */}</span>
               ) : (
                 <>
-                  <Button variant="ghost" className="bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
+                  <Button variant="ghost" className="hidden sm:inline-flex text-white/80 hover:text-white hover:bg-white/5" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
                   <Button asChild className="bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-400/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
                     <Link href="/studio" className="flex items-center gap-2">Go to Studio<ArrowRight className="w-4 h-4" /></Link>
                   </Button>
@@ -150,29 +161,58 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative z-10 px-6 pt-40 pb-28 min-h-[80vh] flex items-center">
-        <div className="max-w-6xl mx-auto w-full">
-          <motion.div variants={container} initial="hidden" animate="show" className="text-center">
-            <motion.h1 variants={item} className="font-extrabold text-white drop-shadow-lg text-5xl md:text-7xl leading-tight">Your Focus Sanctuary</motion.h1>
-            <motion.p variants={item} className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">Personalized widgets, lofi music, and a polished glassmorphism interface to help you get into flow and stay there.</motion.p>
-            <motion.div variants={item} className="mt-10 flex items-center justify-center gap-4">
-              <Button asChild className="px-8 py-6 text-lg font-semibold bg-gradient-to-r from-purple-600/60 to-pink-600/60 border border-purple-500/50 text-white hover:from-purple-600/80 hover:to-pink-600/80 shadow-xl">
-                <Link href="/studio" className="flex items-center gap-2">Enter the Studio<ArrowRight className="w-5 h-5" /></Link>
-              </Button>
-              {session?.user ? (
-                <span className="text-white text-lg font-semibold">Welcome, {session.user.name || ''}</span>
-              ) : (
-                <Button variant="outline" className="px-8 py-6 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={() => signIn('google', { callbackUrl: '/studio' })}>Login</Button>
-              )}
+      <section className="relative z-10 px-6 pt-48 pb-32 min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/20 blur-[120px] rounded-full -z-10 pointer-events-none opacity-50" />
+
+        <div className="max-w-7xl mx-auto w-full text-center relative z-10">
+          <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col items-center">
+
+            <motion.div variants={item} className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-semibold tracking-wide text-green-300 uppercase">V2 Live Now</span>
+            </motion.div>
+
+            <motion.h1 variants={item} className="font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/60 text-6xl md:text-8xl lg:text-9xl tracking-tighter leading-[1.1] mb-8">
+              Focus Like <br className="hidden md:block" /> Never Before
+            </motion.h1>
+
+            <motion.p variants={item} className="text-lg md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed mb-12">
+              Your personal sanctuary for productivity. Immerse yourself in curated lofi soundscapes,
+              powerful widgets, and a <span className="text-white font-medium">distraction-free</span> environment.
+            </motion.p>
+
+            <motion.div variants={item} className="p-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-black/40 rounded-full p-2">
+                <Button asChild size="lg" className="rounded-full px-8 py-7 text-lg font-semibold bg-primary hover:bg-primary/90 text-white shadow-[0_0_30px_-10px_rgba(var(--primary),0.6)] hover:shadow-[0_0_40px_-10px_rgba(var(--primary),0.8)] transition-all duration-300">
+                  <Link href="/studio" className="flex items-center gap-2">Enter Studio <ArrowRight className="w-5 h-5" /></Link>
+                </Button>
+                {!session?.user && (
+                  <Button onClick={() => signIn('google')} variant="ghost" size="lg" className="rounded-full px-8 py-7 text-lg font-medium text-white hover:bg-white/10">
+                    Login to Save
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+
+            <motion.div variants={item} className="mt-20 flex items-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+              {/* Trust badges or similar could go here */}
+              <div className="text-xs text-center text-gray-500 uppercase tracking-widest font-semibold">Trusted by thousands of focus seekers</div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-3xl font-bold text-white mb-8 drop-shadow">Why LofiStudio?</motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="relative z-10 px-6 pb-32">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 mb-6">Why LofiStudio?</motion.h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg">Designed for flow. Engineered for focus. Experience the V2 difference.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard icon={Waves} title="Immersive Ambience" description="Curated lofi playlists and ambient sounds crafted for deep focus." />
             <FeatureCard icon={Timer} title="Productive Timers" description="Pomodoro and tasks that keep your sessions structured and effective." />
             <FeatureCard icon={CalendarDays} title="Calendar Integration" description="Plan your day and sync events for a calm, organized workflow." />
@@ -184,9 +224,12 @@ export default function LandingPage() {
       </section>
 
       <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white drop-shadow">What Our Users Say</h2>
+        <div className="max-w-7xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
+            <div>
+              <h2 className="text-4xl font-bold text-white mb-2">Community Love</h2>
+              <p className="text-gray-400 text-lg">Join thousands of users who have found their flow.</p>
+            </div>
             <Dialog open={openReviews} onOpenChange={setOpenReviews}>
               <DialogTrigger asChild>
                 <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Read More Reviews</Button>
@@ -238,18 +281,26 @@ export default function LandingPage() {
       </section>
 
       <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-3xl mx-auto text-center glass-panel border rounded-3xl px-8 py-10 bg-white/5 backdrop-blur-md">
-          <h3 className="text-2xl font-bold text-white drop-shadow">Support LofiStudio</h3>
-          <p className="mt-3 text-gray-300">Help us keep the systems running and continue shipping improvements.</p>
-          <div className="mt-6">
-            <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 rounded-lg shadow-xl px-8 py-6 text-lg font-semibold">
-              <a href="https://cafecito.app/lofistudio" target="_blank" rel="noopener" className="flex items-center gap-2"><Coffee className="w-5 h-5" />Buy Us a Coffee</a>
-            </Button>
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl p-12 md:p-16">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-50" />
+            <div className="relative z-10">
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">Support LofiStudio</h3>
+              <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                We are an independent team building tools for your peace of mind.
+                If LofiStudio helps you, consider supporting our work.
+              </p>
+              <Button asChild size="lg" className="bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-black font-bold rounded-full text-lg px-8 py-6 shadow-[0_0_20px_rgba(255,221,0,0.4)] hover:shadow-[0_0_30px_rgba(255,221,0,0.6)] transition-all">
+                <a href="https://cafecito.app/motiona" target="_blank" rel="noopener" className="flex items-center gap-2">
+                  <Coffee className="w-5 h-5 fill-current" /> Buy Us a Coffee
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="relative z-10 px-6 pt-20 pb-12 bg-black/60 border-t border-white/5 backdrop-blur-md">
+      <footer className="relative z-10 px-6 pt-24 pb-12 border-t border-white/5 bg-black/40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             <div className="space-y-4">
@@ -261,13 +312,13 @@ export default function LandingPage() {
                 Your personal sanctuary for focus and relaxation. Crafted with care to help you find your flow.
               </p>
               <div className="flex items-center gap-4 pt-2">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+                <a href="https://twitter.com/motiona_ok" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+                <a href="https://instagram.com/motiona.ok" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
                   <Instagram className="w-5 h-5" />
                 </a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="GitHub">
+                <a href="https://github.com/Mateo-Piedra22" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="GitHub">
                   <Github className="w-5 h-5" />
                 </a>
               </div>

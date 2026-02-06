@@ -148,7 +148,25 @@ class AudioManagerClass implements IAudioManager {
         if (!audio) {
             audio = new Audio(sound.src);
             audio.loop = true;
-            audio.preload = 'auto';
+            audio.preload = 'metadata'; // Optimize bandwidth
+            audio.crossOrigin = 'anonymous'; // Better CDN support
+
+            // Robust error handling
+            audio.addEventListener('error', (e) => {
+                console.error(`Error playing sound ${soundId}:`, audio?.error);
+                this.emit({
+                    type: 'error',
+                    soundId,
+                    data: audio?.error,
+                    timestamp: Date.now()
+                });
+                // Auto-cleanup on fatal error
+                if (this.state.activeSounds[soundId]?.isPlaying) {
+                    this.state.activeSounds[soundId].isPlaying = false;
+                    this.updateIsAnyPlaying();
+                    this.emit({ type: 'stop', soundId, timestamp: Date.now() });
+                }
+            });
 
             // Connect to Web Audio API for gain control
             if (this.audioContext && this.masterGain) {

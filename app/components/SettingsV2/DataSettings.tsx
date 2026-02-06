@@ -14,6 +14,17 @@ import { Download, Upload, Trash2, Cloud, Save, AlertTriangle } from 'lucide-rea
 import { useSettingsStore } from '@/lib/stores/settings.store';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function DataSettings() {
     const store = useSettingsStore();
@@ -192,14 +203,28 @@ export function DataSettings() {
 
                 {/* Clear Data */}
                 <div className="pt-2 border-t border-border/50">
-                    <Button
-                        variant="destructive"
-                        className="w-full gap-2"
-                        onClick={handleClearAllData}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                        Clear All Data
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="w-full gap-2">
+                                <Trash2 className="h-4 w-4" />
+                                Clear All Data
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="z-[200]">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete all your local settings, widgets, and preferences.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleClearAllData} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                                    Yes, delete everything
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     <p className="text-xs text-muted-foreground text-center mt-2 flex items-center justify-center gap-1">
                         <AlertTriangle className="h-3 w-3" />
                         This action cannot be undone

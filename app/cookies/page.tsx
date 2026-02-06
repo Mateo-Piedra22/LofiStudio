@@ -3,15 +3,15 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Cookie, Settings, Info, ShieldCheck } from 'lucide-react'
+import PageBackground from '@/app/components/PageBackground'
 
 export default function CookiesPage() {
   return (
     <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+      <PageBackground />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-10 py-10 md:py-12 max-w-4xl w-full">
+        <div className="glass-panel rounded-3xl border border-white/10 px-6 md:px-12 py-12 md:py-16 max-w-4xl w-full bg-black/40 backdrop-blur-xl shadow-2xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-white/10 pb-8">
             <div className="flex items-center gap-4">
@@ -33,10 +33,10 @@ export default function CookiesPage() {
 
           {/* Content */}
           <div className="space-y-10 text-foreground/90 leading-relaxed">
-            
+
             <section className="space-y-4">
               <p className="text-lg text-muted-foreground">
-                This Cookie Policy explains what cookies are, how <strong>LofiStudio</strong> uses them, and your choices regarding their use. 
+                This Cookie Policy explains what cookies are, how <strong>LofiStudio</strong> uses them, and your choices regarding their use.
                 We use cookies to improve your experience, ensure the security of our platform, and understand how our service is used.
               </p>
             </section>
@@ -47,7 +47,7 @@ export default function CookiesPage() {
                 What Are Cookies?
               </h2>
               <p className="text-muted-foreground">
-                Cookies are small text files that are stored on your computer or mobile device when you visit a website. 
+                Cookies are small text files that are stored on your computer or mobile device when you visit a website.
                 They are widely used to make websites work more efficiently and to provide information to the owners of the site.
               </p>
             </section>
@@ -57,7 +57,7 @@ export default function CookiesPage() {
                 <Settings className="w-6 h-6 text-yellow-400" />
                 Types of Cookies We Use
               </h2>
-              
+
               <div className="grid grid-cols-1 gap-4">
                 <div className="glass-panel border p-5 rounded-xl">
                   <h3 className="font-semibold text-lg text-foreground mb-2">Essential Cookies</h3>

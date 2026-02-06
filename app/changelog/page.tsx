@@ -4,6 +4,7 @@ import Link from 'next/link'
 import changelog from '@/lib/data/changelog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import PageBackground from '@/app/components/PageBackground'
 
 function compareVersions(a: string, b: string) {
   const pa = a.split('.').map((x) => parseInt(x) || 0)
@@ -21,12 +22,11 @@ export default function ChangelogPage() {
   const entries = [...changelog].sort((x, y) => compareVersions(y.version, x.version))
   const latestVersion = entries[0]?.version
   return (
-    <main className="min-h-screen w-full relative font-sans">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+    <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
+      <PageBackground />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-8 py-8 md:py-10 max-w-[906px] w-full">
+        <div className="glass-panel rounded-3xl border border-white/10 px-6 md:px-8 py-8 md:py-10 max-w-[906px] w-full bg-black/40 backdrop-blur-xl shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <img src="/brand/lofistudio_logo.png" alt="LofiStudio" className="h-12 w-auto rounded-lg shadow-xl" />

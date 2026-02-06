@@ -98,6 +98,8 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
     const [timezones, setTimezones] = useState<TimezoneEntry[]>([]);
     const [showAdd, setShowAdd] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<{ id: string, label: string, timezone: string, country: string }[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     const showHeaders = useWidgetGridStore(state => state.showHeaders);
 
@@ -121,7 +123,7 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
 
     // Save timezones
     useEffect(() => {
-        if (typeof window === 'undefined' || timezones.length === 0) return;
+        if (typeof window === 'undefined') return;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(timezones));
     }, [timezones]);
 
@@ -133,29 +135,61 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
         return () => clearInterval(interval);
     }, []);
 
+    // Search Cities via API
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (searchQuery.length < 2) {
+                setSearchResults([]);
+                return;
+            }
+
+            setIsSearching(true);
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=10&language=en&format=json`);
+                if (!res.ok) throw new Error('Search failed');
+                const data = await res.json();
+
+                if (data.results) {
+                    const mapped = data.results
+                        .filter((item: any) => item.timezone)
+                        .map((item: any) => ({
+                            id: `${item.id}`,
+                            label: item.name,
+                            timezone: item.timezone,
+                            country: item.country_code
+                        }));
+                    setSearchResults(mapped);
+                } else {
+                    setSearchResults([]);
+                }
+            } catch (e) {
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+
     // Add timezone
-    const addTimezone = useCallback((tz: typeof POPULAR_TIMEZONES[0]) => {
+    const addTimezone = useCallback((entry: { label: string, timezone: string, country?: string }) => {
         const newEntry: TimezoneEntry = {
             id: Date.now().toString(),
-            timezone: tz.timezone,
-            label: tz.label,
+            timezone: entry.timezone,
+            label: entry.label, // + (entry.country ? `, ${entry.country}` : '')
         };
         setTimezones(prev => [...prev, newEntry]);
         setShowAdd(false);
         setSearchQuery('');
+        setSearchResults([]);
     }, []);
 
     // Remove timezone
     const removeTimezone = useCallback((tzId: string) => {
         setTimezones(prev => prev.filter(t => t.id !== tzId));
     }, []);
-
-    // Filter timezones for search
-    const filteredTimezones = useMemo(() =>
-        POPULAR_TIMEZONES.filter(tz =>
-            tz.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tz.timezone.toLowerCase().includes(searchQuery.toLowerCase())
-        ), [searchQuery]);
 
     // Get time difference string
     const getTimeDiff = useCallback((timezone: string): string => {
@@ -191,42 +225,56 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="space-y-2"
+                            className="space-y-2 mb-2"
                         >
                             <Input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search city..."
+                                placeholder="Search city (London, Tokyo)..."
                                 className="h-8 text-sm"
                                 autoFocus
                             />
-                            <div className="max-h-24 overflow-y-auto space-y-1">
-                                {filteredTimezones.slice(0, 5).map((tz) => (
+                            {/* Results List */}
+                            <div className="max-h-32 overflow-y-auto space-y-1 bg-muted/20 rounded-md p-1 border border-border/50">
+                                {isSearching && <div className="p-2 text-xs text-center text-muted-foreground">Searching...</div>}
+
+                                {!isSearching && searchResults.length === 0 && searchQuery.length > 2 && (
+                                    <div className="p-2 text-xs text-center text-muted-foreground">No cities found</div>
+                                )}
+
+                                {!isSearching && searchResults.map((city) => (
                                     <button
-                                        key={tz.timezone}
-                                        onClick={() => addTimezone(tz)}
-                                        disabled={timezones.some(t => t.timezone === tz.timezone)}
+                                        key={city.id}
+                                        onClick={() => addTimezone(city)}
+                                        disabled={timezones.some(t => t.timezone === city.timezone && t.label === city.label)}
                                         className={cn(
-                                            'w-full flex items-center justify-between px-2 py-1 text-xs rounded',
-                                            'hover:bg-muted transition-colors',
-                                            timezones.some(t => t.timezone === tz.timezone) && 'opacity-50 cursor-not-allowed'
+                                            'w-full flex items-center justify-between px-2 py-1.5 text-xs rounded',
+                                            'hover:bg-primary/10 hover:text-primary transition-colors text-left',
+                                            timezones.some(t => t.timezone === city.timezone && t.label === city.label) && 'opacity-50 cursor-not-allowed'
                                         )}
                                     >
-                                        <span>{tz.label}</span>
-                                        {timezones.some(t => t.timezone === tz.timezone) ? (
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{city.label}</span>
+                                            <span className="text-[10px] text-muted-foreground">{city.country} • {city.timezone}</span>
+                                        </div>
+                                        {timezones.some(t => t.timezone === city.timezone && t.label === city.label) ? (
                                             <Check className="w-3 h-3 text-green-500" />
                                         ) : (
-                                            <Plus className="w-3 h-3" />
+                                            <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100" />
                                         )}
                                     </button>
                                 ))}
+
+                                {!isSearching && searchResults.length === 0 && searchQuery.length <= 2 && (
+                                    <div className="p-2 text-xs text-muted-foreground text-center">Type to search world cities</div>
+                                )}
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
                 {/* Timezone list */}
-                <div className="flex-1 overflow-y-auto space-y-2">
+                <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                     {timezones.map((tz, index) => (
                         <motion.div
                             key={tz.id}
@@ -235,27 +283,32 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
                             transition={{ delay: index * 0.05 }}
-                            className="group flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                            className="group flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50"
                         >
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <Globe className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                    <span className="text-xs text-muted-foreground truncate">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <Globe className="w-3 h-3 text-primary/70 flex-shrink-0" />
+                                    <span className="text-sm font-medium text-foreground truncate">
                                         {tz.label}
                                     </span>
-                                    <span className="text-xs text-muted-foreground/60">
-                                        {getTimeDiff(tz.timezone)}
-                                    </span>
                                 </div>
-                                <p className="text-lg font-bold font-mono text-foreground">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>{getTimeDiff(tz.timezone)}</span>
+                                    <span>•</span>
+                                    <span className="opacity-75">{tz.timezone.split('/')[0]}</span>
+                                </div>
+                            </div>
+
+                            <div className="text-right">
+                                <p className="text-xl font-bold font-mono text-foreground tracking-tight">
                                     {formatTimeInTimezone(time, tz.timezone, 'time')}
                                 </p>
                             </div>
 
-                            {/* Remove button */}
+                            {/* Remove button (absolute to not break layout flow but positioned nicely) */}
                             <button
                                 onClick={() => removeTimezone(tz.id)}
-                                className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
+                                className="absolute right-2 top-2 p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
                                 aria-label={`Remove ${tz.label}`}
                             >
                                 <X className="w-3 h-3" />
@@ -264,22 +317,18 @@ export function WorldTimeWidget({ id, settings }: WorldTimeWidgetProps) {
                     ))}
 
                     {timezones.length === 0 && !showAdd && (
-                        <div className="h-full flex items-center justify-center text-center">
-                            <div className="space-y-2">
-                                <Globe className="w-8 h-8 text-muted-foreground/50 mx-auto" />
-                                <p className="text-xs text-muted-foreground">
-                                    No timezones added
-                                </p>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setShowAdd(true)}
-                                    className="text-xs"
-                                >
-                                    <Plus className="w-3 h-3 mr-1" />
-                                    Add timezone
-                                </Button>
-                            </div>
+                        <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
+                            <Globe className="w-10 h-10 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground mb-3">No clocks added</p>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowAdd(true)}
+                                className="text-xs"
+                            >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add Location
+                            </Button>
                         </div>
                     )}
                 </div>

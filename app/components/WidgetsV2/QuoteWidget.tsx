@@ -56,7 +56,26 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
         setError(null);
 
         try {
-            // Try reliable alternative API
+            // Priority 1: Quotable API (High quality, no key)
+            // Note: Quotable servers are sometimes slow or down.
+            const response = await fetch('https://api.quotable.io/random', {
+                signal: AbortSignal.timeout(4000),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setQuote({
+                    text: data.content,
+                    author: data.author,
+                });
+                return;
+            }
+        } catch (e) {
+            // Continue to next provider
+        }
+
+        try {
+            // Priority 2: DummyJSON (Reliable fallback)
             const response = await fetch('https://dummyjson.com/quotes/random', {
                 signal: AbortSignal.timeout(3000),
             });
@@ -67,11 +86,11 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
                     text: data.quote,
                     author: data.author,
                 });
-            } else {
-                throw new Error('API failed');
+                return;
             }
+            throw new Error('API failed');
         } catch (e) {
-            // Fallback to local quotes
+            // Priority 3: Local Fallback
             const randomIndex = Math.floor(Math.random() * FALLBACK_QUOTES.length);
             setQuote(FALLBACK_QUOTES[randomIndex]);
         } finally {

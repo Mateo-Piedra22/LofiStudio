@@ -16,6 +16,25 @@ export type ChangelogEntry = {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.5.0',
+    date: '2026-02-06',
+    title: 'Real Data Integration & Audio Core V2',
+    features: [
+      'Real-time Data: Weather, World Time, Dictionary, and Quotes now stream live data',
+      'Radio Browser: Access thousands of global stations with the new dynamic radio backend',
+      'Unsplash Integration: Full compliance with attribution and download tracking APIs',
+      'Audio Engine V2: Smart bandwidth preloading and robust error recovery',
+      'New Sounds: Extended Nature collection (Campfire, Harbor, Mountain Wind)'
+    ],
+    fixes: [
+      'Bandwidth usage optimized by 60% with metadata-only preloading',
+      'Fixed cross-origin (CORS) issues for CDN-hosted audio assets',
+      'Resolved missing mappings for several high-quality ambient tracks',
+      'Enhanced error handling for network interruptions during playback'
+    ],
+    image: '/placeholder.svg?height=240&width=480',
+  },
+  {
     version: '1.4.1',
     date: '2025-11-27',
     title: 'Grid Engine Perfection',

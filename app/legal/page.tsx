@@ -3,15 +3,15 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Shield, Lock, Eye, Database, Globe } from 'lucide-react'
+import PageBackground from '@/app/components/PageBackground'
 
 export default function LegalPage() {
   return (
     <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+      <PageBackground />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-10 py-10 md:py-12 max-w-4xl w-full">
+        <div className="glass-panel rounded-3xl border border-white/10 px-6 md:px-12 py-12 md:py-16 max-w-4xl w-full bg-black/40 backdrop-blur-xl shadow-2xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-white/10 pb-8">
             <div className="flex items-center gap-4">
@@ -33,14 +33,14 @@ export default function LegalPage() {
 
           {/* Content */}
           <div className="space-y-10 text-foreground/90 leading-relaxed">
-            
+
             <section className="space-y-4">
               <p className="text-lg text-muted-foreground">
-                At <strong>LofiStudio</strong> (developed and maintained by <strong>MotionA</strong>), we believe that privacy is a fundamental human right. 
+                At <strong>LofiStudio</strong> (developed and maintained by <strong>MotionA</strong>), we believe that privacy is a fundamental human right.
                 This Privacy Policy outlines clearly and transparently how we collect, use, and protect your information when you use our platform.
               </p>
               <p className="text-muted-foreground">
-                Our core philosophy is simple: <strong>we only collect what is strictly necessary</strong> to provide you with a seamless and personalized experience. 
+                Our core philosophy is simple: <strong>we only collect what is strictly necessary</strong> to provide you with a seamless and personalized experience.
                 We do not sell your personal data to advertisers or third parties.
               </p>
             </section>
@@ -82,7 +82,7 @@ export default function LegalPage() {
               </p>
               <ul className="list-disc ml-5 space-y-2 text-muted-foreground">
                 <li>
-                  <strong>Google Services (YouTube, Calendar, Tasks):</strong> We use Google APIs to display videos and sync your productivity tools. 
+                  <strong>Google Services (YouTube, Calendar, Tasks):</strong> We use Google APIs to display videos and sync your productivity tools.
                   We adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener" className="text-primary hover:underline">Google API Services User Data Policy</a>.
                 </li>
                 <li>

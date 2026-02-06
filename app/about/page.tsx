@@ -3,22 +3,22 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Heart, Users, Shield, Zap } from 'lucide-react'
+import PageBackground from '@/app/components/PageBackground'
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen w-full relative font-sans selection:bg-primary/30">
-      <div className="fixed inset-0 -z-20 bg-[url('/lofistudio-bg.png')] bg-cover bg-center bg-no-repeat bg-fixed" />
-      <div className="fixed inset-0 -z-10 bg-black/70" />
+      <PageBackground />
 
       <div className="relative z-10 flex items-start justify-center px-6 py-24">
-        <div className="glass-panel rounded-3xl border px-6 md:px-10 py-10 md:py-12 max-w-4xl w-full">
+        <div className="glass-panel rounded-3xl border border-white/10 px-6 md:px-12 py-12 md:py-16 max-w-4xl w-full bg-black/40 backdrop-blur-xl shadow-2xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-white/10 pb-8">
             <div className="flex items-center gap-4">
-              <img 
-                src="/brand/lofistudio_logo.png" 
-                alt="LofiStudio" 
-                className="h-16 w-auto rounded-xl shadow-2xl ring-1 ring-white/20" 
+              <img
+                src="/brand/lofistudio_logo.png"
+                alt="LofiStudio"
+                className="h-16 w-auto rounded-xl shadow-2xl ring-1 ring-white/20"
               />
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">About LofiStudio</h1>
@@ -35,19 +35,19 @@ export default function AboutPage() {
 
           {/* Content */}
           <div className="space-y-12 text-foreground/90 leading-relaxed">
-            
+
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
                 <Heart className="w-5 h-5 text-pink-500" />
                 Our Mission
               </h2>
               <p className="text-lg text-muted-foreground">
-                In an increasingly noisy and distracted world, finding a moment of clarity can feel impossible. 
+                In an increasingly noisy and distracted world, finding a moment of clarity can feel impossible.
                 <strong>LofiStudio</strong> was born from a simple desire: to create a digital space that helps you reclaim your focus.
               </p>
               <p className="text-muted-foreground">
-                We believe that productivity isn't just about doing more—it's about feeling better while you do it. 
-                By combining ambient soundscapes, aesthetic visuals, and essential tools into a unified interface, 
+                We believe that productivity isn't just about doing more—it's about feeling better while you do it.
+                By combining ambient soundscapes, aesthetic visuals, and essential tools into a unified interface,
                 we provide a sanctuary where creators, students, and professionals can thrive.
               </p>
             </section>
@@ -79,11 +79,11 @@ export default function AboutPage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Who We Are</h2>
               <p className="text-muted-foreground">
-                LofiStudio is a product of <strong>MotionA</strong>, a digital product studio dedicated to crafting tools 
+                LofiStudio is a product of <strong>MotionA</strong>, a digital product studio dedicated to crafting tools
                 that blend high-performance technology with human-centric design. We don't just write code; we curate experiences.
               </p>
               <p className="text-muted-foreground">
-                Our team spans across the globe, united by a love for lofi hip hop, clean UI, and the belief that 
+                Our team spans across the globe, united by a love for lofi hip hop, clean UI, and the belief that
                 software should be calm, not chaotic.
               </p>
             </section>

@@ -96,13 +96,13 @@ export function WeatherWidget({ id, settings }: WeatherWidgetProps) {
             const data = await response.json();
 
             setWeather({
-                temperature: Math.round(data.main.temp),
-                description: data.weather[0].description,
-                humidity: data.main.humidity,
-                windSpeed: Math.round(data.wind.speed),
-                icon: data.weather[0].main.toLowerCase(),
-                city: data.name,
-                country: data.sys.country,
+                temperature: Math.round(data.temp),
+                description: data.description,
+                humidity: data.humidity,
+                windSpeed: Math.round(data.windSpeed),
+                icon: data.icon,
+                city: data.city,
+                country: data.country || '',
             });
 
             // Save city for future use
