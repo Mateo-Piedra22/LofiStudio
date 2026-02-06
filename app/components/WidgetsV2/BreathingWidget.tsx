@@ -257,48 +257,83 @@ export function BreathingWidget({ id, settings }: BreathingWidgetProps) {
                     </div>
                 )}
 
-                {/* Breathing circle */}
-                <div className="relative flex items-center justify-center">
+                {/* Breathing circle container */}
+                <div className="relative flex items-center justify-center h-40 w-40 my-2">
+                     {/* Background Ambient Glow */}
+                     <motion.div
+                        animate={{ 
+                            scale: isRunning ? (phase === 'inhale' || phase === 'hold' ? 1.5 : 1) : 1,
+                            opacity: isRunning ? 0.2 : 0 
+                        }}
+                        transition={{ duration: selectedPattern.inhale, ease: "easeInOut" }}
+                        className={cn("absolute inset-0 rounded-full blur-2xl", 
+                            phase === 'inhale' ? 'bg-sky-500' : 
+                            phase === 'exhale' ? 'bg-emerald-500' : 
+                            phase === 'hold' || phase === 'holdAfter' ? 'bg-amber-500' : 'bg-transparent'
+                        )}
+                     />
+
+                    {/* Outer Ring */}
                     <motion.div
-                        animate={{ scale: getScale() }}
+                        animate={{ scale: getScale(), opacity: isRunning ? 1 : 0.5 }}
+                        transition={{ duration: 0.5, ease: 'linear' }} // Linear smoothness for the ring itself relative to the tick
+                        className={cn(
+                            'absolute inset-0 rounded-full border-2',
+                            phase === 'idle' ? 'border-white/10' : 
+                            phase === 'inhale' ? 'border-sky-400/50' : 
+                            phase === 'exhale' ? 'border-emerald-400/50' : 
+                            'border-amber-400/50'
+                        )}
+                    />
+
+                    {/* Inner Core */}
+                    <motion.div
+                        animate={{ scale: isRunning ? getScale() : 1 }}
                         transition={{ duration: 0.5, ease: 'easeInOut' }}
                         className={cn(
-                            'w-24 h-24 rounded-full border-4 flex items-center justify-center',
-                            phase === 'idle' ? 'border-muted-foreground/30' : 'border-primary/50'
+                            'w-32 h-32 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl',
+                            phase === 'idle' ? 'bg-white/5' : 
+                            phase === 'inhale' ? 'bg-sky-500/20' : 
+                            phase === 'exhale' ? 'bg-emerald-500/20' : 
+                            'bg-amber-500/20'
                         )}
                     >
-                        <motion.div
-                            animate={{ scale: getScale() }}
-                            transition={{ duration: 0.5, ease: 'easeInOut' }}
-                            className={cn(
-                                'w-16 h-16 rounded-full flex items-center justify-center',
-                                phase === 'idle' ? 'bg-muted' : 'bg-primary/20'
-                            )}
-                        >
-                            <div className="text-center">
+                         {/* Center Text */}
+                        <div className="flex flex-col items-center justify-center z-10">
+                            <AnimatePresence mode="wait">
                                 {isRunning ? (
-                                    <>
-                                        <p className={cn('text-2xl font-bold', getPhaseColor())}>
+                                    <motion.div
+                                        key="timer"
+                                        initial={{ opacity: 0, scale: 0.5 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.5 }}
+                                        className="flex flex-col items-center"
+                                    >
+                                        <span className="text-4xl font-bold font-mono text-white tracking-widest drop-shadow-md">
                                             {timeLeft}
-                                        </p>
-                                    </>
+                                        </span>
+                                        <span className={cn("text-xs uppercase tracking-[0.2em] font-medium mt-1", 
+                                             phase === 'inhale' ? 'text-sky-300' : 
+                                             phase === 'exhale' ? 'text-emerald-300' : 
+                                             'text-amber-300'
+                                        )}>
+                                            {PHASE_LABELS[phase]}
+                                        </span>
+                                    </motion.div>
                                 ) : (
-                                    <Wind className="w-6 h-6 text-muted-foreground" />
+                                    <motion.div
+                                        key="icon"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                    >
+                                        <Wind className="w-8 h-8 text-white/50" />
+                                    </motion.div>
                                 )}
-                            </div>
-                        </motion.div>
+                            </AnimatePresence>
+                        </div>
                     </motion.div>
                 </div>
-
-                {/* Phase label */}
-                <motion.p
-                    key={phase}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={cn('text-sm font-medium', getPhaseColor())}
-                >
-                    {PHASE_LABELS[phase]}
-                </motion.p>
 
                 {/* Controls */}
                 <div className="flex items-center gap-2">

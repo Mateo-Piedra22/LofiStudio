@@ -509,7 +509,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
                     const data = await res.json();
                     set({
-                        searchResults: data.results || [],
+                        searchResults: data.items || [], // Fixed: API returns 'items'
                         isSearching: false,
                     });
                 } catch (error) {

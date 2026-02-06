@@ -24,7 +24,7 @@ export default function PageBackground() {
         <img
           src="/lofistudio-bg.png"
           alt="Background"
-          className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+          className="w-full h-full object-cover opacity-30" // Removed mix-blend-overlay for better visibility
         />
       </motion.div>
 

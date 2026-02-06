@@ -56,16 +56,15 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
         setError(null);
 
         try {
-            // Priority 1: Quotable API (High quality, no key)
-            // Note: Quotable servers are sometimes slow or down.
-            const response = await fetch('https://api.quotable.io/random', {
-                signal: AbortSignal.timeout(4000),
+            // Priority 1: DummyJSON (Reliable, no CORS issues)
+            const response = await fetch('https://dummyjson.com/quotes/random', {
+                signal: AbortSignal.timeout(3000),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 setQuote({
-                    text: data.content,
+                    text: data.quote,
                     author: data.author,
                 });
                 return;
@@ -75,15 +74,15 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
         }
 
         try {
-            // Priority 2: DummyJSON (Reliable fallback)
-            const response = await fetch('https://dummyjson.com/quotes/random', {
-                signal: AbortSignal.timeout(3000),
+            // Priority 2: Quotable API (Often fails CORS/Down, but high quality)
+            const response = await fetch('https://api.quotable.io/random', {
+                signal: AbortSignal.timeout(4000),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 setQuote({
-                    text: data.quote,
+                    text: data.content,
                     author: data.author,
                 });
                 return;

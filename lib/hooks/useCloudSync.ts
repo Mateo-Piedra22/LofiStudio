@@ -26,7 +26,15 @@ export function useCloudSync() {
     useEffect(() => {
         if (session?.user) {
             fetch('/api/user/settings')
-                .then(res => res.json())
+                .then(async res => {
+                    if (!res.ok) throw new Error('Failed to fetch settings');
+                    const text = await res.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch {
+                        throw new Error('Invalid JSON response');
+                    }
+                })
                 .then(data => {
                     if (data) {
                         // Update localStorage directly for key items

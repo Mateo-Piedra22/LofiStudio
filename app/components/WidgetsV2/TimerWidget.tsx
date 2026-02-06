@@ -8,6 +8,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Coffee, Laptop, SkipForward } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { WidgetWrapper } from '@/app/components/WidgetBase';
 import { Button } from '@/components/ui/button';
 import { useWidgetGridStore } from '@/lib/stores/widget-grid.store';
@@ -133,27 +134,41 @@ export function TimerWidget({ id }: { id: string }) {
             </div>
 
             {/* Timer display */}
-            <div className="relative">
+            <div className="relative group">
                 {/* Progress circle */}
-                <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
+                <svg className="w-40 h-40 -rotate-90 drop-shadow-xl" viewBox="0 0 100 100">
+                    <defs>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    {/* Track */}
                     <circle
                         cx="50"
                         cy="50"
                         r="45"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="6"
-                        className="text-muted/30"
+                        strokeWidth="4"
+                        className="text-white/5"
                     />
+
+                    {/* Progress */}
                     <motion.circle
                         cx="50"
                         cy="50"
                         r="45"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="6"
+                        strokeWidth="4"
                         strokeLinecap="round"
-                        className={getModeColor(mode)}
+                        filter="url(#glow)"
+                        className={cn(getModeColor(mode), "opacity-90")}
                         strokeDasharray={283}
                         strokeDashoffset={283 - (283 * progress) / 100}
                         initial={false}
@@ -163,10 +178,13 @@ export function TimerWidget({ id }: { id: string }) {
                 </svg>
 
                 {/* Time display */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <ModeIcon className={`w-4 h-4 mb-1 ${getModeColor(mode)}`} />
-                    <span className="text-2xl font-bold font-mono text-foreground">
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <ModeIcon className={cn("w-5 h-5 mb-2 transition-colors duration-500", getModeColor(mode))} />
+                    <span className="text-4xl font-bold font-mono tracking-wider text-white drop-shadow-md tabular-nums select-none">
                         {formatTime(secondsRemaining)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-medium">
+                        {isActive ? 'Running' : isPaused ? 'Paused' : 'Ready'}
                     </span>
                 </div>
             </div>

@@ -64,7 +64,7 @@ export function Settings({ open, onOpenChange, onClose }: SettingsProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-[95vw] md:max-w-4xl h-[85vh] md:h-[80vh] p-0 gap-0 overflow-hidden flex flex-col md:flex-row bg-background/95 backdrop-blur-xl border-white/10 shadow-2xl z-[150]">
+            <DialogContent className="max-w-[95vw] md:max-w-4xl h-[85vh] md:h-[80vh] p-0 gap-0 overflow-hidden flex flex-col md:flex-row bg-background/95 backdrop-blur-xl border-white/10 shadow-2xl z-[210]">
                 {/* Sidebar (Mobile: Top Bar, Desktop: Left Sidebar) */}
                 <div className="flex flex-col border-b md:border-b-0 md:border-r border-border md:w-64 bg-muted/30 shrink-0">
                     <DialogHeader className="p-4 md:p-6 pb-2 md:pb-6 text-left">
