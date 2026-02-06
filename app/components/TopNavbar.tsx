@@ -108,10 +108,10 @@ export default function TopNavbar() {
                 <Menu className="w-6 h-6" />
                 <span className="ml-2">Menu</span>
               </Button>
-              <StudioSidebar isOpen={open} onClose={() => setOpen(false)} />
             </div>
           </div>
         </div>
+        <StudioSidebar isOpen={open} onClose={() => setOpen(false)} />
       </div>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 40 }} />
     </div>
