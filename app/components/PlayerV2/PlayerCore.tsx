@@ -185,7 +185,19 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
             audioRef.current.src = currentItem.streamUrl;
             audioRef.current.volume = volume / 100;
             audioRef.current.muted = muted;
-            audioRef.current.play().catch(console.error);
+
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    if (error.name === 'NotAllowedError') {
+                        console.log('[PlayerCore] Autoplay prevented by browser policy (Audio)');
+                        setState('paused');
+                    } else {
+                        console.error('[PlayerCore] Stream play failed', error);
+                        // Don't fail completely, user can try play again
+                    }
+                });
+            }
         }
     }, [currentItem, volume, muted, handleAudioPlay, handleAudioPause, handleAudioError, handleAudioWaiting]);
 
@@ -203,10 +215,17 @@ export const PlayerCore = memo(function PlayerCore({ className, onPlayerReady }:
             } else if (isRadioItem(currentItem) && audioRef.current) {
                 // Ensure audio is playing if state is supposed to be active
                 if (audioRef.current.paused) {
-                    audioRef.current.play().catch(e => {
-                        console.warn('Autoplay prevented:', e);
-                        // Don't log as error to avoid clutter, it's expected browser behavior
-                    });
+                    const playPromise = audioRef.current.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            if (error.name === 'NotAllowedError') {
+                                console.log('[PlayerCore] Autoplay prevented by browser policy (Resume)');
+                                setState('paused');
+                            } else {
+                                console.warn('[PlayerCore] Resume failed:', error);
+                            }
+                        });
+                    }
                 }
             }
         } else if (state === 'paused') {

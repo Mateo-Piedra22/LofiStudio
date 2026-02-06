@@ -12,32 +12,42 @@ export async function GET() {
     }
 
     try {
-        if (!process.env.DATABASE_URL) {
-            return NextResponse.json({
-                theme: "dark",
-                pomodoroWork: 25,
-                pomodoroBreak: 5,
-                preferences: null,
-            })
+        // Default settings object
+        const defaultSettings = {
+            theme: "dark",
+            pomodoroWork: 25,
+            pomodoroBreak: 5,
+            preferences: null,
         }
-        const userSettings = await db.query.settings.findFirst({
-            where: eq(settings.userId, session.user.id),
-        })
+
+        if (!process.env.DATABASE_URL) {
+            return NextResponse.json(defaultSettings)
+        }
+
+        let userSettings = null
+        try {
+            userSettings = await db.query.settings.findFirst({
+                where: eq(settings.userId, session.user.id),
+            })
+        } catch (dbError) {
+            console.error("[SETTINGS_DB_ERROR] Failed to fetch settings from DB, using defaults.", dbError)
+            // Fallthrough to return defaultSettings
+        }
 
         if (!userSettings) {
-            // Return default settings if none exist
-            return NextResponse.json({
-                theme: "dark",
-                pomodoroWork: 25,
-                pomodoroBreak: 5,
-                preferences: null,
-            })
+            return NextResponse.json(defaultSettings)
         }
 
         return NextResponse.json(userSettings)
     } catch (error) {
-        console.error("[SETTINGS_GET]", error)
-        return NextResponse.json({ error: "Internal Error" }, { status: 500 })
+        console.error("[SETTINGS_GET] Critical error", error)
+        // Return defaults even in critical error to prevent app crash
+        return NextResponse.json({
+            theme: "dark",
+            pomodoroWork: 25,
+            pomodoroBreak: 5,
+            preferences: null,
+        })
     }
 }
 

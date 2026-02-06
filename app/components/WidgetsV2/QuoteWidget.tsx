@@ -56,44 +56,25 @@ export function QuoteWidget({ id, settings }: QuoteWidgetProps) {
         setError(null);
 
         try {
-            // Priority 1: DummyJSON (Reliable, no CORS issues)
-            const response = await fetch('https://dummyjson.com/quotes/random', {
-                signal: AbortSignal.timeout(3000),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                // console.log('[QuoteWidget] DummyJSON response:', data); 
-                if (data && (data.quote || data.content)) {
-                    setQuote({
-                        text: data.quote || data.content,
-                        author: data.author || 'Unknown',
-                    });
-                    return;
-                }
-            }
-        } catch (e) {
-            console.error('[QuoteWidget] DummyJSON failed:', e);
-            // Continue to next provider
-        }
-
-        try {
-            // Priority 2: Quotable API (Often fails CORS/Down, but high quality)
+            // Priority 1: Quotable API
             const response = await fetch('https://api.quotable.io/random', {
                 signal: AbortSignal.timeout(4000),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                setQuote({
-                    text: data.content,
-                    author: data.author,
-                });
-                return;
+                if (data && data.content && data.author) {
+                    setQuote({
+                        text: data.content,
+                        author: data.author,
+                    });
+                    return;
+                }
             }
-            throw new Error('API failed');
+            throw new Error('API response invalid or failed');
         } catch (e) {
-            // Priority 3: Local Fallback
+            console.warn('[QuoteWidget] API failed, using local fallback', e);
+            // Priority 2: Local Fallback
             const randomIndex = Math.floor(Math.random() * FALLBACK_QUOTES.length);
             setQuote(FALLBACK_QUOTES[randomIndex]);
         } finally {

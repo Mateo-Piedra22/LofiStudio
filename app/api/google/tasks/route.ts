@@ -3,18 +3,18 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 
-export async function GET() {
-  const session = await auth()
-  if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
-
-  const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
-  const required = 'https://www.googleapis.com/auth/tasks'
-  if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
-
-  const accessToken = (session as any)?.accessToken as string | undefined
-  if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
-
+export async function GET(req: Request) {
   try {
+    const session = await auth()
+    if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
+
+    const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
+    const required = 'https://www.googleapis.com/auth/tasks'
+    if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
+
+    const accessToken = (session as any)?.accessToken as string | undefined
+    if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
+
     const listsRes = await fetch('https://www.googleapis.com/tasks/v1/users/@me/lists', {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -43,29 +43,31 @@ export async function GET() {
             updated: t.updated ? Date.parse(t.updated) : undefined,
           })
         })
-      } catch {}
+      } catch { }
     }
     return NextResponse.json({ tasks })
   } catch (error) {
+    console.error('[GoogleTasks] GET Error:', error)
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 })
   }
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
-  const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
-  const required = 'https://www.googleapis.com/auth/tasks'
-  if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
-  const accessToken = (session as any)?.accessToken as string | undefined
-  if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
-
-  const body = await req.json()
-  const title = body?.title || 'Task'
-  const notes = body?.notes || undefined
-  const dueAt = body?.dueAt ? new Date(body.dueAt) : undefined
-  const chosenListId = body?.listId as string | undefined
   try {
+    const session = await auth()
+    if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
+    const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
+    const required = 'https://www.googleapis.com/auth/tasks'
+    if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
+    const accessToken = (session as any)?.accessToken as string | undefined
+    if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
+
+    const body = await req.json()
+    const title = body?.title || 'Task'
+    const notes = body?.notes || undefined
+    const dueAt = body?.dueAt ? new Date(body.dueAt) : undefined
+    const chosenListId = body?.listId as string | undefined
+
     const listsRes = await fetch('https://www.googleapis.com/tasks/v1/users/@me/lists', {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -83,24 +85,26 @@ export async function POST(req: Request) {
     if (!createRes.ok) return NextResponse.json({ error: createData }, { status: createRes.status })
     return NextResponse.json({ task: createData })
   } catch (error) {
+    console.error('[GoogleTasks] POST Error:', error)
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
   }
 }
 
 export async function PATCH(req: Request) {
-  const session = await auth()
-  if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
-  const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
-  const required = 'https://www.googleapis.com/auth/tasks'
-  if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
-  const accessToken = (session as any)?.accessToken as string | undefined
-  if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
-
-  const body = await req.json()
-  const id = body?.id
-  const chosenListId = body?.listId as string | undefined
-  if (!id) return new NextResponse('Missing id', { status: 400 })
   try {
+    const session = await auth()
+    if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
+    const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
+    const required = 'https://www.googleapis.com/auth/tasks'
+    if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
+    const accessToken = (session as any)?.accessToken as string | undefined
+    if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
+
+    const body = await req.json()
+    const id = body?.id
+    const chosenListId = body?.listId as string | undefined
+    if (!id) return new NextResponse('Missing id', { status: 400 })
+
     const listsRes = await fetch('https://www.googleapis.com/tasks/v1/users/@me/lists', {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -124,24 +128,26 @@ export async function PATCH(req: Request) {
     if (!patchRes.ok) return NextResponse.json({ error: patchData }, { status: patchRes.status })
     return NextResponse.json({ task: patchData })
   } catch (error) {
+    console.error('[GoogleTasks] PATCH Error:', error)
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 })
   }
 }
 
 export async function DELETE(req: Request) {
-  const session = await auth()
-  if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
-  const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
-  const required = 'https://www.googleapis.com/auth/tasks'
-  if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
-  const accessToken = (session as any)?.accessToken as string | undefined
-  if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
-
-  const body = await req.json()
-  const id = body?.id
-  const chosenListId = body?.listId as string | undefined
-  if (!id) return new NextResponse('Missing id', { status: 400 })
   try {
+    const session = await auth()
+    if (!session?.user) return new NextResponse('Unauthorized', { status: 401 })
+    const granted = ((session as any)?.scope as string | undefined)?.split(' ') || []
+    const required = 'https://www.googleapis.com/auth/tasks'
+    if (!granted.includes(required)) return new NextResponse('Forbidden', { status: 403 })
+    const accessToken = (session as any)?.accessToken as string | undefined
+    if (!accessToken) return new NextResponse('Missing access token', { status: 401 })
+
+    const body = await req.json()
+    const id = body?.id
+    const chosenListId = body?.listId as string | undefined
+    if (!id) return new NextResponse('Missing id', { status: 400 })
+
     const listsRes = await fetch('https://www.googleapis.com/tasks/v1/users/@me/lists', {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -160,6 +166,7 @@ export async function DELETE(req: Request) {
     }
     return NextResponse.json({ ok: true })
   } catch (error) {
+    console.error('[GoogleTasks] DELETE Error:', error)
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 })
   }
 }
